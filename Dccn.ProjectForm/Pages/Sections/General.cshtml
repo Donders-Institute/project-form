@@ -1,0 +1,36 @@
+﻿@model Models.General
+
+@* Title *@
+<div class="form-group">
+    <label asp-for="Title"></label>
+    <input asp-for="Title" class="form-control" data-submit-on="change">
+    <small asp-description-for="Title"></small>
+</div>
+
+@* Owner *@
+<div class="form-group">
+    <label asp-for="OwnerName"></label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        <input asp-for="OwnerName" class="form-control" disabled>
+    </div>
+    <small asp-description-for="OwnerName"></small>
+</div>
+
+@* Principal Investigator *@
+<div class="form-group">
+    <label asp-for="PrincipalInvestigatorName"></label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <i class="fas fa-user"></i>
+            </div>
+        </div>
+        <input asp-for="PrincipalInvestigatorName" class="form-control" disabled />
+    </div>
+    <small asp-description-for="PrincipalInvestigatorName"></small>
+</div>

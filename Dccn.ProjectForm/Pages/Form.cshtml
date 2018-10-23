@@ -1,0 +1,179 @@
+﻿@page "{proposalId:int}"
+@model FormModel
+@using Dccn.ProjectForm.Data
+@using Dccn.ProjectForm.Models
+@using Extensions
+
+@{
+    ViewData["Title"] = Model.General.Title;
+}
+
+<div class="row">
+    <div class="col-auto d-none d-lg-block">
+        <div id="section-list" class="list-group">
+            @foreach (var sectionInfo in FormModel.FormSections)
+            {
+                var section = sectionInfo.GetModel(Model);
+
+                <a class="list-group-item list-group-item-action" href="#@Html.IdFor(sectionInfo.Expr)">
+                    @Html.DisplayNameFor(sectionInfo.Expr)
+                    <span class="ml-3 float-right">
+                        @{
+                            // TODO: pretty ugly
+                            if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.NotSubmitted))
+                            {
+                                <span class="badge badge-pill badge-secondary">
+                                    @(section.ApprovalInfo.Count(i => i.Status == ApprovalStatus.NotSubmitted))
+                                </span>
+                            }
+                            if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.ApprovalPending))
+                            {
+                                <span class="badge badge-pill badge-info">
+                                    @(section.ApprovalInfo.Count(i => i.Status == ApprovalStatus.ApprovalPending))
+                                </span>
+                            }
+                            if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.Approved))
+                            {
+                                <span class="badge badge-pill badge-success">
+                                    @(section.ApprovalInfo.Count(i => i.Status == ApprovalStatus.Approved))
+                                </span>
+                            }
+                            if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.Rejected))
+                            {
+                                <span class="badge badge-pill badge-danger">
+                                    @(section.ApprovalInfo.Count(i => i.Status == ApprovalStatus.Rejected))
+                                </span>
+                            }
+                        }
+                    </span>
+                </a>
+            }
+        </div>
+    </div>
+    <div class="col">
+        <div class="card">
+            <div id="form-view" class="card-body" data-spy="scroll" data-target="#section-list" data-offset="18">
+                <form id="form" method="post">
+                    @foreach (var sectionInfo in FormModel.FormSections)
+                    {
+                        var section = sectionInfo.GetModel(Model);
+
+                        <div class="card mb-3" id="@Html.IdFor(sectionInfo.Expr)" data-class="form-section">
+                            <div class="card-header d-flex justify-content-between section-header">
+                                <h1 class="display-4">@Html.DisplayNameFor(sectionInfo.Expr)</h1>
+                            </div>
+                            <div class="card-body">
+                                @* <h5 class="card-title">@Html.DisplayFor(_ => section.DisplayName)</h5> *@
+                                @* <h6 class="card-subtitle mb-4 text-muted">Card subtitle</h6> *@
+                                <p class="card-text">@Html.DisplayNameFor(sectionInfo.Expr)</p>
+                                @await Html.FormSectionAsync(sectionInfo.Id)
+                            </div>
+                            <div class="card-footer">
+                                <div class="form-group">
+                                    @{
+                                        var comments = sectionInfo.Id + "." + nameof(ISectionModel.Comments);
+                                    }
+                                    @Html.Label(comments)
+                                    @Html.TextArea(comments, section.Comments, 3, 0, new
+                                    {
+                                        @class = "form-control form-control-sm",
+                                        placeholder = "Leave a comment here if something in this section requires extra explanation.",
+                                        data_submit_on = "change"
+                                    })
+                                </div>
+
+                                @if (section.ApprovalInfo.Any())
+                                {
+                                    <div class="card">
+                                        <div class="card-body bg-light">
+                                            <h5 class="card-title">Approval status</h5>
+                                            <ul class="list-group mb-3">
+                                                @foreach (var approvalInfo in section.ApprovalInfo)
+                                                {
+                                                    string colorClass;
+                                                    string statusText;
+                                                    switch (approvalInfo.Status)
+                                                    {
+                                                        case ApprovalStatus.NotSubmitted:
+                                                            colorClass = "badge-secondary";
+                                                            statusText = "not submitted";
+                                                            break;
+                                                        case ApprovalStatus.ApprovalPending:
+                                                            colorClass = "badge-info";
+                                                            statusText = "pending";
+                                                            break;
+                                                        case ApprovalStatus.Approved:
+                                                            colorClass = "badge-success";
+                                                            statusText = "approved";
+                                                            break;
+                                                        case ApprovalStatus.Rejected:
+                                                            colorClass = "badge-danger";
+                                                            statusText = "rejected";
+                                                            break;
+                                                        default:
+                                                            throw new ArgumentOutOfRangeException();
+                                                    }
+                                                    <li class="list-group-item">
+                                                        <div class="row align-content-center">
+                                                            <div class="col">
+                                                                @approvalInfo.AuthorityName
+                                                            </div>
+                                                            <div class="col">
+                                                                <a href="mailto:@(approvalInfo.AuthorityEmail)">@approvalInfo.AuthorityEmail</a>
+                                                            </div>
+                                                            <div class="col">
+                                                                <span class="badge badge-pill @colorClass">@statusText</span>
+                                                            </div>
+                                                        </div>
+                                                    </li>
+                                                }
+                                            </ul>
+                                            @if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.NotSubmitted || i.Status == ApprovalStatus.Rejected))
+                                            {
+                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@sectionInfo.Id">
+                                                    <i class="far fa-thumbs-up"></i>
+                                                    Submit for approval
+                                                </a>
+                                            }
+                                        </div>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    }
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="request-approval-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Submit for approval</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to submit this section for approval?
+            </div>
+            <div class="modal-footer">
+                <form method="post" data-url="@Url.Page(null, "RequestApproval", new { section = "__SECTION__" })">
+                    <button class="btn btn-primary float-right" type="submit">Submit</button>
+                </form>
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/form.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/form.min.js"></script>
+    </environment>
+}

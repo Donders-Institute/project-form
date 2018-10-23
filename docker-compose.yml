@@ -1,0 +1,17 @@
+version: "3.7"
+
+services:
+  web:
+    image: dccn/project-form
+    build:
+      context: .
+      dockerfile: Dccn.ProjectForm/Dockerfile
+    depends_on:
+      - db
+    ports:
+      - "8080:80"
+    volumes:
+      - ./wait-for-it.sh:/app/entrypoint.sh:ro
+    entrypoint: ["./entrypoint.sh", "db:1433", "--timeout=0", "--", "dotnet", "Dccn.ProjectForm.dll"]
+  db:
+    image: microsoft/mssql-server-linux:2017-latest

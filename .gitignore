@@ -1,0 +1,17 @@
+*.suo
+*.user
+*.DotSettings.user
+*.crt
+*.min.css
+*.min.js
+docker-compose.*.yml
+
+.vs/
+.vscode/
+bin/
+obj/
+
+# Workaround: Font Awesome 5 is not in any supported CDNs
+/Dccn.ProjectForm/wwwroot/lib/**
+!/Dccn.ProjectForm/wwwroot/lib/fontawesome/
+!/Dccn.ProjectForm/wwwroot/lib/fontawesome/**

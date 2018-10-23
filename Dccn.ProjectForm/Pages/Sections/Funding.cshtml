@@ -1,0 +1,51 @@
+﻿@model Models.Funding
+
+@* Contact person *@
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">Contact person</h5>
+        <h6 class="card-subtitle text-muted mb-3">The person to contact for funding related questions.</h6>
+
+        @* Name *@
+        <div class="form-group">
+            <label asp-for="ContactName"></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <i class="fas fa-user"></i>
+                    </div>
+                </div>
+                <input asp-for="ContactName" class="form-control" data-submit-on="change">
+            </div>
+            <small asp-description-for="ContactName"></small>
+        </div>
+
+        @* E-mail *@
+        <div class="form-group">
+            <label asp-for="ContactEmail"></label>
+            <div class="input-group">
+                <div class="input-group-prepend">
+                    <div class="input-group-text">
+                        <i class="fas fa-at"></i>
+                    </div>
+                </div>
+                <input asp-for="ContactEmail" class="form-control" data-submit-on="change">
+            </div>
+            <small asp-description-for="ContactEmail"></small>
+        </div>
+    </div>
+</div>
+
+@* Financial code *@
+<div class="form-group">
+    <label asp-for="FinancialCode"></label>
+    <div class="input-group">
+        <div class="input-group-prepend">
+            <div class="input-group-text">
+                <i class="fas fa-hashtag"></i>
+            </div>
+        </div>
+        <input asp-for="FinancialCode" class="form-control" data-submit-on="change">
+    </div>
+    <small asp-description-for="FinancialCode"></small>
+</div>

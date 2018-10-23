@@ -1,0 +1,195 @@
+﻿@model Models.DataManagement
+@using Data
+@using System.Web
+
+@* Project storage access roles *@
+<div class="card mb-3">
+    <div class="card-body">
+        <h5 class="card-title">@Html.DisplayNameFor(m => m.StorageAccessRules)</h5>
+        <h6 class="card-subtitle text-muted mb-3">
+            The data-access role defines collaborator's permission and responsibility in
+            managing project data. The PI will be one of the managers. The applicant should also specify his/her data access role.
+            Click <a href="https://intranet.donders.ru.nl/index.php?id=4733" target="_blank">here</a> for more information.
+        </h6>
+        <div class="card">
+            <div class="card-header py-2">
+                <div class="row">
+                    <label class="col-auto col-form-label col-form-label-sm">Add access role</label>
+                    <div class="col">
+                        <input class="form-control form-control-sm" type="text"
+                               placeholder="Search for an existing DCCN member or enter a non-member's full name"
+                               data-class="user-query" data-usertype="access"
+                               data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})">
+                    </div>
+                    <div class="col-auto">
+                        <button type="button" class="btn btn-sm btn-outline-secondary"
+                                data-class="user-add" data-usertype="access" data-submit-on="click">
+                            <i class="fas fa-plus-square"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+            <div class="list-group list-group-flush" data-class="access-items">
+                <div class="list-group-item list-group-placeholder">
+                    <span class="text-muted font-italic">No access roles assigned</span>
+                </div>
+                @foreach (var (index, rule) in Model.StorageAccessRules)
+                {
+                    <div class="d-none"
+                         data-class="access-item"
+                         data-index="@index"
+                         data-id="@rule.User.Id"
+                         data-name="@rule.User.Name"
+                         data-role="@rule.Role"
+                         data-can-edit="@rule.CanEdit"
+                         data-can-remove="@rule.CanRemove">
+                    </div>
+                }
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <h5 class="card-title">@Html.DisplayNameFor(m => m.Preservation)</h5>
+        <h6 class="card-subtitle text-muted mb-3">
+            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+            dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+        </h6>
+        <div class="accordion" id="preservation-options">
+            <div class="card">
+                <div class="card-header">
+                    <div class="custom-control custom-radio">
+                        <input asp-for="Preservation"
+                               class="custom-control-input"
+                               type="radio"
+                               id="preservation-repository"
+                               value="@Models.DataManagement.PreservationType.Repository"
+                               data-class="radio-panel-input"
+                               data-target="#preservation-repository-panel"
+                               data-submit-on="change">
+                        <label class="custom-control-label" for="preservation-repository">Preserve data at the Donders Repository</label>
+                    </div>
+                </div>
+                <fieldset class="collapse" id="preservation-repository-panel" data-parent="#preservation-options">
+                    <div class="card-body">
+                        <h5 class="card-title">Donders Repository access roles</h5>
+                        <h6 class="card-subtitle text-muted mb-3">
+                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
+                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
+                            dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
+                            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
+                        </h6>
+                        <p class="card-text">
+                            The project owner (<b>@Html.DisplayFor(m => m.OwnerName)</b>) and the PI (<b>@Html.DisplayFor(m => m.SupervisorName)</b>)
+                            will receive the <i>manager</i> role in the Donders Repository.
+                        </p>
+
+                        <div class="alert alert-warning d-none" role="alert" data-class="repository-user-warning"
+                             data-url="@Url.Action("RepositoryUserExists", "Users", new {id = Model.OwnerId})">
+                            <b>Warning: </b>
+                            No Donders Repository account found for <i>@Html.DisplayFor(m => m.OwnerName)</i> using e-mail address <i>@Html.DisplayFor(m => m.OwnerEmail)</i>
+                        </div>
+                        <div class="alert alert-info" role="alert">
+                            <b>Note: </b><i>Collaborator</i> and <i>viewer</i> and additional <i>manager</i> roles for the Donders Repository need to be manually assigned by a <i>manager</i>.
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+            <div class="card">
+                <div class="card-header">
+                    <div class="custom-control custom-radio">
+                        <input asp-for="Preservation"
+                               class="custom-control-input"
+                               type="radio"
+                               id="preservation-external"
+                               value="@Models.DataManagement.PreservationType.External"
+                               data-class="radio-panel-input"
+                               data-target="#preservation-external-panel"
+                               data-submit-on="change">
+                        <label class="custom-control-label" for="preservation-external">Preserve data at an external location</label>
+                    </div>
+                </div>
+                <fieldset class="collapse" id="preservation-external-panel" data-parent="#preservation-options">
+                    <div class="card-body">
+                        <h5 class="card-title">@Html.DisplayNameFor(m => m.ExternalPreservation)</h5>
+                        <h6 class="card-subtitle text-muted mb-3">
+                            Please specify the external location for the data archive if the data will be archived outside the DCCN domain of
+                            the Donders Repository (e.g. DCN, DCMN, DCC, MPI or other).
+                        </h6>
+                        <div class="form-group">
+                            <label asp-for="ExternalPreservation.Location"></label>
+                            <input asp-for="ExternalPreservation.Location" class="form-control" data-submit-on="change"/>
+                            <small asp-description-for="ExternalPreservation.Location"></small>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ExternalPreservation.Reference"></label>
+                            <input asp-for="ExternalPreservation.Reference" class="form-control" data-submit-on="change"/>
+                            <small asp-description-for="ExternalPreservation.Reference"></small>
+                        </div>
+                        <div class="form-group">
+                            <label asp-for="ExternalPreservation.SupervisorName"></label>
+                            <input asp-for="ExternalPreservation.SupervisorName" class="form-control" data-submit-on="change"/>
+                            <small asp-description-for="ExternalPreservation.SupervisorName"></small>
+                        </div>
+                    </div>
+                </fieldset>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script id="access-item-template" type="text/x-jsrender">
+    <div class="list-group-item list-group-item-action py-2"
+         data-class="access-item-expanded"
+         data-index="{{:index}}"
+         data-id="{{:id}}"
+         data-name="{{>name}}"
+         data-role="{{:role}}"
+         data-can-edit="{{:canEdit}}"
+         data-can-remove="{{:canRemove}}">
+
+        <div class="row">
+            <div class="col my-auto">
+                {{>name}}
+                {{if id}}
+                <span class="badge badge-info">{{:id}}</span>
+                <input name="@Html.Name("AccessRules[{{:index}}].User.Id")" type="hidden" value="{{:id}}">
+                {{else}}
+                <span class="badge badge-danger">No DCCN Account</span>
+                <input name="@Html.Name("AccessRules[{{:index}}].User.Name")" type="hidden" value="{{>name}}">
+                {{/if}}
+            </div>
+            {{if canEdit}}
+            <div class="col-auto btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                @foreach (var role in (StorageAccessRole[])Enum.GetValues(typeof(StorageAccessRole)))
+                {
+                    var roleName = Html.Name("AccessRules[{{:index}}].Role");
+
+                    @:{{if role === @Html.Raw(HttpUtility.JavaScriptStringEncode(role.ToString(), true))}}
+                    <label class="btn btn-outline-secondary active">
+                        <input type="radio" name="@roleName" autocomplete="off" value="@role" data-submit-on="change" checked> @role
+                    </label>
+                    @:{{else}}
+                    <label class="btn btn-outline-secondary">
+                        <input type="radio" name="@roleName" autocomplete="off" value="@role" data-submit-on="change"> @role
+                    </label>
+                    @:{{/if}}
+                }
+            </div>
+            {{else}}
+            <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}">
+            {{/if}}
+            {{if canRemove == "true"}}
+            <div class="col-auto">
+                <button type="button" class="btn btn-sm btn-outline-secondary" data-class="remove-access" data-submit-on="click">
+                    <i class="fas fa-minus-square"></i>
+                </button>
+            </div>
+            {{/if}}
+        </div>
+    </div>
+</script>

@@ -1,0 +1,131 @@
+﻿@model Models.Privacy
+
+<div class="form-group">
+    <label asp-for="DataTypes"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Names
+                    @* <input asp-for="DataTypes" type="checkbox" autocomplete="off" value="@Models.Privacy.DataType.Name"> Names *@
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Addresses
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> E-mail addresses
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Phone numbers
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Dates of birth
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> SONA ID's
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="DataTypes"></small>
+</div>
+
+<div class="form-group">
+    <label asp-for="Motivations"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Experiment scheduling
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Incidental findings
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="Motivations"></small>
+</div>
+
+<div class="form-group">
+    <label asp-for="StorageLocations"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Home folder (M:\)
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Project folder (P:\)
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> DCC
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="StorageLocations"></small>
+</div>
+
+<div class="form-group">
+    <label asp-for="Accessors"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Managers
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Contributors
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="Accessors"></small>
+</div>
+
+<div class="form-group">
+    <label asp-for="SecurityMeasures"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Password protection
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="checkbox" autocomplete="off"> Key-file encryption
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="SecurityMeasures"></small>
+</div>
+
+<div class="form-group">
+    <label asp-for="DataDisposalTerm"></label>
+    <div class="w-100"></div>
+    <div class="input-group input-group-sm">
+        <div class="input-group-append">
+            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
+                <label class="btn btn-outline-secondary">
+                    <input type="radio" autocomplete="off"> 1 month after ending data acquisition
+                </label>
+                <label class="btn btn-outline-secondary">
+                    <input type="radio" autocomplete="off"> 1 year after ending data acquisition
+                </label>
+            </div>
+        </div>
+        <input class="form-control" type="text" placeholder="Other">
+    </div>
+    <small asp-description-for="DataDisposalTerm"></small>
+</div>

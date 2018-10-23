@@ -1,0 +1,48 @@
+﻿@model Models.Payment
+
+<div class="form-row">
+    <div class="col-md form-group">
+        <label asp-for="SubjectCount"></label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <i class="fas fa-hashtag"></i>
+                </div>
+            </div>
+            <input asp-for="SubjectCount" class="form-control" data-class="cost-subjects" data-submit-on="change">
+        </div>
+    </div>
+    <div class="col-md form-group">
+        <label asp-for="AverageSubjectCost"></label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+            <input asp-for="AverageSubjectCost" class="form-control" data-class="cost-average" data-submit-on="change">
+        </div>
+    </div>
+    <div class="col-md form-group">
+        <label>Predicted costs</label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+            <input class="form-control" data-class="cost-predicted" disabled>
+        </div>
+    </div>
+    <div class="col-md form-group">
+        <label asp-for="MaxTotalCost"></label>
+        <div class="input-group">
+            <div class="input-group-prepend">
+                <div class="input-group-text">
+                    <i class="fas fa-euro-sign"></i>
+                </div>
+            </div>
+            <input asp-for="MaxTotalCost" class="form-control" data-submit-on="change">
+        </div>
+    </div>
+</div>

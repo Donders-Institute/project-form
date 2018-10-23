@@ -1,0 +1,187 @@
+﻿@page
+@model IndexModel
+@{
+    ViewData["Title"] = "Proposals";
+}
+
+@if (Model.IsSupervisor)
+{
+    <div class="card mb-3">
+        <div class="card-header">
+            <h1 class="display-4">Supervised proposals</h1>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Manage proposals of which you are the supervisor.</p>
+            <ul class="list-group">
+                <li class="list-group-item list-group-placeholder">
+                    <span class="text-muted font-italic">No proposals</span>
+                </li>
+                @foreach (var proposal in Model.MyProposals)
+                {
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col">
+                                <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
+                                <dl class="row mb-0">
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.OwnerName)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.OwnerName)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
+                                </dl>
+                            </div>
+
+                            <div class="btn-group col-auto my-auto" role="group">
+                                <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
+                                    <span class="d-none d-sm-inline mr-1">Edit</span>
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+}
+
+<div class="card">
+    <div class="card-header">
+        <h1 class="display-4">My project proposals</h1>
+    </div>
+    <div class="card-body">
+        <p class="card-text">Manage proposals of projects for which you are the owner.</p>
+        <div class="card">
+            <div class="card-header">
+                <div class="float-right">
+                    <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#create-proposal-modal">
+                        <span class="d-none d-sm-inline mr-1">Create new proposal</span>
+                        <i class="fas fa-plus-square"></i>
+                    </button>
+                </div>
+            </div>
+            <ul class="list-group list-group-flush">
+                <li class="list-group-item list-group-placeholder">
+                    <span class="text-muted font-italic">No proposals</span>
+                </li>
+                @foreach (var proposal in Model.MyProposals)
+                {
+                    <li class="list-group-item">
+                        <div class="row">
+                            <div class="col">
+                                <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
+                                <dl class="row mb-0">
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.SupervisorName)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.SupervisorName)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
+
+                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
+                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
+                                </dl>
+                            </div>
+
+                            <div class="btn-group col-auto my-auto" role="group">
+                                <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
+                                    <span class="d-none d-sm-inline mr-1">Edit</span>
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <button class="btn btn-sm btn-danger" type="button" data-toggle="modal" data-target="#delete-proposal-modal" data-proposal-id="@proposal.Id">
+                                    <span class="d-none d-sm-inline mr-1">Delete</span>
+                                    <i class="fas fa-trash-alt"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</div>
+
+<div id="create-proposal-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">New project proposal</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <form method="post" asp-page-handler="Create">
+                <div class="modal-body">
+                    <p class="card-text">Start a new project proposal.</p>
+
+                    <div class="form-group">
+                        <label asp-for="NewProposal.Title"></label>
+                        <input asp-for="NewProposal.Title" class="form-control">
+                        <small asp-description-for="NewProposal.Title"></small>
+                    </div>
+                    <div class="form-group">
+                        <label asp-for="NewProposal.SupervisorId"></label>
+                        <div class="input-group">
+                            <div class="input-group-prepend">
+                                <div class="input-group-text">
+                                    <i class="fas fa-user"></i>
+                                </div>
+                            </div>
+                            <select asp-for="NewProposal.SupervisorId" asp-items="Model.NewProposal.Supervisors" class="custom-select"></select>
+                        </div>
+                        <small asp-description-for="NewProposal.SupervisorId"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Create</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<div id="delete-proposal-modal" class="modal fade" tabindex="-1" role="dialog">
+    <div class="modal-dialog modal-dialog-centered" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Delete proposal</h5>
+                <button type="button" class="close" data-dismiss="modal">
+                    <span aria-hidden="true">&times;</span>
+                </button>
+            </div>
+            <div class="modal-body">
+                Are you sure you want to remove this proposal? This change cannot be reverted.
+            </div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                <form method="post" data-url="@Url.Page(null, "Delete", new { id = "__ID__" })">
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/index.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/index.min.js"></script>
+    </environment>
+}
