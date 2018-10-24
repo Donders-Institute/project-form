@@ -184,7 +184,7 @@
                     <label class="col-auto col-form-label col-form-label-sm">Add experimenter</label>
                     <div class="col">
                         <input class="form-control form-control-sm" type="text"
-                               placeholder="Search for an existing DCCN member or enter a non-member's full name"
+                               placeholder="Search for a DCCN member to add as experimenter"
                                data-class="user-query" data-usertype="experimenter"
                                data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" >
                     </div>
@@ -196,7 +196,7 @@
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush" data-class="experimenter-items">
+            <div class="list-group list-group-flush" data-class="user-items" data-usertype="experimenter">
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No experimenters assigned</span>
                 </div>
@@ -289,13 +289,8 @@
         <div class="row">
             <div class="col my-auto">
                 {{>name}}
-                {{if id}}
                 <span class="badge badge-info">{{:id}}</span>
                 <input name="@Html.Name("Experimenters[{{:index}}].Id")" type="hidden" value="{{:id}}">
-                {{else}}
-                <span class="badge badge-danger">No DCCN Account</span>
-                <input name="@Html.Name("Experimenters[{{:index}}].Name")" type="hidden" value="{{>name}}">
-                {{/if}}
             </div>
 
             <div class="col-auto">

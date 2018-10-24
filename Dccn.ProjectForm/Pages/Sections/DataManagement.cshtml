@@ -17,7 +17,7 @@
                     <label class="col-auto col-form-label col-form-label-sm">Add access role</label>
                     <div class="col">
                         <input class="form-control form-control-sm" type="text"
-                               placeholder="Search for an existing DCCN member or enter a non-member's full name"
+                               placeholder="Search for a DCCN member to give project access to"
                                data-class="user-query" data-usertype="access"
                                data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})">
                     </div>
@@ -29,7 +29,7 @@
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush" data-class="access-items">
+            <div class="list-group list-group-flush" data-class="user-items" data-usertype="access">
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No access roles assigned</span>
                 </div>
@@ -94,7 +94,7 @@
                             No Donders Repository account found for <i>@Html.DisplayFor(m => m.OwnerName)</i> using e-mail address <i>@Html.DisplayFor(m => m.OwnerEmail)</i>
                         </div>
                         <div class="alert alert-info" role="alert">
-                            <b>Note: </b><i>Collaborator</i> and <i>viewer</i> and additional <i>manager</i> roles for the Donders Repository need to be manually assigned by a <i>manager</i>.
+                            <b>Note: </b><i>Collaborator</i>, <i>viewer</i> and additional <i>manager</i> roles for the Donders Repository need to be manually assigned by a <i>manager</i>.
                         </div>
                     </div>
                 </fieldset>
@@ -155,15 +155,10 @@
         <div class="row">
             <div class="col my-auto">
                 {{>name}}
-                {{if id}}
                 <span class="badge badge-info">{{:id}}</span>
                 <input name="@Html.Name("AccessRules[{{:index}}].User.Id")" type="hidden" value="{{:id}}">
-                {{else}}
-                <span class="badge badge-danger">No DCCN Account</span>
-                <input name="@Html.Name("AccessRules[{{:index}}].User.Name")" type="hidden" value="{{>name}}">
-                {{/if}}
             </div>
-            {{if canEdit}}
+
             <div class="col-auto btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
                 @foreach (var role in (StorageAccessRole[])Enum.GetValues(typeof(StorageAccessRole)))
                 {
@@ -180,16 +175,14 @@
                     @:{{/if}}
                 }
             </div>
-            {{else}}
-            <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}">
-            {{/if}}
-            {{if canRemove == "true"}}
+
+            @* <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}"> *@
+
             <div class="col-auto">
                 <button type="button" class="btn btn-sm btn-outline-secondary" data-class="remove-access" data-submit-on="click">
                     <i class="fas fa-minus-square"></i>
                 </button>
             </div>
-            {{/if}}
         </div>
     </div>
 </script>

@@ -25,6 +25,34 @@ jQuery(function($) {
         });
     }
 
+    function initializeUserList(userType, itemDefaults, createItem) {
+        var $autocomplete = $(".aa-input[data-class='user-query'][data-usertype='" + userType + "']");
+        var $userlist = $("[data-class='user-items'][data-usertype='" + userType + "']");
+
+        $("[data-class='user-add'][data-usertype='" + userType + "']").click(function(event) {
+
+            var id = $autocomplete.data("id");
+            if (!id || $userlist.find("[data-id='" + id + "']").length > 0) {
+                $autocomplete.addClass("border-danger");
+                event.stopImmediatePropagation();
+                return;
+            }
+
+            $userlist.append(createItem(Object.assign({
+                index: generateUniqueIndex(),
+                id: id,
+                name: $autocomplete.autocomplete("val")
+            }, itemDefaults)));
+
+            $autocomplete.autocomplete("val", "");
+            $autocomplete.trigger("input");
+        });
+
+        $userlist.children(":not(.list-group-placeholder)").replaceWith(function() {
+            return createItem($(this).data());
+        });
+    }
+
     $(window).on("beforeunload", function() {
         var errorCount = $(".is-invalid").length;
         if (errorCount > 0) {
@@ -143,7 +171,6 @@ jQuery(function($) {
 
     // Experiment
     var labItemTemplate = $.templates("#lab-item-template");
-    var experimenterItemTemplate = $.templates("#experimenter-item-template");
 
     function createLabItem(data) {
         var $item = $(labItemTemplate.render(data));
@@ -172,22 +199,12 @@ jQuery(function($) {
         return $item;
     }
 
-    function createExperimenterItem(data) {
-        var $item = $(experimenterItemTemplate.render(data));
-        $item.find("[data-class='remove-experimenter']").click(function() {
-            $(this).parents("[data-class='experimenter-item-expanded']").remove();
-        });
-        return $item;
-    }
-
     function updateLabItems() {
         var $container = $("[data-class='lab-items']");
         if ($container.children("[data-class='lab-item-expanded']").length === 0) {
-            $container.children("[data-class='lab-item-placeholder']").removeClass("d-none");
             $("#quota-standard").prop("disabled", true);
             $("#quota-custom").prop("checked", true).change();
         } else {
-            $container.children("[data-class='lab-item-placeholder']").addClass("d-none");
             $("#quota-standard").prop("disabled", false);
         }
     }
@@ -233,27 +250,26 @@ jQuery(function($) {
 
 
     $("[data-class='user-query']").each(function() {
-        var $query = $(this);
+        var $autocomplete = $(this);
 
-        $query.on("keypress", function(event) {
+        $autocomplete.on("keypress", function(event) {
             if (event.key === "Enter") {
-                $("[data-class='user-add'][data-usertype='" + $query.data("usertype") + "']").click();
+                $("[data-class='user-add'][data-usertype='" + $autocomplete.data("usertype") + "']").click();
                 event.preventDefault();
             }
         });
 
-        $query.on("input", function() {
-            $query.removeClass("border-info");
-            $query.removeData("id");
-            $query.removeData("name");
+        $autocomplete.on("input", function() {
+            $autocomplete.removeClass("border-success").removeClass("border-danger");
+            $autocomplete.removeData("id");
         });
 
-        $query.on("autocomplete:selected", function(_event, suggestion) {
-            $query.addClass("border-info");
-            $query.data(suggestion);
+        $autocomplete.on("autocomplete:selected", function(_event, suggestion) {
+            $autocomplete.addClass("border-success");
+            $autocomplete.data("id", suggestion.id);
         });
 
-        $query.autocomplete({
+        $autocomplete.autocomplete({
                 minLength: 2,
                 highlight: true,
                 autoselect: true
@@ -261,7 +277,7 @@ jQuery(function($) {
             {
                 source: function(query, callback) {
                     $.getJSON({
-                        url: $query.data("url").replace("__QUERY__", encodeURIComponent(query))
+                        url: $autocomplete.data("url").replace("__QUERY__", encodeURIComponent(query))
                     }).done(function(data) {
                         callback(data);
                     });
@@ -278,7 +294,7 @@ jQuery(function($) {
                     },
                     empty: function(params) {
                         return $("<div></div>")
-                            .text(" No results for '" + params.query + "'. Press enter to add a new user.")
+                            .text(" No results for '" + params.query + "'.")
                             .html();
                     }
                 },
@@ -287,109 +303,25 @@ jQuery(function($) {
         );
     });
 
-    $("[data-class='user-add'][data-usertype='experimenter']").click(function(event) {
-        var $query = $(".aa-input[data-class='user-query'][data-usertype='experimenter']");
-
-        function clearQuery() {
-            $query.autocomplete("val", "");
-            $query.trigger("input");
-        }
-
-        var query = $query.autocomplete("val");
-        if (query.length === 0) {
-            event.stopImmediatePropagation();
-            clearQuery();
-            return;
-        }
-
-        var $items = $("[data-class='experimenter-items']");
-        if ($query.data("id") && $query.data("name")) {
-            var id = $query.data("id");
-            if ($items.find("[data-id='" + id + "']").length > 0) {
-                event.stopImmediatePropagation();
-                clearQuery();
-                return;
-            }
-            $items.append(createExperimenterItem({
-                index: generateUniqueIndex(),
-                id: id,
-                name: $query.data("name")
-            }));
-        } else {
-            $items.append(createExperimenterItem({
-                index: generateUniqueIndex(),
-                id: null,
-                name: query
-            }));
-        }
-
-        clearQuery();
-    });
-
-    $("[data-class='experimenter-item']").replaceWith(function() {
-       return createExperimenterItem($(this).data());
+    var experimenterItemTemplate = $.templates("#experimenter-item-template");
+    initializeUserList("experimenter", {}, function(data) {
+        var $item = $(experimenterItemTemplate.render(data));
+        $item.find("[data-class='remove-experimenter']").click(function() {
+            $(this).parents("[data-class='experimenter-item-expanded']").remove();
+        });
+        return $item;
     });
 
 
 
     // Data management
     var accessItemTemplate = $.templates("#access-item-template");
-
-    function createAccessItem(data) {
+    initializeUserList("access", { role: "Viewer", canEdit: true, canRemove: true }, function(data) {
         var $item = $(accessItemTemplate.render(data));
-        $item.find("[data-class='remove-access']").click(function() {
+            $item.find("[data-class='remove-access']").click(function() {
             $(this).parents("[data-class='access-item-expanded']").remove();
         });
         return $item;
-    }
-
-    $("[data-class='user-add'][data-usertype='access']").click(function(event) {
-        var $query = $(".aa-input[data-class='user-query'][data-usertype='access']");
-
-        function clearQuery() {
-            $query.autocomplete("val", "");
-            $query.trigger("input");
-        }
-
-        var query = $query.autocomplete("val");
-        if (query.length === 0) {
-            event.stopImmediatePropagation();
-            clearQuery();
-            return;
-        }
-
-        var $items = $("[data-class='access-items']");
-        if ($query.data("id") && $query.data("name")) {
-            var id = $query.data("id");
-            if ($items.find("[data-id='" + id + "']").length > 0) {
-                event.stopImmediatePropagation();
-                clearQuery();
-                return;
-            }
-            $items.append(createAccessItem({
-                index: generateUniqueIndex(),
-                id: id,
-                name: $query.data("name"),
-                role: "Viewer",
-                canEdit: true,
-                canRemove: true
-            }));
-        } else {
-            $items.append(createAccessItem({
-                index: generateUniqueIndex(),
-                id: null,
-                name: query,
-                role: "Viewer",
-                canEdit: true,
-                canRemove: true
-            }));
-        }
-
-        clearQuery();
-    });
-
-    $("[data-class='access-item']").replaceWith(function() {
-        return createAccessItem($(this).data());
     });
 
 
