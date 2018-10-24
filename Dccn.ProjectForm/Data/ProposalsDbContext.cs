@@ -45,10 +45,10 @@ namespace Dccn.ProjectForm.Data
 
             builder.Entity<Approval>(b =>
             {
+                b.HasKey(e => new {e.ProposalId, e.AuthorityRole});
+
                 b.Property(e => e.AuthorityRole).HasConversion<string>();
                 b.Property(e => e.Status).HasConversion<string>().HasDefaultValue(ApprovalStatus.NotSubmitted);
-
-                b.HasIndex(e => new {e.ProposalId, e.AuthorityRole}).IsUnique();
             });
 
             builder.Entity<Lab>(b =>
@@ -60,29 +60,28 @@ namespace Dccn.ProjectForm.Data
 
             builder.Entity<Experimenter>(b =>
             {
-                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength).IsRequired();
+                b.HasKey(e => new {e.ProposalId, e.UserId});
 
-                b.HasIndex(e => new {e.ProposalId, e.UserId}).IsUnique();
+                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength);
 
                 b.ToTable("Experimenters");
             });
 
             builder.Entity<StorageAccessRule>(b =>
             {
-                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength).IsRequired();
-                b.Property(e => e.Role).HasConversion<string>();
+                b.HasKey(e => new {e.ProposalId, e.UserId});
 
-                b.HasIndex(e => new {e.ProposalId, e.UserId}).IsUnique();
+                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength);
+                b.Property(e => e.Role).HasConversion<string>();
 
                 b.ToTable("StorageAccessRules");
             });
 
             builder.Entity<Comment>(b =>
             {
-                b.Property(e => e.SectionId).IsRequired();
-                b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                b.HasKey(e => new {e.ProposalId, e.SectionId});
 
-                b.HasIndex(e => new {e.ProposalId, e.SectionId}).IsUnique();
+                b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
 
                 b.ToTable("Comments");
             });

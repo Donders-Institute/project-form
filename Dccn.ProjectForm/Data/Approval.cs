@@ -2,8 +2,6 @@
 {
     public class Approval
     {
-        public int Id { get; private set; }
-
         public int ProposalId { get; private set; }
 
         public ApprovalAuthorityRole AuthorityRole { get; set; }

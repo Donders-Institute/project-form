@@ -5,8 +5,6 @@ namespace Dccn.ProjectForm.Data
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class StorageAccessRule
     {
-        public int Id { get; private set; }
-
         public int ProposalId { get; private set; }
 
         public string UserId { get; set; }
