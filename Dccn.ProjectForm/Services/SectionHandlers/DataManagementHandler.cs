@@ -14,14 +14,15 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         private readonly ProjectsDbContext _projectsDbContext;
 
-        public DataManagementHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext) : base(authorityProvider)
+        public DataManagementHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext)
+            : base(authorityProvider, m => m.DataManagement)
         {
             _projectsDbContext = projectsDbContext;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        public override async Task LoadAsync(DataManagement model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(DataManagement model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.StorageAccessRules = await proposal.DataAccessRules
                 .Select(async access => new DataManagement.StorageAccessRule
@@ -60,7 +61,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(DataManagement model, Proposal proposal)
+        protected override Task StoreAsync(DataManagement model, Proposal proposal)
         {
             proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<DataManagement.StorageAccessRule>())
                 .Select(access => new StorageAccessRule

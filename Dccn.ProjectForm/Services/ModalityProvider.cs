@@ -16,6 +16,7 @@ namespace Dccn.ProjectForm.Services
                 .Select(entry => new Modality
                 {
                     Id = entry.Key,
+                    IsMri = entry.Value.IsMri,
                     DisplayName = entry.Value.DisplayName ?? entry.Key,
                     FixedStorage = entry.Value.Storage.Fixed.GetValueOrDefault(),
                     SessionStorage = entry.Value.Storage.Session.GetValueOrDefault()

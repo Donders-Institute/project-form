@@ -9,13 +9,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class PaymentHandler : FormSectionHandlerBase<Payment>
     {
-        public PaymentHandler(IAuthorityProvider authorityProvider): base(authorityProvider)
+        public PaymentHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.Payment)
         {
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        public override Task LoadAsync(Payment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(Payment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.SubjectCount = proposal.PaymentSubjectCount;
             model.AverageSubjectCost = proposal.PaymentAverageSubjectCost;
@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(Payment model, Proposal proposal)
+        protected override Task StoreAsync(Payment model, Proposal proposal)
         {
             proposal.PaymentSubjectCount = model.SubjectCount;
             proposal.PaymentAverageSubjectCost = model.AverageSubjectCost;

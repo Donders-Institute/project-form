@@ -15,7 +15,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly IModalityProvider _modalityProvider;
 
-        public ExperimentHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider) : base(authorityProvider)
+        public ExperimentHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider)
+            : base(authorityProvider, m => m.Experiment)
         {
             _projectsDbContext = projectsDbContext;
             _modalityProvider = modalityProvider;
@@ -26,7 +27,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             ApprovalAuthorityRole.LabMri, ApprovalAuthorityRole.LabOther
         };
 
-        public override async Task LoadAsync(Experiment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(Experiment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.StartDate = proposal.StartDate;
             model.EndDate = proposal.EndDate;
@@ -65,7 +66,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(Experiment model, Proposal proposal)
+        protected override Task StoreAsync(Experiment model, Proposal proposal)
         {
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
@@ -104,6 +105,20 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 .ToList();
 
             return base.StoreAsync(model, proposal);
+        }
+
+        protected override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
+        {
+            var hasMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
+            switch (authorityRole)
+            {
+                case ApprovalAuthorityRole.LabMri:
+                    return hasMri;
+                case ApprovalAuthorityRole.LabOther:
+                    return !hasMri;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(authorityRole), authorityRole, null);
+            }
         }
     }
 }

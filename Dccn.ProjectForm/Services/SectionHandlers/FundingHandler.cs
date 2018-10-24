@@ -10,11 +10,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Funding};
 
-        public FundingHandler(IAuthorityProvider authorityProvider): base(authorityProvider)
+        public FundingHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.Funding)
         {
         }
 
-        public override Task LoadAsync(Funding model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(Funding model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.ContactName = proposal.FundingContactName;
             model.ContactEmail = proposal.FundingContactEmail;
@@ -23,7 +23,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(Funding model, Proposal proposal)
+        protected override Task StoreAsync(Funding model, Proposal proposal)
         {
             proposal.FundingContactName = model.ContactName;
             proposal.FundingContactEmail = model.ContactEmail;

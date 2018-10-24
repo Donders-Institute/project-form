@@ -11,11 +11,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        public GeneralHandler(IAuthorityProvider authorityProvider): base(authorityProvider)
+        public GeneralHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.General)
         {
         }
 
-        public override Task LoadAsync(General model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(General model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.OwnerName = owner.DisplayName;
             model.PrincipalInvestigatorName = supervisor.DisplayName;
@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(General model, Proposal proposal)
+        protected override Task StoreAsync(General model, Proposal proposal)
         {
             proposal.Title = model.Title;
 

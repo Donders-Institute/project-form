@@ -94,7 +94,6 @@ namespace Dccn.ProjectForm
                 .AddScoped<IAuthorizationHandler, FormAuthorizationHandler>()
                 .AddTransient<IModalityProvider, ModalityProvider>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
-                .AddTransient<IFormSectionHandlerRegistry, FormSectionHandlerRegistry>()
                 .AddFormSectionHandlers()
                 .AddEmail("/Email/Templates");
         }

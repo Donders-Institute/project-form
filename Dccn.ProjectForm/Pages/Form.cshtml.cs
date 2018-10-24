@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
+using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
@@ -21,41 +22,32 @@ namespace Dccn.ProjectForm.Pages
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class FormModel : PageModel
     {
-        public static readonly IEnumerable<SectionInfo> FormSections = new []
-        {
-            new SectionInfo(m => m.General),
-            new SectionInfo(m => m.Funding),
-            new SectionInfo(m => m.Ethics),
-            new SectionInfo(m => m.Experiment),
-            new SectionInfo(m => m.DataManagement),
-            new SectionInfo(m => m.Privacy),
-            new SectionInfo(m => m.Payment)
-        };
-
         private readonly IAuthorizationService _authorizationService;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly IModalityProvider _modalityProvider;
         private readonly UserManager<ProjectsUser> _userManager;
-        private readonly IFormSectionHandlerRegistry _sectionHandlerRegistry;
+        private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider, UserManager<ProjectsUser> userManager, IFormSectionHandlerRegistry sectionHandlerRegistry)
+        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider, UserManager<ProjectsUser> userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _authorizationService = authorizationService;
             _proposalsDbContext = proposalsDbContext;
             _projectsDbContext = projectsDbContext;
             _modalityProvider = modalityProvider;
             _userManager = userManager;
-            _sectionHandlerRegistry = sectionHandlerRegistry;
+            _sectionHandlers = sectionHandlers;
         }
 
-        public General General { get; set; } = new General();
-        public Funding Funding { get; set; } = new Funding();
-        public Ethics Ethics { get; set; } = new Ethics();
-        public Experiment Experiment { get; set; } = new Experiment();
-        public DataManagement DataManagement { get; set; } = new DataManagement();
-        public Privacy Privacy { get; set; } = new Privacy();
-        public Payment Payment { get; set; } = new Payment();
+        public General General { get; private set; } = new General();
+        public Funding Funding { get; private set; } = new Funding();
+        public Ethics Ethics { get; private set; } = new Ethics();
+        public Experiment Experiment { get; private set; } = new Experiment();
+        public DataManagement DataManagement { get; private set; } = new DataManagement();
+        public Privacy Privacy { get; private set; } = new Privacy();
+        public Payment Payment { get; private set; } = new Payment();
+
+        public ICollection<SectionInfo> SectionInfo { get; private set; }
 
         [UsedImplicitly]
         public async Task<IActionResult> OnGetAsync(int proposalId)
@@ -113,25 +105,16 @@ namespace Dccn.ProjectForm.Pages
                 return error;
             }
 
-            var section = FormSections.FirstOrDefault(i => i.Id == sectionId)?.GetModel(this);
-            if (section == null)
-            {
-                return BadRequest();
-            }
-
             if (!ModelState.IsValid)
             {
                 await LoadFormAsync(proposal);
                 return Page();
             }
 
-            foreach (var approvalInfo in section.ApprovalInfo)
+            var sectionHandler = _sectionHandlers.Single(h => h.ModelId == sectionId);
+            if (sectionHandler.RequestApproval(proposal))
             {
-                if (approvalInfo.Status == ApprovalStatus.NotSubmitted ||
-                    approvalInfo.Status == ApprovalStatus.Rejected)
-                {
-                    await _sectionHandlerRegistry.GetHandler(section.GetType()).ValidateExAsync(ModelState);
-                }
+                await _proposalsDbContext.SaveChangesAsync();
             }
 
             return RedirectToPage(null, null, new { proposalId }, sectionId);
@@ -171,9 +154,16 @@ namespace Dccn.ProjectForm.Pages
             var owner = await _projectsDbContext.Users.FindAsync(proposal.OwnerId);
             var supervisor = await _projectsDbContext.Users.FindAsync(proposal.SupervisorId);
 
-            foreach (var sectionInfo in FormSections)
+            SectionInfo = _sectionHandlers.Select(h => new SectionInfo
             {
-                await _sectionHandlerRegistry.LoadSectionAsync(sectionInfo.GetModel(this), proposal, owner, supervisor);
+                Model = h.GetModel(this),
+                Expression = h.ModelExpression,
+                Id = h.ModelId
+            }).ToList();
+
+            foreach (var sectionHandler in _sectionHandlers)
+            {
+                await sectionHandler.LoadAsync(this, proposal, owner, supervisor);
             }
         }
 
@@ -181,22 +171,21 @@ namespace Dccn.ProjectForm.Pages
         {
             _proposalsDbContext.Proposals.Attach(proposal);
 
-            foreach (var sectionInfo in FormSections)
+            foreach (var sectionHandler in _sectionHandlers)
             {
                 var sectionValid = true;
 
                 if (!ModelState.IsValid)
                 {
                     sectionValid = ModelState
-                        .FindKeysWithPrefix(sectionInfo.Id)
+                        .FindKeysWithPrefix(sectionHandler.ModelId)
                         .Select(entry => entry.Value)
                         .All(state => state.ValidationState == ModelValidationState.Valid);
                 }
 
-                var model = sectionInfo.GetModel(this);
-                if (sectionValid && model != null)
+                if (sectionValid)
                 {
-                    await _sectionHandlerRegistry.StoreSectionAsync(model, proposal);
+                    await sectionHandler.StoreAsync(this, proposal);
                 }
             }
 

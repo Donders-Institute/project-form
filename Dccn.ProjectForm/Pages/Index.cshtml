@@ -4,6 +4,49 @@
     ViewData["Title"] = "Proposals";
 }
 
+@if (Model.IsApprovalAuthority)
+{
+    <div class="card">
+        <div class="card-header">
+            <h1 class="display-4">Pending approvals</h1>
+        </div>
+        <div class="card-body">
+            <p class="card-text">Project proposals that require your approval.</p>
+            <div class="card">
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item list-group-placeholder">
+                        <span class="text-muted font-italic">No pending approvals</span>
+                    </li>
+                    @foreach (var approval in Model.PendingApprovals)
+                    {
+                        <li class="list-group-item">
+                            <div class="row">
+                                <div class="col">
+                                    <h2 class="h3 mb-3">@Html.DisplayFor(_ => approval.ProposalTitle)</h2>
+                                    <dl class="row mb-0">
+                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.ProposalOwnerName)</dt>
+                                        <dd class="col-9">@Html.DisplayFor(_ => approval.ProposalOwnerName)</dd>
+
+                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.ApprovalType)</dt>
+                                        <dd class="col-9">@Html.DisplayFor(_ => approval.ApprovalType)</dd>
+                                    </dl>
+                                </div>
+
+                                <div class="btn-group col-auto my-auto" role="group">
+                                    <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", null, new {approval.ProposalId}, null, null, approval.SectionId)" role="button">
+                                        <span class="d-none d-sm-inline mr-1">View</span>
+                                        <i class="fas fa-edit"></i>
+                                    </a>
+                                </div>
+                            </div>
+                        </li>
+                    }
+                </ul>
+            </div>
+        </div>
+    </div>
+}
+
 <div class="card">
     <div class="card-header">
         <h1 class="display-4">My project proposals</h1>
@@ -103,7 +146,7 @@
 
                             <div class="btn-group col-auto my-auto" role="group">
                                 <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
-                                    <span class="d-none d-sm-inline mr-1">Edit</span>
+                                    <span class="d-none d-sm-inline mr-1">View</span>
                                     <i class="fas fa-edit"></i>
                                 </a>
                             </div>

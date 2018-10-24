@@ -6,7 +6,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class PrivacyHandler : FormSectionHandlerBase<Privacy>
     {
-        public PrivacyHandler(IAuthorityProvider authorityProvider) : base(authorityProvider)
+        public PrivacyHandler(IAuthorityProvider authorityProvider) : base(authorityProvider, m => m.Privacy)
         {
         }
 

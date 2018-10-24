@@ -7,6 +7,7 @@ using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
+using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Identity;
@@ -20,24 +21,27 @@ namespace Dccn.ProjectForm.Pages
     public class IndexModel : PageModel
     {
         private readonly IAuthorizationService _authorizationService;
+        private readonly IAuthorityProvider _authorityProvider;
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly UserManager<ProjectsUser> _userManager;
 
-        public IndexModel(ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext,
-            UserManager<ProjectsUser> userManager, IAuthorizationService authorizationService)
+        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, UserManager<ProjectsUser> userManager)
         {
-            _proposalsDbContext = proposalsDbContext;
-            _projectsDbContext = projectsDbContext;
-            _userManager = userManager;
             _authorizationService = authorizationService;
+            _authorityProvider = authorityProvider;
+            _projectsDbContext = projectsDbContext;
+            _proposalsDbContext = proposalsDbContext;
+            _userManager = userManager;
         }
 
         public NewProposalInfo NewProposal { get; set; }
 
         public bool IsSupervisor { get; private set; }
+        public bool IsApprovalAuthority { get; private set; }
         public ICollection<ProposalInfo> MyProposals { get; private set; }
         public ICollection<ProposalInfo> SupervisedProposals { get; private set; }
+        public ICollection<PendingApproval> PendingApprovals { get; private set; }
 
         [UsedImplicitly]
         public async Task OnGetAsync()
@@ -148,6 +152,36 @@ namespace Dccn.ProjectForm.Pages
                 .Where(g => !string.IsNullOrEmpty(g.HeadId)) // Workaround: stored in db as empty strings
                 .Select(g => new SelectListItem($"{g.Head.DisplayName} ({g.Description})", g.Head.Id))
                 .ToListAsync();
+
+            var authorityRoles = _authorityProvider.GetAuthorityRoles(userId).ToList();
+            if (IsSupervisor)
+            {
+                authorityRoles.Add(ApprovalAuthorityRole.Supervisor);
+            }
+
+            IsApprovalAuthority = authorityRoles.Any();
+            if (IsApprovalAuthority)
+            {
+                var approvalsQueryResult = await _proposalsDbContext.Approvals
+                    .Where(a => authorityRoles.Contains(a.AuthorityRole))
+                    .Where(a => a.Status == ApprovalStatus.ApprovalPending)
+                    .Select(a => new
+                    {
+                        ProposalOwnerId = a.Proposal.OwnerId,
+                        ProposalTitle = a.Proposal.Title,
+                        a.AuthorityRole
+                    })
+                    .ToListAsync();
+
+                PendingApprovals = await approvalsQueryResult
+                    .Select(async a => new PendingApproval
+                    {
+                        ProposalOwnerName = (await _projectsDbContext.Users.FindAsync(a.ProposalOwnerId)).DisplayName,
+                        ProposalTitle = a.ProposalTitle,
+                        ApprovalType = a.AuthorityRole.ToString()
+                    })
+                    .ToListAsync();
+            }
 
             NewProposal = new NewProposalInfo
             {

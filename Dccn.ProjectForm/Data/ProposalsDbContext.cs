@@ -13,6 +13,7 @@ namespace Dccn.ProjectForm.Data
         }
 
         public DbSet<Proposal> Proposals { get; private set; }
+        public DbSet<Approval> Approvals { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -33,7 +34,7 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.PaymentAverageSubjectCost).HasColumnType("decimal(5, 2)");
                 b.Property(e => e.PaymentMaxTotalCost).HasColumnType("decimal(6, 2)");
 
-                b.HasMany(e => e.Approvals).WithOne().HasForeignKey(e => e.ProposalId);
+                b.HasMany(e => e.Approvals).WithOne(e => e.Proposal).HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Labs).WithOne().HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Experimenters).WithOne().HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.DataAccessRules).WithOne().HasForeignKey(e => e.ProposalId);
@@ -49,6 +50,10 @@ namespace Dccn.ProjectForm.Data
 
                 b.Property(e => e.AuthorityRole).HasConversion<string>();
                 b.Property(e => e.Status).HasConversion<string>().HasDefaultValue(ApprovalStatus.NotSubmitted);
+
+                b.HasIndex(e => e.AuthorityRole);
+
+                b.ToTable("Approvals");
             });
 
             builder.Entity<Lab>(b =>

@@ -3,6 +3,7 @@
     public class Approval
     {
         public int ProposalId { get; private set; }
+        public Proposal Proposal { get; private set; }
 
         public ApprovalAuthorityRole AuthorityRole { get; set; }
         public ApprovalStatus Status { get; set; }
@@ -24,6 +25,7 @@
     public enum ApprovalStatus
     {
         NotSubmitted,
+        NotApplicable,
         ApprovalPending,
         Approved,
         Rejected

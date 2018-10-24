@@ -14,6 +14,9 @@ namespace Dccn.ProjectForm.Models
         public string DisplayName { get; set; }
 
         [BindNever]
+        public bool IsMri { get; set; }
+
+        [BindNever]
         public decimal FixedStorage { get; set; }
 
         [BindNever]

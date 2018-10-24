@@ -9,13 +9,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class EthicsHandler : FormSectionHandlerBase<Ethics>
     {
-        public EthicsHandler(IAuthorityProvider authorityProvider) : base(authorityProvider)
+        public EthicsHandler(IAuthorityProvider authorityProvider) : base(authorityProvider, m => m.Ethics)
         {
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Ethics};
 
-        public override Task LoadAsync(Ethics model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(Ethics model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             if (proposal.EcApproved)
             {
@@ -43,7 +43,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override Task StoreAsync(Ethics model, Proposal proposal)
+        protected override Task StoreAsync(Ethics model, Proposal proposal)
         {
             if (model.Approved)
             {
