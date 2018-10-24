@@ -9,6 +9,6 @@ namespace Dccn.ProjectForm.Data
 
         public int ProposalId { get; private set; }
 
-        public UserReference User { get; set; }
+        public string UserId { get; set; }
     }
 }

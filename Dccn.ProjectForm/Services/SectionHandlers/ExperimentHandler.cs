@@ -6,6 +6,7 @@ using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
@@ -25,7 +26,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             ApprovalAuthorityRole.LabMri, ApprovalAuthorityRole.LabOther
         };
 
-        public override Task LoadAsync(Experiment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        public override async Task LoadAsync(Experiment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.StartDate = proposal.StartDate;
             model.EndDate = proposal.EndDate;
@@ -53,18 +54,18 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 model.StorageQuota = Experiment.StorageQuotaType.Standard;
             }
 
-            model.Experimenters = proposal.Experimenters
-                .Select(experimenter => new User
+            model.Experimenters = await proposal.Experimenters
+                .Select(async experimenter => new User
                 {
-                    Id = experimenter.User.Id,
-                    Name = experimenter.User.DisplayName
+                    Id = experimenter.UserId,
+                    Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == experimenter.UserId)).DisplayName
                 })
-                .ToDictionary(_ => Guid.NewGuid());
+                .ToDictionaryAsync(_ => Guid.NewGuid());
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override async Task StoreAsync(Experiment model, Proposal proposal)
+        public override Task StoreAsync(Experiment model, Proposal proposal)
         {
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
@@ -95,16 +96,14 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 proposal.CustomQuotaMotivation = model.CustomQuotaMotivation;
             }
 
-            proposal.Experimenters = await (model.Experimenters?.Values ?? Enumerable.Empty<User>())
-                .Select(async experimenter => new Experimenter
+            proposal.Experimenters = (model.Experimenters?.Values ?? Enumerable.Empty<User>())
+                .Select( experimenter => new Experimenter
                 {
-                    User = experimenter.Id == null
-                        ? new UserReference { DisplayName = experimenter.Name }
-                        : await UserReference.FromExistingAsync(experimenter.Id, _projectsDbContext)
+                    UserId = experimenter.Id
                 })
-                .ToListAsync();
+                .ToList();
 
-            await base.StoreAsync(model, proposal);
+            return base.StoreAsync(model, proposal);
         }
     }
 }

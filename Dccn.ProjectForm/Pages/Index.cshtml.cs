@@ -85,8 +85,6 @@ namespace Dccn.ProjectForm.Pages
                 return Page();
             }
 
-            var ownerRef = await UserReference.FromExistingAsync(ownerId, _projectsDbContext);
-
             var proposal = new Proposal
             {
                 LastEditedBy = ownerId,
@@ -97,14 +95,14 @@ namespace Dccn.ProjectForm.Pages
                 {
                     new Experimenter
                     {
-                        User = ownerRef
+                        UserId = ownerId
                     }
                 },
                 DataAccessRules = new List<StorageAccessRule>
                 {
                     new StorageAccessRule
                     {
-                        User = ownerRef,
+                        UserId = ownerId,
                         Role = StorageAccessRole.Manager
                     }
                 },
@@ -121,7 +119,7 @@ namespace Dccn.ProjectForm.Pages
             {
                 proposal.DataAccessRules.Add(new StorageAccessRule
                 {
-                    User = await UserReference.FromExistingAsync(info.SupervisorId, _projectsDbContext),
+                    UserId = info.SupervisorId,
                     Role = StorageAccessRole.Viewer
                 });
             }

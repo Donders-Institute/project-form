@@ -6,6 +6,7 @@ using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
@@ -20,21 +21,21 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        public override Task LoadAsync(DataManagement model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        public override async Task LoadAsync(DataManagement model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
-            model.StorageAccessRules = proposal.DataAccessRules
-                .Select(access => new DataManagement.StorageAccessRule
+            model.StorageAccessRules = await proposal.DataAccessRules
+                .Select(async access => new DataManagement.StorageAccessRule
                 {
                     User = new User
                     {
-                        Id = access.User.Id,
-                        Name = access.User.DisplayName
+                        Id = access.UserId,
+                        Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == access.UserId)).DisplayName
                     },
                     Role = access.Role,
-                    CanRemove = access.User.Id != owner.Id && access.User.Id != supervisor.Id,
-                    CanEdit = access.User.Id != owner.Id
+                    CanRemove = access.UserId != owner.Id && access.UserId != supervisor.Id,
+                    CanEdit = access.UserId != owner.Id
                 })
-                .ToDictionary(_ => Guid.NewGuid());
+                .ToDictionaryAsync(_ => Guid.NewGuid());
 
             if (proposal.ExternalPreservation)
             {
@@ -56,20 +57,18 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             model.OwnerEmail = owner.Email;
             model.SupervisorName = supervisor.DisplayName;
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        public override async Task StoreAsync(DataManagement model, Proposal proposal)
+        public override Task StoreAsync(DataManagement model, Proposal proposal)
         {
-            proposal.DataAccessRules = await (model.StorageAccessRules?.Values ?? Enumerable.Empty<DataManagement.StorageAccessRule>())
-                .Select(async access => new StorageAccessRule
+            proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<DataManagement.StorageAccessRule>())
+                .Select(access => new StorageAccessRule
                 {
-                    User = access.User.Id == null
-                        ? new UserReference { DisplayName = access.User.Name }
-                        : await UserReference.FromExistingAsync(access.User.Id, _projectsDbContext),
+                    UserId = access.User.Id,
                     Role = access.Role
                 })
-                .ToListAsync();
+                .ToList();
 
             if (model.Preservation == DataManagement.PreservationType.External)
             {
@@ -86,7 +85,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 proposal.ExternalPreservationReference = null;
             }
 
-            await base.StoreAsync(model, proposal);
+            return base.StoreAsync(model, proposal);
         }
     }
 }

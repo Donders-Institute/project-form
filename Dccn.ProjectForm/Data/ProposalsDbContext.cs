@@ -6,6 +6,8 @@ namespace Dccn.ProjectForm.Data
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class ProposalsDbContext : DbContext
     {
+        private const int UserIdMaxLength = 10;
+
         public ProposalsDbContext(DbContextOptions<ProposalsDbContext> options) : base(options)
         {
         }
@@ -22,8 +24,8 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.LastEditedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 b.Property(e => e.LastEditedBy).IsRequired();
                 b.Property(e => e.TimeStamp).IsRowVersion().IsRequired();
-                b.Property(e => e.OwnerId).HasMaxLength(10).IsRequired();
-                b.Property(e => e.SupervisorId).HasMaxLength(10).IsRequired();
+                b.Property(e => e.OwnerId).HasMaxLength(UserIdMaxLength).IsRequired();
+                b.Property(e => e.SupervisorId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.ProjectId).HasMaxLength(10);
                 b.Property(e => e.Title).IsRequired();
                 b.Property(e => e.StartDate).HasColumnType("DATE");
@@ -58,24 +60,19 @@ namespace Dccn.ProjectForm.Data
 
             builder.Entity<Experimenter>(b =>
             {
-                b.OwnsOne(e => e.User, bb =>
-                {
-                    bb.Property(e => e.Id).HasColumnName("UserId");
-                    bb.Property(e => e.DisplayName).IsRequired().HasColumnName("UserName");
-                });
+                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength).IsRequired();
+
+                b.HasIndex(e => new {e.ProposalId, e.UserId}).IsUnique();
 
                 b.ToTable("Experimenters");
             });
 
             builder.Entity<StorageAccessRule>(b =>
             {
+                b.Property(e => e.UserId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.Role).HasConversion<string>();
 
-                b.OwnsOne(e => e.User, bb =>
-                {
-                    bb.Property(e => e.Id).HasColumnName("UserId");
-                    bb.Property(e => e.DisplayName).IsRequired().HasColumnName("UserName");
-                });
+                b.HasIndex(e => new {e.ProposalId, e.UserId}).IsUnique();
 
                 b.ToTable("StorageAccessRules");
             });
