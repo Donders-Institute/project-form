@@ -47,7 +47,22 @@ namespace Dccn.ProjectForm.Services
             var comment = proposal.Comments.FirstOrDefault(c => c.SectionId == ModelType.Name);
             if (comment != null)
             {
-                comment.Content = model.Comments;
+                if (string.IsNullOrWhiteSpace(model.Comments))
+                {
+                    proposal.Comments.Remove(comment);
+                }
+                else
+                {
+                    comment.Content = model.Comments;
+                }
+            }
+            else if (!string.IsNullOrWhiteSpace(model.Comments))
+            {
+                proposal.Comments.Add(new Comment
+                {
+                    SectionId = ModelType.Name,
+                    Content = model.Comments
+                });
             }
 
             return Task.CompletedTask;

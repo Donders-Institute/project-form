@@ -67,6 +67,6 @@ namespace Dccn.ProjectForm.Data
         public decimal? PaymentMaxTotalCost { get; set; }
         #endregion
 
-        public IEnumerable<Comment> Comments { get; set; }
+        public ICollection<Comment> Comments { get; set; }
     }
 }

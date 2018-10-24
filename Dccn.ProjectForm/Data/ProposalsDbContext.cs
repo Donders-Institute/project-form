@@ -81,7 +81,7 @@ namespace Dccn.ProjectForm.Data
             {
                 b.HasKey(e => new {e.ProposalId, e.SectionId});
 
-                b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                b.Property(e => e.Content).IsRequired();
 
                 b.ToTable("Comments");
             });

@@ -8,8 +8,6 @@ namespace Dccn.ProjectForm.Data
 
         public string SectionId { get; set; }
 
-        public DateTime CreatedOn { get; private set; }
-
         public string Content { get; set; }
     }
 }
