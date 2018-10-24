@@ -109,13 +109,14 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
-            var hasMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
+            var hasAnyMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
+            var hasAnyNonMri = proposal.Labs.Any(l => !_modalityProvider[l.Modality].IsMri);
             switch (authorityRole)
             {
                 case ApprovalAuthorityRole.LabMri:
-                    return hasMri;
+                    return hasAnyMri;
                 case ApprovalAuthorityRole.LabOther:
-                    return !hasMri;
+                    return hasAnyNonMri || !hasAnyMri;
                 default:
                     throw new ArgumentOutOfRangeException(nameof(authorityRole), authorityRole, null);
             }
