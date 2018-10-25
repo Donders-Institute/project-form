@@ -50,6 +50,7 @@ namespace Dccn.ProjectForm.Authentication
 
             identity.AddClaim(new Claim(ClaimTypes.UserId, user.Id));
             identity.AddClaim(new Claim(ClaimTypes.UserName, user.DisplayName));
+            identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
             identity.AddClaim(new Claim(ClaimTypes.IsSupervisor, user.IsHead.ToString()));
             identity.AddClaim(new Claim(ClaimTypes.Role, "User"));
 
