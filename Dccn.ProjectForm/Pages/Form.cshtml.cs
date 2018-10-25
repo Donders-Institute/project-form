@@ -126,7 +126,7 @@ namespace Dccn.ProjectForm.Pages
             }
 
             var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
-            if (!(await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Submit(sectionHandler))).Succeeded)
+            if (!await AuthorizeAsync( proposal, FormSectionOperation.Submit(sectionHandler)))
             {
                 return Forbid();
             }
@@ -154,8 +154,7 @@ namespace Dccn.ProjectForm.Pages
                 return (null, NotFound());
             }
 
-            var authorization = await _authorizationService.AuthorizeAsync(User, proposal, FormOperation.View);
-            if (authorization.Succeeded)
+            if (await AuthorizeAsync(proposal, FormOperation.View))
             {
                 return (proposal, null);
             }
@@ -179,9 +178,9 @@ namespace Dccn.ProjectForm.Pages
                     Model = h.GetModel(this),
                     Expression = h.ModelExpression,
                     Id = h.Id,
-                    CanEdit = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Edit(h))).Succeeded,
-                    CanApprove = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Approve(h))).Succeeded,
-                    CanSubmit = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Submit(h))).Succeeded,
+                    CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(h)),
+                    CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(h)),
+                    CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(h)),
                 })
                 .ToListAsync();
 
@@ -207,7 +206,7 @@ namespace Dccn.ProjectForm.Pages
                         .All(state => state.ValidationState == ModelValidationState.Valid);
                 }
 
-                var sectionAuthorized = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Edit(sectionHandler))).Succeeded;
+                var sectionAuthorized = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler));
                 if (sectionValid && sectionAuthorized)
                 {
                     await sectionHandler.StoreAsync(this, proposal);
@@ -218,6 +217,11 @@ namespace Dccn.ProjectForm.Pages
             proposal.LastEditedBy = _userManager.GetUserId(User);
 
             await _proposalsDbContext.SaveChangesAsync();
+        }
+
+        private async Task<bool> AuthorizeAsync(Proposal proposal, IAuthorizationRequirement requirement)
+        {
+            return (await _authorizationService.AuthorizeAsync(User, proposal, requirement)).Succeeded;
         }
     }
 }
