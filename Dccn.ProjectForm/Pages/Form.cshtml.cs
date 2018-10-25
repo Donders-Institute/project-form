@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Buffers.Text;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
@@ -47,6 +48,8 @@ namespace Dccn.ProjectForm.Pages
         public Privacy Privacy { get; private set; } = new Privacy();
         public Payment Payment { get; private set; } = new Payment();
 
+        public byte[] Timestamp { get; private set; }
+
         public ICollection<SectionInfo> SectionInfo { get; private set; }
 
         [UsedImplicitly]
@@ -57,6 +60,8 @@ namespace Dccn.ProjectForm.Pages
             {
                 return error;
             }
+
+            Timestamp = proposal.Timestamp;
 
             await LoadFormAsync(proposal);
             return Page();
@@ -71,12 +76,23 @@ namespace Dccn.ProjectForm.Pages
             [FromForm(Name = nameof(Experiment))] Experiment experiment,
             [FromForm(Name = nameof(DataManagement))] DataManagement dataManagement,
             [FromForm(Name = nameof(Privacy))] Privacy privacy,
-            [FromForm(Name = nameof(Payment))] Payment payment)
+            [FromForm(Name = nameof(Payment))] Payment payment,
+            [FromForm(Name = nameof(Timestamp))] byte[] timestamp)
         {
             var (proposal, error) = await LoadProposalAsync(proposalId);
             if (proposal == null)
             {
                 return error;
+            }
+
+            if (timestamp == null)
+            {
+                return BadRequest();
+            }
+
+            if (!proposal.Timestamp.SequenceEqual(timestamp))
+            {
+                return new ConflictResult();
             }
 
             General = general;
@@ -89,12 +105,11 @@ namespace Dccn.ProjectForm.Pages
 
             await StoreFormAsync(proposal);
 
-            if (!ModelState.IsValid)
+            return new JsonResult(new
             {
-                return new JsonResult(new SerializableError(ModelState));
-            }
-
-            return new NoContentResult();
+                proposal.Timestamp,
+                Errors = ModelState.IsValid ? new SerializableError() : new SerializableError(ModelState)
+            });
         }
 
         public async Task<IActionResult> OnPostRequestApprovalAsync(int proposalId, [Required][FromQuery(Name = "section")] string sectionId)

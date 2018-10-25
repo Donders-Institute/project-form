@@ -64,18 +64,14 @@
     <div class="modal-dialog modal-dialog-centered" role="document">
         <div class="modal-content">
             <div class="modal-header">
-                <h5 class="modal-title">An error occurred</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                </button>
+                <h5 id="ajax-error-title" class="modal-title"></h5>
             </div>
             <div class="modal-body">
                 <p id="ajax-error-message"></p>
                 <p id="ajax-error-status" class="text-muted small text-right mb-0"></p>
             </div>
             <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">Close</button>
-                <button id="ajax-error-reload" class="btn btn-primary" type="button" data-dismiss="modal">Reload</button>
+                <button id="ajax-error-reload" class="btn btn-primary" type="button">Reload</button>
             </div>
         </div>
     </div>

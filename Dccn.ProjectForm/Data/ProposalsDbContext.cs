@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 b.Property(e => e.LastEditedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 b.Property(e => e.LastEditedBy).IsRequired();
-                b.Property(e => e.TimeStamp).IsRowVersion().IsRequired();
+                b.Property(e => e.Timestamp).IsRowVersion().IsRequired();
                 b.Property(e => e.OwnerId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.SupervisorId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.ProjectId).HasMaxLength(10);

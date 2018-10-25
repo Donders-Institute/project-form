@@ -83,25 +83,36 @@ jQuery(function($) {
     $(document).ajaxError(function(_event, xhr, _settings, error) {
         var $modal = $("#ajax-error-modal");
 
-        var message = null, status = null;
+        var title = "Unknown error", message = null, status = null;
         if (xhr.status === 0) {
+            title = "Connection error";
             message = "Could not connect to server. Make sure you are connected to the internet or try again later.";
         } else {
             status = "Status message: " + xhr.statusText + " (Code: " + xhr.status + ")";
             if (xhr.status >= 500) {
+                title = "Server error";
                 message = "An internal error occurred on the server or the service is temporarily unavailable.";
             } else if (xhr.status >= 400) {
                 if (xhr.status === 401) {
+                    title = "Session expired";
                     message = "Your session has expired. Try reloading the page and logging back in.";
+                } else if (xhr.status === 409) {
+                    title = "Concurrent change";
+                    message = "The form was changed from another location. Try reloading the page.";
                 } else {
+                    title = "Client error";
                     message = "Server responded with an error. Try reloading the page.";
                 }
             }
         }
 
+        $modal.find("#ajax-error-title").text(title);
         $modal.find("#ajax-error-message").text(message);
         $modal.find("#ajax-error-status").text(status);
-        $modal.modal();
+        $modal.modal({
+            backdrop: "static",
+            keyboard: false
+        });
     });
 
     $("[data-validation-message]").each(function() {

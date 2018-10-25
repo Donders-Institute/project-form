@@ -9,7 +9,7 @@ namespace Dccn.ProjectForm.Data
     {
         public int Id { get; private set; }
 
-        public byte[] TimeStamp { get; private set; }
+        public byte[] Timestamp { get; private set; }
         public DateTime CreatedOn { get; private set; }
         public DateTime LastEditedOn { get; set; }
         public string LastEditedBy { get; set; }

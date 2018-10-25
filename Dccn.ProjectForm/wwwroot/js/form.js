@@ -98,8 +98,9 @@ jQuery(function($) {
             url: $form.attr("action"),
             data: $form.serialize(),
             dataType: "json"
-        }).done(function(data) {
-            updateErrors(data || []);
+        }).done(function(result) {
+            $("#timestamp").val(result.timestamp);
+            updateErrors(result.errors);
         }).always(function() {
             setTimeout(function() {
                 $form.data("recently-submitted", false);
