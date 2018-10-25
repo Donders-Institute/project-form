@@ -1,4 +1,6 @@
-﻿using System.IO;
+﻿using System;
+using System.IO;
+using System.Linq;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -53,7 +55,7 @@ namespace Dccn.ProjectForm.Services
 
                 var userName = _userManager.GetUserName(user);
                 var userEmail = _userManager.GetUserEmail(user);
-                recipientOverride = new MailAddress(userName, userEmail);
+                recipientOverride = new MailAddress(userEmail, userName);
             }
 
             var templatePath = Path.ChangeExtension(email.TemplateName, "hbs");
@@ -105,9 +107,14 @@ namespace Dccn.ProjectForm.Services
                             {
                                 "includeStyle", (output, context, arguments) =>
                                 {
-                                    var path = (string) arguments[0];
+                                    if (!(arguments.ElementAtOrDefault(0) is string path))
+                                    {
+                                        throw new ArgumentException("includeStyle(path): argument missing or of incorrect type.", nameof(path));
+                                    }
+
+                                    var physicalPath = environment.WebRootFileProvider.GetFileInfo(path).PhysicalPath;
                                     output.WriteLine(@"<style type=""text/css"">");
-                                    output.WriteLine(File.ReadAllText(environment.WebRootFileProvider.GetFileInfo(path)                                        .PhysicalPath));
+                                    output.WriteLine(File.ReadAllText(physicalPath));
                                     output.WriteLine("</style>");
                                 }
                             }
