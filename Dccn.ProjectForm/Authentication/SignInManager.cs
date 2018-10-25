@@ -76,10 +76,10 @@ namespace Dccn.ProjectForm.Authentication
 
         private bool CheckPasswordSignIn(ProjectsUser user, string password)
         {
-//            if (_environment.IsDevelopment())
-//            {
-//                return true;
-//            }
+            if (_environment.IsDevelopment())
+            {
+                return true;
+            }
 
             var userId = user.Id;
             using (var connection = new LdapConnection { SecureSocketLayer = _ldapOptions.UseSsl })
