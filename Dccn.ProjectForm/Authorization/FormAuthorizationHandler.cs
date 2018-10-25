@@ -1,20 +1,19 @@
 ﻿using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
-using Microsoft.AspNetCore.Identity;
 
 namespace Dccn.ProjectForm.Authorization
 {
     public class FormAuthorizationHandler : AuthorizationHandler<OperationAuthorizationRequirement, Proposal>
     {
-        private readonly UserManager<ProjectsUser> _userManager;
+        private readonly IUserManager _userManager;
         private readonly IAuthorityProvider _authorityProvider;
 
-        public FormAuthorizationHandler(UserManager<ProjectsUser> userManager, IAuthorityProvider authorityProvider)
+        public FormAuthorizationHandler(IUserManager userManager, IAuthorityProvider authorityProvider)
         {
             _userManager = userManager;
             _authorityProvider = authorityProvider;

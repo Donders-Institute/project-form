@@ -1,20 +1,17 @@
 using System;
-using System.IO;
 using System.Net.Http.Headers;
-using System.Net.Mail;
 using System.Text;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
-using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Services;
-using HandlebarsDotNet;
+using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
@@ -47,19 +44,15 @@ namespace Dccn.ProjectForm
             });
 
             services
-                .AddIdentity<ProjectsUser, object>()
-                .AddUserStore<UserStore>()
-                .AddRoleStore<RoleStore<object>>()
-                .AddSignInManager<LdapSignInManager<ProjectsUser>>();
-
-            services.ConfigureApplicationCookie(options =>
-            {
-                options.ExpireTimeSpan = TimeSpan.FromDays(7);
-                options.SlidingExpiration = true;
-                options.Cookie.HttpOnly = true;
-                options.Cookie.SameSite = SameSiteMode.Strict;
-                options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
-            });
+                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddCookie(options =>
+                {
+                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    options.SlidingExpiration = true;
+                    options.Cookie.HttpOnly = true;
+                    options.Cookie.SameSite = SameSiteMode.Strict;
+                    options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+                });
 
             services.AddLocalization(options => options.ResourcesPath = "Resources");
 
@@ -91,6 +84,8 @@ namespace Dccn.ProjectForm
                 .Configure<FormOptions>(_configuration.GetSection(FormOptions.SectionName));
 
             services
+                .AddTransient<IUserManager, UserManager>()
+                .AddTransient<ISignInManager, SignInManager>()
                 .AddScoped<IAuthorizationHandler, FormAuthorizationHandler>()
                 .AddScoped<IAuthorizationHandler, FormSectionAuthorizationHandler>()
                 .AddTransient<IModalityProvider, ModalityProvider>()

@@ -2,14 +2,13 @@
 using System.Diagnostics;
 using System.Net.Mail;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Configuration;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Email.Models;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Identity;
 
 namespace Dccn.ProjectForm.Services
 {
@@ -25,7 +24,7 @@ namespace Dccn.ProjectForm.Services
         }
 
         [UsedImplicitly]
-        public async Task Invoke(HttpContext httpContext, UserManager<ProjectsUser> userManager, IEmailService emailService)
+        public async Task Invoke(HttpContext httpContext, IUserManager userManager, IEmailService emailService)
         {
             try
             {

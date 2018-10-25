@@ -1,9 +1,7 @@
-using System;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Email.Models;
-using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using Microsoft.Extensions.DependencyInjection;
 using Xunit;

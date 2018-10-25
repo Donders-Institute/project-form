@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace Dccn.ProjectForm.Data
+﻿namespace Dccn.ProjectForm.Data
 {
     public class Comment
     {

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
@@ -11,7 +12,6 @@ using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
@@ -26,10 +26,10 @@ namespace Dccn.ProjectForm.Pages
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly IModalityProvider _modalityProvider;
-        private readonly UserManager<ProjectsUser> _userManager;
+        private readonly IUserManager _userManager;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider, UserManager<ProjectsUser> userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
+        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _authorizationService = authorizationService;
             _proposalsDbContext = proposalsDbContext;
@@ -126,7 +126,7 @@ namespace Dccn.ProjectForm.Pages
             }
 
             var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
-            if (!await AuthorizeAsync( proposal, FormSectionOperation.Submit(sectionHandler)))
+            if (!await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler)))
             {
                 return Forbid();
             }

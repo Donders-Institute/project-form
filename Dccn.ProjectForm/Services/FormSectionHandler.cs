@@ -9,7 +9,6 @@ using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
 using Dccn.ProjectForm.Services.SectionHandlers;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 

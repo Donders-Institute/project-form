@@ -1,16 +1,14 @@
-﻿using System;
-using System.IO;
+﻿using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Configuration;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Email.Models;
 using HandlebarsDotNet;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -20,12 +18,12 @@ namespace Dccn.ProjectForm.Services
     {
         private readonly ITemplateRenderService _renderService;
         private readonly IHostingEnvironment _environment;
-        private readonly UserManager<ProjectsUser> _userManager;
+        private readonly IUserManager _userManager;
         private readonly SmtpClient _client;
         private readonly MailAddress _sender;
         private readonly bool _overrideRecipient;
 
-        public EmailService(ITemplateRenderService renderService, IHostingEnvironment environment, UserManager<ProjectsUser> userManager, IOptionsSnapshot<EmailOptions> optionsAccessor)
+        public EmailService(ITemplateRenderService renderService, IHostingEnvironment environment, IUserManager userManager, IOptionsSnapshot<EmailOptions> optionsAccessor)
         {
             _renderService = renderService;
             _environment = environment;
@@ -53,8 +51,9 @@ namespace Dccn.ProjectForm.Services
                     return;
                 }
 
-                var projectsUser = await _userManager.GetUserAsync(user);
-                recipientOverride = new MailAddress(projectsUser.Email, projectsUser.DisplayName);
+                var userName = _userManager.GetUserName(user);
+                var userEmail = _userManager.GetUserEmail(user);
+                recipientOverride = new MailAddress(userName, userEmail);
             }
 
             var templatePath = Path.ChangeExtension(email.TemplateName, "hbs");

@@ -1,9 +1,8 @@
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Authentication;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.Extensions.Logging;
@@ -13,10 +12,10 @@ namespace Dccn.ProjectForm.Pages.Account
     [AllowAnonymous]
     public class LoginModel : PageModel
     {
-        private readonly SignInManager<ProjectsUser> _signInManager;
+        private readonly ISignInManager _signInManager;
         private readonly ILogger _logger;
 
-        public LoginModel(SignInManager<ProjectsUser> signInManager, ILogger<LoginModel> logger)
+        public LoginModel(ISignInManager signInManager, ILogger<LoginModel> logger)
         {
             _signInManager = signInManager;
             _logger = logger;
@@ -61,8 +60,7 @@ namespace Dccn.ProjectForm.Pages.Account
                 return Page();
             }
 
-            var result = await _signInManager.PasswordSignInAsync(UserName, Password, RememberMe, false);
-            if (result.Succeeded)
+            if (await _signInManager.PasswordSignInAsync(HttpContext, UserName, Password, RememberMe))
             {
                 _logger.LogInformation($"User '{UserName}' logged in.");
 
@@ -74,7 +72,7 @@ namespace Dccn.ProjectForm.Pages.Account
                 return RedirectToPage("/Index");
             }
 
-            ModelState.AddModelError(string.Empty, "Invalid login attempt.");
+            ModelState.AddModelError(nameof(Password), "Invalid login attempt.");
 
             return Page();
         }
@@ -83,7 +81,7 @@ namespace Dccn.ProjectForm.Pages.Account
         public async Task<IActionResult> OnPostLogoutAsync()
         {
             var userId = _signInManager.UserManager.GetUserId(User);
-            await _signInManager.SignOutAsync();
+            await _signInManager.SignOutAsync(HttpContext);
 
             _logger.LogInformation($"User '{userId}' logged out.");
             return RedirectToPage();

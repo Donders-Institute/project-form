@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
@@ -10,7 +11,6 @@ using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
-using Microsoft.AspNetCore.Identity;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.AspNetCore.Mvc.Rendering;
@@ -24,9 +24,9 @@ namespace Dccn.ProjectForm.Pages
         private readonly IAuthorityProvider _authorityProvider;
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly ProposalsDbContext _proposalsDbContext;
-        private readonly UserManager<ProjectsUser> _userManager;
+        private readonly IUserManager _userManager;
 
-        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, UserManager<ProjectsUser> userManager)
+        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, IUserManager userManager)
         {
             _authorizationService = authorizationService;
             _authorityProvider = authorityProvider;
@@ -136,9 +136,8 @@ namespace Dccn.ProjectForm.Pages
 
         private async Task LoadPageAsync()
         {
-            var user = await _userManager.GetUserAsync(User);
+            var user = await _userManager.GetUserAsync(User, true);
             var userId = _userManager.GetUserId(User);
-            await _projectsDbContext.Entry(user).Reference(u => u.Group).LoadAsync();
 
             MyProposals = await LoadProposalsAsync(_proposalsDbContext.Proposals.Where(p => p.OwnerId == userId));
 
