@@ -40,8 +40,13 @@ namespace Dccn.ProjectForm.Services
         public ICollection<Approval> GetAssociatedApprovals(Proposal proposal)
         {
             return proposal.Approvals
-                .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
+                .Where(a => HasApprovalAuthorityRole(a.AuthorityRole))
                 .ToList();
+        }
+
+        public bool HasApprovalAuthorityRole(ApprovalAuthorityRole role)
+        {
+            return ApprovalRoles.Contains(role);
         }
 
         protected virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
@@ -137,6 +142,7 @@ namespace Dccn.ProjectForm.Services
 
         ISectionModel GetModel(FormModel form);
         ICollection<Approval> GetAssociatedApprovals(Proposal proposal);
+        bool HasApprovalAuthorityRole(ApprovalAuthorityRole role);
 
         Task LoadAsync(FormModel form, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor);
         Task StoreAsync(FormModel form, Proposal proposal);

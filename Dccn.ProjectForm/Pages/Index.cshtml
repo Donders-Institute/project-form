@@ -27,13 +27,13 @@
                                         <dt class="col-3">@Html.DisplayNameFor(_ => approval.ProposalOwnerName)</dt>
                                         <dd class="col-9">@Html.DisplayFor(_ => approval.ProposalOwnerName)</dd>
 
-                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.ApprovalType)</dt>
-                                        <dd class="col-9">@Html.DisplayFor(_ => approval.ApprovalType)</dd>
+                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.ApprovalRole)</dt>
+                                        <dd class="col-9">@Html.DisplayFor(_ => approval.ApprovalRole)</dd>
                                     </dl>
                                 </div>
 
                                 <div class="btn-group col-auto my-auto" role="group">
-                                    <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", null, new {approval.ProposalId}, null, null, approval.SectionId)" role="button">
+                                    <a asp-page="Form" asp-route-proposalid="@approval.ProposalId" asp-fragment="@approval.SectionId" class="btn btn-sm btn-secondary" role="button">
                                         <span class="d-none d-sm-inline mr-1">View</span>
                                         <i class="fas fa-edit"></i>
                                     </a>

@@ -22,14 +22,16 @@ namespace Dccn.ProjectForm.Pages
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly IAuthorityProvider _authorityProvider;
+        private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly IUserManager _userManager;
 
-        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, IUserManager userManager)
+        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, IUserManager userManager)
         {
             _authorizationService = authorizationService;
             _authorityProvider = authorityProvider;
+            _sectionHandlers = sectionHandlers;
             _projectsDbContext = projectsDbContext;
             _proposalsDbContext = proposalsDbContext;
             _userManager = userManager;
@@ -166,6 +168,7 @@ namespace Dccn.ProjectForm.Pages
                     .Where(a => a.Status == ApprovalStatus.ApprovalPending)
                     .Select(a => new
                     {
+                        a.ProposalId,
                         ProposalOwnerId = a.Proposal.OwnerId,
                         ProposalTitle = a.Proposal.Title,
                         a.AuthorityRole
@@ -175,9 +178,11 @@ namespace Dccn.ProjectForm.Pages
                 PendingApprovals = await approvalsQueryResult
                     .Select(async a => new PendingApproval
                     {
+                        ProposalId = a.ProposalId,
+                        SectionId = _sectionHandlers.FirstOrDefault(s => s.HasApprovalAuthorityRole(a.AuthorityRole))?.Id,
                         ProposalOwnerName = (await _projectsDbContext.Users.FindAsync(a.ProposalOwnerId)).DisplayName,
                         ProposalTitle = a.ProposalTitle,
-                        ApprovalType = a.AuthorityRole.ToString()
+                        ApprovalRole = a.AuthorityRole
                     })
                     .ToListAsync();
             }

@@ -1,4 +1,5 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Dccn.ProjectForm.Data;
 
 namespace Dccn.ProjectForm.Models
 {
@@ -14,7 +15,7 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Project owner")]
         public string ProposalOwnerName { get; set; }
 
-        [Display(Name = "Approval type")]
-        public string ApprovalType { get; set; }
+        [Display(Name = "Approval role")]
+        public ApprovalAuthorityRole ApprovalRole { get; set; }
     }
 }
