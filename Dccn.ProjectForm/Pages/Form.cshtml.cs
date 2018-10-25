@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Buffers.Text;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
@@ -108,7 +107,7 @@ namespace Dccn.ProjectForm.Pages
             return new JsonResult(new
             {
                 proposal.Timestamp,
-                Errors = ModelState.IsValid ? new SerializableError() : new SerializableError(ModelState)
+                Errors = new SerializableError(ModelState)
             });
         }
 
@@ -126,7 +125,12 @@ namespace Dccn.ProjectForm.Pages
                 return Page();
             }
 
-            var sectionHandler = _sectionHandlers.Single(h => h.ModelId == sectionId);
+            var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
+            if (!(await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Submit(sectionHandler))).Succeeded)
+            {
+                return Forbid();
+            }
+
             if (sectionHandler.RequestApproval(proposal))
             {
                 await _proposalsDbContext.SaveChangesAsync();
@@ -150,7 +154,7 @@ namespace Dccn.ProjectForm.Pages
                 return (null, NotFound());
             }
 
-            var authorization = await _authorizationService.AuthorizeAsync(User, proposal, FormOperations.Edit);
+            var authorization = await _authorizationService.AuthorizeAsync(User, proposal, FormOperation.View);
             if (authorization.Succeeded)
             {
                 return (proposal, null);
@@ -169,12 +173,17 @@ namespace Dccn.ProjectForm.Pages
             var owner = await _projectsDbContext.Users.FindAsync(proposal.OwnerId);
             var supervisor = await _projectsDbContext.Users.FindAsync(proposal.SupervisorId);
 
-            SectionInfo = _sectionHandlers.Select(h => new SectionInfo
-            {
-                Model = h.GetModel(this),
-                Expression = h.ModelExpression,
-                Id = h.ModelId
-            }).ToList();
+            SectionInfo = await _sectionHandlers
+                .Select(async h => new SectionInfo
+                {
+                    Model = h.GetModel(this),
+                    Expression = h.ModelExpression,
+                    Id = h.Id,
+                    CanEdit = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Edit(h))).Succeeded,
+                    CanApprove = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Approve(h))).Succeeded,
+                    CanSubmit = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Submit(h))).Succeeded,
+                })
+                .ToListAsync();
 
             foreach (var sectionHandler in _sectionHandlers)
             {
@@ -193,12 +202,13 @@ namespace Dccn.ProjectForm.Pages
                 if (!ModelState.IsValid)
                 {
                     sectionValid = ModelState
-                        .FindKeysWithPrefix(sectionHandler.ModelId)
+                        .FindKeysWithPrefix(sectionHandler.Id)
                         .Select(entry => entry.Value)
                         .All(state => state.ValidationState == ModelValidationState.Valid);
                 }
 
-                if (sectionValid)
+                var sectionAuthorized = (await _authorizationService.AuthorizeAsync(User, proposal, FormSectionOperation.Edit(sectionHandler))).Succeeded;
+                if (sectionValid && sectionAuthorized)
                 {
                     await sectionHandler.StoreAsync(this, proposal);
                 }

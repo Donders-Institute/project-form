@@ -92,6 +92,7 @@ namespace Dccn.ProjectForm
 
             services
                 .AddScoped<IAuthorizationHandler, FormAuthorizationHandler>()
+                .AddScoped<IAuthorizationHandler, FormSectionAuthorizationHandler>()
                 .AddTransient<IModalityProvider, ModalityProvider>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
                 .AddFormSectionHandlers()

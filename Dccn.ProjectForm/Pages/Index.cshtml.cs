@@ -58,7 +58,7 @@ namespace Dccn.ProjectForm.Pages
                 return NotFound();
             }
 
-            if (!(await _authorizationService.AuthorizeAsync(User, proposal, FormOperations.Delete)).Succeeded)
+            if (!(await _authorizationService.AuthorizeAsync(User, proposal, FormOperation.Delete)).Succeeded)
             {
                 return Forbid();
             }

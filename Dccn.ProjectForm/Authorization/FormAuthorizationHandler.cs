@@ -20,7 +20,7 @@ namespace Dccn.ProjectForm.Authorization
             _authorityProvider = authorityProvider;
         }
 
-        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Proposal resource)
+        protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Proposal proposal)
         {
             if (context.User.IsInRole("Admin"))
             {
@@ -29,17 +29,16 @@ namespace Dccn.ProjectForm.Authorization
             }
 
             var userId = _userManager.GetUserId(context.User);
-            if (requirement == FormOperations.Edit || requirement == FormOperations.View)
+            if (requirement == FormOperation.View)
             {
-                if (userId == resource.OwnerId ||
-                    resource.Approvals.Any(approval => _authorityProvider.GetAuthorityId(resource, approval.AuthorityRole) == userId))
+                if (userId == proposal.OwnerId || proposal.Approvals.Any(approval => _authorityProvider.GetAuthorityId(proposal, approval.AuthorityRole) == userId))
                 {
                     context.Succeed(requirement);
                 }
             }
-            else if (requirement == FormOperations.Delete)
+            else if (requirement == FormOperation.Delete)
             {
-                if (userId == resource.OwnerId)
+                if (userId == proposal.OwnerId)
                 {
                     context.Succeed(requirement);
                 }
@@ -49,10 +48,13 @@ namespace Dccn.ProjectForm.Authorization
         }
     }
 
-    public static class FormOperations
+    public sealed class FormOperation : OperationAuthorizationRequirement
     {
-        public static readonly OperationAuthorizationRequirement View = new OperationAuthorizationRequirement {Name = nameof(View)};
-        public static readonly OperationAuthorizationRequirement Edit = new OperationAuthorizationRequirement {Name = nameof(Edit)};
-        public static readonly OperationAuthorizationRequirement Delete = new OperationAuthorizationRequirement {Name = nameof(Delete)};
+        private FormOperation()
+        {
+        }
+
+        public static readonly FormOperation View = new FormOperation {Name = nameof(View)};
+        public static readonly FormOperation Delete = new FormOperation {Name = nameof(Delete)};
     }
 }

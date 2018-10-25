@@ -25,17 +25,29 @@ namespace Dccn.ProjectForm.Services
             _authorityProvider = authorityProvider;
             _compiledExpr = expression.Compile();
             ModelExpression = expression.UpcastFuncResult<FormModel, TModel, ISectionModel>();
-            ModelId = ExpressionHelper.GetExpressionText(ModelExpression); // Note: this is an internal function
+            Id = ExpressionHelper.GetExpressionText(ModelExpression); // Note: this is an internal function
         }
 
+        public string Id { get; }
         public Type ModelType => typeof(TModel);
         protected abstract IEnumerable<ApprovalAuthorityRole> ApprovalRoles { get; }
         public Expression<Func<FormModel, ISectionModel>> ModelExpression { get; }
-        public string ModelId { get; }
 
         public ISectionModel GetModel(FormModel form)
         {
             return _compiledExpr(form);
+        }
+
+        public ICollection<Approval> GetAssociatedApprovals(Proposal proposal)
+        {
+            return proposal.Approvals
+                .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
+                .ToList();
+        }
+
+        protected virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
+        {
+            return true;
         }
 
         protected virtual async Task LoadAsync(TModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
@@ -95,16 +107,11 @@ namespace Dccn.ProjectForm.Services
             return section == null ? Task.CompletedTask : StoreAsync(section, proposal);
         }
 
-        protected virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
-        {
-            return true;
-        }
-
         public bool RequestApproval(Proposal proposal)
         {
             var statusChanged = false;
 
-            foreach (var approval in proposal.Approvals.Where(a => ApprovalRoles.Contains(a.AuthorityRole)))
+            foreach (var approval in GetAssociatedApprovals(proposal))
             {
                 var oldStatus = approval.Status;
                 if (approval.Status == ApprovalStatus.NotSubmitted
@@ -125,11 +132,12 @@ namespace Dccn.ProjectForm.Services
 
     public interface IFormSectionHandler
     {
+        string Id { get; }
         Type ModelType { get; }
         Expression<Func<FormModel, ISectionModel>> ModelExpression { get; }
-        string ModelId { get; }
 
         ISectionModel GetModel(FormModel form);
+        ICollection<Approval> GetAssociatedApprovals(Proposal proposal);
 
         Task LoadAsync(FormModel form, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor);
         Task StoreAsync(FormModel form, Proposal proposal);

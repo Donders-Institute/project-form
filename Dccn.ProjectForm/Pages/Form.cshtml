@@ -65,12 +65,12 @@
                             <div class="card-header d-flex justify-content-between section-header">
                                 <h1 class="display-4">@Html.DisplayNameFor(sectionInfo.Expression)</h1>
                             </div>
-                            <div class="card-body">
+                            <fieldset class="card-body" @{if (!sectionInfo.CanEdit) { <text>disabled</text> }}>
                                 @* <h5 class="card-title">@Html.DisplayFor(_ => section.DisplayName)</h5> *@
                                 @* <h6 class="card-subtitle mb-4 text-muted">Card subtitle</h6> *@
                                 <p class="card-text">@Html.DisplayNameFor(sectionInfo.Expression)</p>
                                 @await Html.FormSectionAsync(sectionInfo.Id)
-                            </div>
+                            </fieldset>
                             <div class="card-footer">
                                 <div class="form-group">
                                     @{
@@ -135,7 +135,14 @@
                                                     </li>
                                                 }
                                             </ul>
-                                            @if (section.ApprovalInfo.Any(i => i.Status == ApprovalStatus.NotSubmitted || i.Status == ApprovalStatus.Rejected))
+                                            @if (sectionInfo.CanSubmit)
+                                            {
+                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@sectionInfo.Id">
+                                                    <i class="far fa-thumbs-up"></i>
+                                                    Submit for approval
+                                                </a>
+                                            }
+                                            @if (sectionInfo.CanApprove)
                                             {
                                                 <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@sectionInfo.Id">
                                                     <i class="far fa-thumbs-up"></i>
