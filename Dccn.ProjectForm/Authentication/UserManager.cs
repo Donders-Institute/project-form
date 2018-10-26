@@ -1,4 +1,7 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data.Projects;
 
@@ -23,9 +26,19 @@ namespace Dccn.ProjectForm.Authentication
             return principal.Identity.Name;
         }
 
-        public string GetUserEmail(ClaimsPrincipal principal)
+        public string GetEmailAddress(ClaimsPrincipal principal)
         {
             return principal.FindFirst(ClaimTypes.EmailAddress).Value;
+        }
+
+        public IEnumerable<Role> GetRoles(ClaimsPrincipal principal)
+        {
+            return principal.FindAll(ClaimTypes.Role).Select(r => Enum.Parse<Role>(r.Value));
+        }
+
+        public bool IsInRole(ClaimsPrincipal principal, Role role)
+        {
+            return principal.IsInRole(Enum.GetName(typeof(Role), role));
         }
 
         public Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup)
@@ -54,7 +67,9 @@ namespace Dccn.ProjectForm.Authentication
     {
         string GetUserId(ClaimsPrincipal principal);
         string GetUserName(ClaimsPrincipal principal);
-        string GetUserEmail(ClaimsPrincipal principal);
+        string GetEmailAddress(ClaimsPrincipal principal);
+        IEnumerable<Role> GetRoles(ClaimsPrincipal principal);
+        bool IsInRole(ClaimsPrincipal principal, Role role);
         Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup);
         Task<ProjectsUser> GetUserByIdAsync(string userId, bool includeGroup);
     }

@@ -21,7 +21,7 @@ namespace Dccn.ProjectForm.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FormSectionOperation requirement, Proposal proposal)
         {
-            if (context.User.IsInRole("Admin"))
+            if (_userManager.IsInRole(context.User, Role.Administrator))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;

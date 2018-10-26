@@ -54,7 +54,7 @@ namespace Dccn.ProjectForm.Services
                 }
 
                 var userName = _userManager.GetUserName(user);
-                var userEmail = _userManager.GetUserEmail(user);
+                var userEmail = _userManager.GetEmailAddress(user);
                 recipientOverride = new MailAddress(userEmail, userName);
             }
 

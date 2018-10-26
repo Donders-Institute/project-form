@@ -1,4 +1,5 @@
-﻿using System.Security.Claims;
+﻿using System;
+using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data.Projects;
@@ -53,7 +54,7 @@ namespace Dccn.ProjectForm.Authentication
             identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
             if (user.IsHead)
             {
-                identity.AddClaim(new Claim(ClaimTypes.Role, "Supervisor"));
+                identity.AddClaim(new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), Role.Supervisor)));
             }
 
             await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), new AuthenticationProperties
