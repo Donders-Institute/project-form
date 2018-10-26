@@ -1,4 +1,6 @@
-﻿namespace Dccn.ProjectForm.Authentication
+﻿using System.Security.Claims;
+
+namespace Dccn.ProjectForm.Authentication
 {
     public static class ClaimTypes
     {
@@ -6,5 +8,6 @@
         public const string UserName = nameof(UserName);
         public const string Role = nameof(Role);
         public const string EmailAddress = nameof(EmailAddress);
+        public const string Group = nameof(Group);
     }
 }

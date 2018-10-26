@@ -52,15 +52,18 @@ namespace Dccn.ProjectForm.Authentication
             identity.AddClaim(new Claim(ClaimTypes.UserId, user.Id));
             identity.AddClaim(new Claim(ClaimTypes.UserName, user.DisplayName));
             identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
+            identity.AddClaim(new Claim(ClaimTypes.Group, user.GroupId));
             if (user.IsHead)
             {
                 identity.AddClaim(new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), Role.Supervisor)));
             }
 
-            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), new AuthenticationProperties
+            var authProperties = new AuthenticationProperties
             {
                 IsPersistent = isPersistent
-            });
+            };
+
+            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), authProperties);
 
             return true;
         }
