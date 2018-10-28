@@ -56,6 +56,11 @@ namespace Dccn.ProjectForm.Authentication
             return _dbContext.Groups.FindAsync(groupId);
         }
 
+        public IQueryable<ProjectsGroup> QueryGroups()
+        {
+            return _dbContext.Groups;
+        }
+
         public Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup)
         {
             return GetUserByIdAsync(GetUserId(principal), includeGroup);
@@ -76,6 +81,11 @@ namespace Dccn.ProjectForm.Authentication
 
             return user;
         }
+
+        public IQueryable<ProjectsUser> QueryUsers()
+        {
+            return _dbContext.Users;
+        }
     }
 
     public interface IUserManager
@@ -89,8 +99,10 @@ namespace Dccn.ProjectForm.Authentication
 
         Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
         Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId);
+        IQueryable<ProjectsGroup> QueryGroups();
 
         Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false);
         Task<ProjectsUser> GetUserByIdAsync(string userId, bool includeGroup = false);
+        IQueryable<ProjectsUser> QueryUsers();
     }
 }

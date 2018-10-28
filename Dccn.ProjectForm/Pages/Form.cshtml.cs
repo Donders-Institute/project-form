@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
@@ -22,15 +21,13 @@ namespace Dccn.ProjectForm.Pages
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ProposalsDbContext _proposalsDbContext;
-        private readonly ProjectsDbContext _projectsDbContext;
         private readonly IUserManager _userManager;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
+        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _authorizationService = authorizationService;
             _proposalsDbContext = proposalsDbContext;
-            _projectsDbContext = projectsDbContext;
             _userManager = userManager;
             _sectionHandlers = sectionHandlers;
         }
@@ -155,9 +152,6 @@ namespace Dccn.ProjectForm.Pages
 
         private async Task LoadFormAsync(Proposal proposal)
         {
-            var owner = await _projectsDbContext.Users.FindAsync(proposal.OwnerId);
-            var supervisor = await _projectsDbContext.Users.FindAsync(proposal.SupervisorId);
-
             SectionInfo = await _sectionHandlers
                 .Select(async h => new SectionInfoModel
                 {
@@ -172,7 +166,7 @@ namespace Dccn.ProjectForm.Pages
 
             foreach (var sectionHandler in _sectionHandlers)
             {
-                await sectionHandler.LoadAsync(this, proposal, owner, supervisor);
+                await sectionHandler.LoadAsync(this, proposal);
             }
         }
 

@@ -4,7 +4,6 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
@@ -54,7 +53,7 @@ namespace Dccn.ProjectForm.Services
             return true;
         }
 
-        protected virtual async Task LoadAsync(TModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected virtual async Task LoadAsync(TModel model, Proposal proposal)
         {
             model.Comments = proposal.Comments.FirstOrDefault(c => c.SectionId == ModelType.Name)?.Content;
 
@@ -99,10 +98,10 @@ namespace Dccn.ProjectForm.Services
             return Task.CompletedTask;
         }
 
-        public Task LoadAsync(FormModel form, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        public Task LoadAsync(FormModel form, Proposal proposal)
         {
             var section = _compiledExpr(form);
-            return section == null ? Task.CompletedTask : LoadAsync(section, proposal, owner, supervisor);
+            return section == null ? Task.CompletedTask : LoadAsync(section, proposal);
         }
 
         public Task StoreAsync(FormModel form, Proposal proposal)
@@ -144,7 +143,7 @@ namespace Dccn.ProjectForm.Services
         ICollection<Approval> GetAssociatedApprovals(Proposal proposal);
         bool HasApprovalAuthorityRole(ApprovalAuthorityRole role);
 
-        Task LoadAsync(FormModel form, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor);
+        Task LoadAsync(FormModel form, Proposal proposal);
         Task StoreAsync(FormModel form, Proposal proposal);
 
         bool RequestApproval(Proposal proposal);

@@ -2,23 +2,22 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class ExperimentHandler : FormSectionHandlerBase<ExperimentSectionModel>
     {
-        private readonly ProjectsDbContext _projectsDbContext;
+        private readonly IUserManager _userManager;
         private readonly IModalityProvider _modalityProvider;
 
-        public ExperimentHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider)
+        public ExperimentHandler(IAuthorityProvider authorityProvider, IUserManager userManager, IModalityProvider modalityProvider)
             : base(authorityProvider, m => m.Experiment)
         {
-            _projectsDbContext = projectsDbContext;
+            _userManager = userManager;
             _modalityProvider = modalityProvider;
         }
 
@@ -27,7 +26,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             ApprovalAuthorityRole.LabMri, ApprovalAuthorityRole.LabOther
         };
 
-        protected override async Task LoadAsync(ExperimentSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(ExperimentSectionModel model, Proposal proposal)
         {
             model.StartDate = proposal.StartDate;
             model.EndDate = proposal.EndDate;
@@ -59,11 +58,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 .Select(async experimenter => new UserModel
                 {
                     Id = experimenter.UserId,
-                    Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == experimenter.UserId)).DisplayName
+                    Name = (await _userManager.GetUserByIdAsync(experimenter.UserId)).DisplayName
                 })
                 .ToDictionaryAsync(_ => Guid.NewGuid());
 
-            await base.LoadAsync(model, proposal, owner, supervisor);
+            await base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(ExperimentSectionModel model, Proposal proposal)

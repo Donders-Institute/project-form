@@ -1,7 +1,6 @@
 ﻿using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
@@ -14,13 +13,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
         }
 
-        protected override Task LoadAsync(FundingSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(FundingSectionModel model, Proposal proposal)
         {
             model.ContactName = proposal.FundingContactName;
             model.ContactEmail = proposal.FundingContactEmail;
             model.FinancialCode = proposal.FinancialCode;
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            return base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(FundingSectionModel model, Proposal proposal)

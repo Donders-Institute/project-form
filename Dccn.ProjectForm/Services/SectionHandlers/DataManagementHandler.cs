@@ -2,35 +2,37 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
-using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class DataManagementHandler : FormSectionHandlerBase<DataSectionModel>
     {
-        private readonly ProjectsDbContext _projectsDbContext;
+        private readonly IUserManager _userManager;
 
-        public DataManagementHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext)
+        public DataManagementHandler(IAuthorityProvider authorityProvider, IUserManager userManager)
             : base(authorityProvider, m => m.Data)
         {
-            _projectsDbContext = projectsDbContext;
+            _userManager = userManager;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        protected override async Task LoadAsync(DataSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(DataSectionModel model, Proposal proposal)
         {
+            var owner = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+            var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+
             model.StorageAccessRules = await proposal.DataAccessRules
                 .Select(async access => new StorageAccessRuleModel
                 {
                     User = new UserModel
                     {
                         Id = access.UserId,
-                        Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == access.UserId)).DisplayName
+                        Name = (await _userManager.GetUserByIdAsync(access.UserId)).DisplayName
                     },
                     Role = (StorageAccessRoleModel) access.Role,
                     CanRemove = access.UserId != owner.Id && access.UserId != supervisor.Id,
@@ -58,7 +60,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             model.OwnerEmail = owner.Email;
             model.SupervisorName = supervisor.DisplayName;
 
-            await base.LoadAsync(model, proposal, owner, supervisor);
+            await base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(DataSectionModel model, Proposal proposal)

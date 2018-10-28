@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
@@ -11,12 +12,12 @@ namespace Dccn.ProjectForm.Services
     public class AuthorityProvider : IAuthorityProvider
     {
         private readonly IDictionary<ApprovalAuthorityRole, string> _authorities;
-        private readonly ProjectsDbContext _dbContext;
+        private readonly IUserManager _userManager;
 
-        public AuthorityProvider(IOptionsSnapshot<FormOptions> options, ProjectsDbContext dbContext)
+        public AuthorityProvider(IOptionsSnapshot<FormOptions> options, IUserManager userManager)
         {
             _authorities = options.Value.Authorities;
-            _dbContext = dbContext;
+            _userManager = userManager;
         }
 
         public string GetAuthorityId(Proposal proposal, ApprovalAuthorityRole role)
@@ -37,7 +38,7 @@ namespace Dccn.ProjectForm.Services
         public Task<ProjectsUser> GetAuthorityAsync(Proposal proposal, ApprovalAuthorityRole role)
         {
             var id = GetAuthorityId(proposal, role);
-            return _dbContext.Users.FindAsync(id);
+            return _userManager.GetUserByIdAsync(id);
         }
     }
 

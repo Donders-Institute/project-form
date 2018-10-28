@@ -18,6 +18,6 @@ namespace Dccn.ProjectForm.Models
 
         [BindNever]
         [DisplayName("Principal Investigator")]
-        public string PrincipalInvestigatorName { get; set; }
+        public string SupervisorName { get; set; }
     }
 }

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
@@ -15,7 +14,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Ethics};
 
-        protected override Task LoadAsync(EthicsSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(EthicsSectionModel model, Proposal proposal)
         {
             if (proposal.EcApproved)
             {
@@ -40,7 +39,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 model.CorrespondenceNumber = proposal.EcReference;
             }
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            return base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(EthicsSectionModel model, Proposal proposal)

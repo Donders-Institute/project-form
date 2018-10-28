@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
@@ -15,13 +14,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        protected override Task LoadAsync(PaymentSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(PaymentSectionModel model, Proposal proposal)
         {
             model.SubjectCount = proposal.PaymentSubjectCount;
             model.AverageSubjectCost = proposal.PaymentAverageSubjectCost;
             model.MaxTotalCost = proposal.PaymentMaxTotalCost;
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            return base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(PaymentSectionModel model, Proposal proposal)

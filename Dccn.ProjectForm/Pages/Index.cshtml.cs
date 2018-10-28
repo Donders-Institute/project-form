@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
@@ -23,16 +22,14 @@ namespace Dccn.ProjectForm.Pages
         private readonly IAuthorizationService _authorizationService;
         private readonly IAuthorityProvider _authorityProvider;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
-        private readonly ProjectsDbContext _projectsDbContext;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly IUserManager _userManager;
 
-        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers, ProjectsDbContext projectsDbContext, ProposalsDbContext proposalsDbContext, IUserManager userManager)
+        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers, ProposalsDbContext proposalsDbContext, IUserManager userManager)
         {
             _authorizationService = authorizationService;
             _authorityProvider = authorityProvider;
             _sectionHandlers = sectionHandlers;
-            _projectsDbContext = projectsDbContext;
             _proposalsDbContext = proposalsDbContext;
             _userManager = userManager;
         }
@@ -80,7 +77,7 @@ namespace Dccn.ProjectForm.Pages
                 ModelState.AddModelError(string.Empty, "A proposal with the same name already exists.");
             }
 
-            if (!await _projectsDbContext.Groups.AnyAsync(g => g.HeadId == model.SupervisorId))
+            if (!await _userManager.QueryGroups().AnyAsync(g => g.HeadId == model.SupervisorId))
             {
                 ModelState.AddModelError(string.Empty, "The supervisor is not valid.");
             }
@@ -149,7 +146,7 @@ namespace Dccn.ProjectForm.Pages
                 SupervisedProposals = await LoadProposalsAsync(_proposalsDbContext.Proposals.Where(p => p.SupervisorId == userId));
             }
 
-            var supervisors = await _projectsDbContext.Groups
+            var supervisors = await _userManager.QueryGroups()
                 .Where(g => !string.IsNullOrEmpty(g.HeadId)) // Workaround: stored in db as empty strings
                 .Select(g => new SelectListItem($"{g.Head.DisplayName} ({g.Description})", g.Head.Id))
                 .ToListAsync();
@@ -180,7 +177,7 @@ namespace Dccn.ProjectForm.Pages
                     {
                         ProposalId = a.ProposalId,
                         SectionId = _sectionHandlers.FirstOrDefault(s => s.HasApprovalAuthorityRole(a.AuthorityRole))?.Id,
-                        ProposalOwnerName = (await _projectsDbContext.Users.FindAsync(a.ProposalOwnerId)).DisplayName,
+                        ProposalOwnerName = (await _userManager.GetUserByIdAsync(a.ProposalOwnerId)).DisplayName,
                         ProposalTitle = a.ProposalTitle,
                         Role = (ApprovalAuthorityRoleModel) a.AuthorityRole
                     })
@@ -221,11 +218,11 @@ namespace Dccn.ProjectForm.Pages
                     Id = p.Id,
                     Title = p.Title,
                     ProjectId = p.ProjectId,
-                    OwnerName = (await _projectsDbContext.Users.FindAsync(p.OwnerId)).DisplayName,
-                    SupervisorName = (await _projectsDbContext.Users.FindAsync(p.SupervisorId)).DisplayName,
+                    OwnerName = (await _userManager.GetUserByIdAsync(p.OwnerId)).DisplayName,
+                    SupervisorName = (await _userManager.GetUserByIdAsync(p.SupervisorId)).DisplayName,
                     CreatedOn = p.CreatedOn,
                     LastEditedOn = p.LastEditedOn,
-                    LastEditedBy = (await _projectsDbContext.Users.FindAsync(p.LastEditedBy)).DisplayName,
+                    LastEditedBy = (await _userManager.GetUserByIdAsync(p.LastEditedBy)).DisplayName,
                     NotSubmitted = p.NotSubmitted,
                     Pending = p.Pending,
                     Approved = p.Approved,

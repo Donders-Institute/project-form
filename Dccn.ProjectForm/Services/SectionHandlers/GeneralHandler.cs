@@ -1,27 +1,33 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class GeneralHandler : FormSectionHandlerBase<GeneralSectionModel>
     {
-        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
+        private readonly IUserManager _userManager;
 
-        public GeneralHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.General)
+        public GeneralHandler(IAuthorityProvider authorityProvider, IUserManager userManager): base(authorityProvider, m => m.General)
         {
+            _userManager = userManager;
         }
 
-        protected override Task LoadAsync(GeneralSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
+
+        protected override async Task LoadAsync(GeneralSectionModel model, Proposal proposal)
         {
+            var owner = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+            var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+
             model.OwnerName = owner.DisplayName;
-            model.PrincipalInvestigatorName = supervisor.DisplayName;
+            model.SupervisorName = supervisor.DisplayName;
             model.Title = proposal.Title;
 
-            return base.LoadAsync(model, proposal, owner, supervisor);
+            await base.LoadAsync(model, proposal);
         }
 
         protected override Task StoreAsync(GeneralSectionModel model, Proposal proposal)

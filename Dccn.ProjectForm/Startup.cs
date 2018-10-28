@@ -23,12 +23,10 @@ namespace Dccn.ProjectForm
     public class Startup
     {
         private readonly IConfiguration _configuration;
-        private readonly IHostingEnvironment _environment;
 
-        public Startup(IConfiguration configuration, IHostingEnvironment environment)
+        public Startup(IConfiguration configuration)
         {
             _configuration = configuration;
-            _environment = environment;
         }
 
         public void ConfigureServices(IServiceCollection services)
