@@ -18,27 +18,25 @@
                 <div class="row">
                     <label class="col-auto col-form-label col-form-label-sm">Add access role</label>
                     <div class="col">
-                        <input class="form-control form-control-sm" type="text"
+                        <input class="form-control form-control-sm user-query" type="text"
                                placeholder="Search for a DCCN member to give project access to"
-                               data-class="user-query" data-usertype="access"
-                               data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})">
+                               data-usertype="access" data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})">
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                data-class="user-add" data-usertype="access" data-submit-on="click">
+                        <button type="button" class="btn btn-sm btn-outline-secondary user-add"
+                                data-usertype="access" data-submit-on="click">
                             <i class="fas fa-plus-square"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush" data-class="user-items" data-usertype="access">
+            <div class="list-group list-group-flush user-items" data-usertype="access">
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No access roles assigned</span>
                 </div>
                 @foreach (var (index, rule) in Model.StorageAccessRules)
                 {
-                    <div class="d-none"
-                         data-class="access-item"
+                    <div class="d-none access-item"
                          data-index="@index"
                          data-id="@rule.User.Id"
                          data-name="@rule.User.Name"
@@ -66,11 +64,10 @@
                 <div class="card-header">
                     <div class="custom-control custom-radio">
                         <input asp-for="Preservation"
-                               class="custom-control-input"
+                               class="custom-control-input radio-panel-input"
                                type="radio"
                                id="preservation-repository"
                                value="@DataPreservationModel.Repository"
-                               data-class="radio-panel-input"
                                data-target="#preservation-repository-panel"
                                data-submit-on="change">
                         <label class="custom-control-label" for="preservation-repository">Preserve data at the Donders Repository</label>
@@ -90,7 +87,7 @@
                             will receive the <i>manager</i> role in the Donders Repository.
                         </p>
 
-                        <div class="alert alert-warning d-none" role="alert" data-class="repository-user-warning"
+                        <div class="alert alert-warning d-none repository-user-warning" role="alert"
                              data-url="@Url.Action("RepositoryUserExists", "Users", new {id = Model.OwnerId})">
                             <b>Warning: </b>
                             No Donders Repository account found for <i>@Html.DisplayFor(m => m.OwnerName)</i> using e-mail address <i>@Html.DisplayFor(m => m.OwnerEmail)</i>
@@ -105,11 +102,10 @@
                 <div class="card-header">
                     <div class="custom-control custom-radio">
                         <input asp-for="Preservation"
-                               class="custom-control-input"
+                               class="custom-control-input radio-panel-input"
                                type="radio"
                                id="preservation-external"
                                value="@DataPreservationModel.External"
-                               data-class="radio-panel-input"
                                data-target="#preservation-external-panel"
                                data-submit-on="change">
                         <label class="custom-control-label" for="preservation-external">Preserve data at an external location</label>
@@ -145,8 +141,7 @@
 </div>
 
 <script id="access-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2"
-         data-class="access-item-expanded"
+    <div class="list-group-item list-group-item-action py-2 access-item-expanded"
          data-index="{{:index}}"
          data-id="{{:id}}"
          data-name="{{>name}}"
@@ -181,7 +176,7 @@
             @* <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}"> *@
 
             <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-class="remove-access" data-submit-on="click">
+                <button type="button" class="btn btn-sm btn-outline-secondary remove-access" data-submit-on="click">
                     <i class="fas fa-minus-square"></i>
                 </button>
             </div>

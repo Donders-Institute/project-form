@@ -20,7 +20,7 @@ jQuery(function($) {
         $(root).find("[data-submit-on]").each(function() {
             var $input = $(this);
             var $form = $("#form");
-            var sectionId = $input.parents("[data-class='form-section']").prop("id");
+            var sectionId = $input.parents(".form-section").prop("id");
 
             $input.on($input.data("submit-on"), function() {
                 $form.data("section-id", sectionId);
@@ -30,10 +30,10 @@ jQuery(function($) {
     }
 
     function initializeUserList(userType, itemDefaults, createItem) {
-        var $autocomplete = $(".aa-input[data-class='user-query'][data-usertype='" + userType + "']");
-        var $userlist = $("[data-class='user-items'][data-usertype='" + userType + "']");
+        var $autocomplete = $(".aa-input.user-query[data-usertype='" + userType + "']");
+        var $userlist = $(".user-items[data-usertype='" + userType + "']");
 
-        $("[data-class='user-add'][data-usertype='" + userType + "']").click(function(event) {
+        $(".user-add[data-usertype='" + userType + "']").click(function(event) {
             var id = $autocomplete.data("id");
             if (!id || $userlist.find("[data-id='" + id + "']").length > 0) {
                 $autocomplete.addClass("border-danger");
@@ -85,7 +85,7 @@ jQuery(function($) {
         if (sectionId) {
             url = $form.attr("action").replace("__SECTION__", encodeURIComponent(sectionId));
             $items = $form.find(":input").filter(function() {
-                var parentSectionId = $(this).parents("[data-class='form-section']").prop("id");
+                var parentSectionId = $(this).parents(".form-section").prop("id");
                 return !parentSectionId || parentSectionId === sectionId;
             });
         } else {
@@ -125,14 +125,14 @@ jQuery(function($) {
         $form.prop("action", $form.data("url").replace("__SECTION__", encodeURIComponent(section)));
     });
 
-    $("[data-class='radio-panel-input']").change(function() {
+    $(".radio-panel-input").change(function() {
         var $input = $(this);
         if ($input.prop("checked")) {
             $($input.data("target")).collapse("show");
         }
     });
 
-    $("[data-class='radio-panel-input']").each(function() {
+    $(".radio-panel-input").each(function() {
         var $input = $(this);
         var $collapse = $($input.data("target"));
         $collapse.on("hide.bs.collapse", function() {
@@ -152,13 +152,13 @@ jQuery(function($) {
 
 
     // Ethics
-    $("[data-class='ethics-approval']").change(function() {
+    $(".ethics-approval").change(function() {
         var $option = $(this.selectedOptions[0]);
         var description = $option.data("description");
         if (description) {
-            $("[data-class='ethics-custom']").val(description).prop("disabled", true);
+            $(".ethics-custom").val(description).prop("disabled", true);
         } else {
-            $("[data-class='ethics-custom']").val("").prop("disabled", false);
+            $(".ethics-custom").val("").prop("disabled", false);
         }
     }).change();
 
@@ -171,21 +171,21 @@ jQuery(function($) {
         var $item = $(labItemTemplate.render(data));
 
         function updateTotalDuration() {
-            var subjects = parseInt($item.find("[data-class='lab-item-subjects']").val());
-            var sessions = parseInt($item.find("[data-class='lab-item-sessions']").val());
-            var duration = parseInt($item.find("[data-class='lab-item-duration']").val());
+            var subjects = parseInt($item.find(".lab-item-subjects").val());
+            var sessions = parseInt($item.find(".lab-item-sessions").val());
+            var duration = parseInt($item.find(".lab-item-duration").val());
             var totalDuration = moment.duration(subjects * sessions * duration, "minutes");
-            $item.find("[data-class='lab-item-total-duration']").text(totalDuration.isValid() ? totalDuration.asHours().toFixed() + " hour(s)" : "");
+            $item.find(".lab-item-total-duration").text(totalDuration.isValid() ? totalDuration.asHours().toFixed() + " hour(s)" : "");
         }
 
-        $item.find("[data-class='remove-lab-item']").click(function() {
+        $item.find(".remove-lab-item").click(function() {
             $item.remove();
             updateLabItems();
             updateStandardQuota();
         });
 
-        $item.find("[data-class='lab-item-subjects'],[data-class='lab-item-sessions'],[data-class='lab-item-duration']").change(updateTotalDuration);
-        $item.find("[data-class='lab-item-subjects'],[data-class='lab-item-sessions']").change(updateStandardQuota);
+        $item.find(".lab-item-subjects,.lab-item-sessions,.lab-item-duration").change(updateTotalDuration);
+        $item.find(".lab-item-subjects,.lab-item-sessions").change(updateStandardQuota);
 
         updateTotalDuration();
         updateStandardQuota();
@@ -195,8 +195,8 @@ jQuery(function($) {
     }
 
     function updateLabItems() {
-        var $container = $("[data-class='lab-items']");
-        if ($container.children("[data-class='lab-item-expanded']").length === 0) {
+        var $container = $(".lab-items");
+        if ($container.children(".lab-item-expanded").length === 0) {
             $("#quota-standard").prop("disabled", true);
             $("#quota-custom").prop("checked", true).change();
         } else {
@@ -205,28 +205,28 @@ jQuery(function($) {
     }
 
     function updateStandardQuota() {
-        var $items = $("[data-class='lab-item-expanded']");
+        var $items = $(".lab-item-expanded");
         if ($items.length > 0) {
             var quota = 0;
             $items.each(function() {
                 var $item = $(this);
 
-                var subjects = parseInt($item.find("[data-class='lab-item-subjects']").val()) || 0;
-                var sessions = parseInt($item.find("[data-class='lab-item-sessions']").val()) || 0;
+                var subjects = parseInt($item.find(".lab-item-subjects").val()) || 0;
+                var sessions = parseInt($item.find(".lab-item-sessions").val()) || 0;
                 var sessionStorage = $item.data("storage-session");
                 var fixedStorage = $item.data("storage-fixed");
 
                 quota += subjects * sessions * sessionStorage + fixedStorage;
             });
-            $("[data-class='quota-standard-value']").text(quota.toFixed(1) + " GB");
+            $(".quota-standard-value").text(quota.toFixed(1) + " GB");
         } else {
-            $("[data-class='quota-standard-value']").first().text("requires at least one lab");
+            $(".quota-standard-value").first().text("requires at least one lab");
         }
     }
 
-    $("[data-class='add-lab-item']").click(function() {
+    $(".add-lab-item").click(function() {
         var $button = $(this);
-        $("[data-class='lab-items']").append(createLabItem({
+        $(".lab-items").append(createLabItem({
             index: generateUniqueIndex(),
             modality: $button.data("modality"),
             storageFixed: $button.data("storage-fixed"),
@@ -236,7 +236,7 @@ jQuery(function($) {
         updateStandardQuota();
     });
 
-    $("[data-class='lab-item']").replaceWith(function() {
+    $(".lab-item").replaceWith(function() {
         return createLabItem($(this).data());
     });
     updateLabItems();
@@ -244,12 +244,12 @@ jQuery(function($) {
 
 
 
-    $("[data-class='user-query']").each(function() {
+    $(".user-query").each(function() {
         var $autocomplete = $(this);
 
         $autocomplete.on("keypress", function(event) {
             if (event.key === "Enter") {
-                $("[data-class='user-add'][data-usertype='" + $autocomplete.data("usertype") + "']").click();
+                $(".user-add[data-usertype='" + $autocomplete.data("usertype") + "']").click();
                 event.preventDefault();
             }
         });
@@ -301,8 +301,8 @@ jQuery(function($) {
     var experimenterItemTemplate = $.templates("#experimenter-item-template");
     initializeUserList("experimenter", {}, function(data) {
         var $item = $(experimenterItemTemplate.render(data));
-        $item.find("[data-class='remove-experimenter']").click(function() {
-            $(this).parents("[data-class='experimenter-item-expanded']").remove();
+        $item.find(".remove-experimenter").click(function() {
+            $(this).parents(".experimenter-item-expanded").remove();
         });
         return $item;
     });
@@ -313,15 +313,15 @@ jQuery(function($) {
     var accessItemTemplate = $.templates("#access-item-template");
     initializeUserList("access", { role: "Viewer", canEdit: true, canRemove: true }, function(data) {
         var $item = $(accessItemTemplate.render(data));
-            $item.find("[data-class='remove-access']").click(function() {
-            $(this).parents("[data-class='access-item-expanded']").remove();
+            $item.find(".remove-access").click(function() {
+            $(this).parents(".access-item-expanded").remove();
         });
         return $item;
     });
 
 
 
-    $("[data-class='repository-user-warning']").each(function() {
+    $(".repository-user-warning").each(function() {
         var $alert = $(this);
         $.getJSON({
             url: $alert.data("url")
@@ -335,23 +335,23 @@ jQuery(function($) {
 
 
     // Payment
-    $("[data-class='cost-subjects'], [data-class='cost-average']").change(function() {
-        var subjects = parseInt($("[data-class='cost-subjects']").val());
-        var averageCost = parseFloat($("[data-class='cost-average']").val());
+    $(".cost-subjects,.cost-average").change(function() {
+        var subjects = parseInt($(".cost-subjects").val());
+        var averageCost = parseFloat($(".cost-average").val());
         var totalCost = subjects * averageCost;
         if (!isNaN(totalCost)) {
-            $("[data-class='cost-predicted']").val(totalCost.toFixed(2));
+            $(".cost-predicted").val(totalCost.toFixed(2));
         } else {
-            $("[data-class='cost-predicted']").val("");
+            $(".cost-predicted").val("");
         }
     });
 
-    $("[data-class='quota-overrule']").change(function() {
+    $(".quota-overrule").change(function() {
         var $this = $(this);
         if ($this.prop("checked")) {
-            $("[data-class='quota-custom']").prop("disabled", false);
+            $(".quota-custom").prop("disabled", false);
         } else {
-            $("[data-class='quota-custom']").prop("disabled", true).val("");
+            $(".quota-custom").prop("disabled", true).val("");
         }
     });
 

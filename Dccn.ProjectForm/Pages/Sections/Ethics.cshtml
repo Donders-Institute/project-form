@@ -8,11 +8,10 @@
         <div class="card-header">
             <div class="custom-control custom-radio">
                 <input asp-for="Approved"
-                       class="custom-control-input"
+                       class="custom-control-input radio-panel-input"
                        id="ethics-approved"
                        type="radio"
                        value="@true"
-                       data-class="radio-panel-input"
                        data-target="#ethics-approved-panel"
                        data-submit-on="change">
                 <label class="custom-control-label" for="ethics-approved">Approved</label>
@@ -24,7 +23,7 @@
                     <label asp-for="ApprovalCode"></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <select asp-for="ApprovalCode" class="custom-select" data-class="ethics-approval" data-submit-on="change">
+                            <select asp-for="ApprovalCode" class="custom-select ethics-approval" data-submit-on="change">
                                 @foreach (var option in EnumUtils.GetValues<EthicsApprovalOptionModel>())
                                 {
                                     <!option value="@option" selected="@(Model.ApprovalCode == option)"
@@ -38,7 +37,7 @@
                                 }
                             </select>
                         </div>
-                        <input asp-for="CustomCode" class="form-control" placeholder="Enter study-specific approval CMO number" data-class="ethics-custom" data-submit-on="change">
+                        <input asp-for="CustomCode" class="form-control ethics-custom" placeholder="Enter study-specific approval CMO number" data-submit-on="change">
                     </div>
                 </div>
             </div>
@@ -48,11 +47,10 @@
         <div class="card-header">
             <div class="custom-control custom-radio">
                 <input asp-for="Approved"
-                       class="custom-control-input"
+                       class="custom-control-input radio-panel-input"
                        id="ethics-not-approved"
                        type="radio"
                        value="@false"
-                       data-class="radio-panel-input"
                        data-target="#ethics-not-approved-panel"
                        data-submit-on="change">
                 <label class="custom-control-label" for="ethics-not-approved">Not approved</label>

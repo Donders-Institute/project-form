@@ -54,9 +54,8 @@
                                 <h6 class="dropdown-header">Add a modality</h6>
                                 @foreach (var modality in ModalityProvider.Values)
                                 {
-                                    <button class="dropdown-item"
+                                    <button class="dropdown-item add-lab-item"
                                             type="button"
-                                            data-class="add-lab-item"
                                             data-modality="@modality.Id"
                                             data-storage-fixed="@modality.FixedStorage"
                                             data-storage-session="@modality.SessionStorage"
@@ -69,7 +68,7 @@
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush" data-class="lab-items">
+            <div class="list-group list-group-flush lab-items">
                 <div class="list-group-item list-group-placeholder py-2">
                     <div class="form-row align-items-center">
                         <div class="col">
@@ -81,8 +80,7 @@
                 </div>
                 @foreach (var (index, lab) in Model.Labs)
                 {
-                    <div class="d-none"
-                         data-class="lab-item"
+                    <div class="d-none lab-item"
                          data-index="@index"
                          data-id="@lab.Id"
                          data-modality="@lab.Modality.Id"
@@ -111,14 +109,13 @@
         <div class="card-header">
             <div class="custom-control custom-radio">
                 <input asp-for="StorageQuota"
-                       class="custom-control-input"
+                       class="custom-control-input radio-panel-input"
                        type="radio"
                        id="quota-standard"
                        value="@StorageQuotaModel.Standard"
-                       data-class="radio-panel-input"
                        data-target="#quota-standard-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="quota-standard">Use standard storage quota (<span data-class="quota-standard-value">...</span>)</label>
+                <label class="custom-control-label" for="quota-standard">Use standard storage quota (<span class="quota-standard-value">...</span>)</label>
             </div>
         </div>
         <fieldset class="collapse" id="quota-standard-panel" data-parent="#quota-options">
@@ -127,7 +124,7 @@
                 <h6 class="card-subtitle text-muted mb-3">
                     Use overruling storage quota in case the project uses imported data. This requires a motivation.
                 </h6>
-                <p class="card-text">The calculated quota is: <span data-class="quota-standard-value">...</span>.</p>
+                <p class="card-text">The calculated quota is: <span class="quota-standard-value">...</span>.</p>
             </div>
         </fieldset>
     </div>
@@ -135,11 +132,10 @@
         <div class="card-header">
             <div class="custom-control custom-radio">
                 <input asp-for="StorageQuota"
-                       class="custom-control-input"
+                       class="custom-control-input radio-panel-input"
                        type="radio"
                        id="quota-custom"
                        value="@StorageQuotaModel.Custom"
-                       data-class="radio-panel-input"
                        data-target="#quota-custom-panel"
                        data-submit-on="change">
                 <label class="custom-control-label" for="quota-custom">Use overruling storage quota</label>
@@ -184,27 +180,25 @@
                 <div class="row">
                     <label class="col-auto col-form-label col-form-label-sm">Add experimenter</label>
                     <div class="col">
-                        <input class="form-control form-control-sm" type="text"
-                               placeholder="Search for a DCCN member to add as experimenter"
-                               data-class="user-query" data-usertype="experimenter"
+                        <input class="form-control form-control-sm user-query" type="text"
+                               placeholder="Search for a DCCN member to add as experimenter" data-usertype="experimenter"
                                data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" >
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-sm btn-outline-secondary"
-                                data-class="user-add" data-usertype="experimenter" data-submit-on="click">
+                        <button type="button" class="btn btn-sm btn-outline-secondary user-add"
+                                data-usertype="experimenter" data-submit-on="click">
                             <i class="fas fa-plus-square"></i>
                         </button>
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush" data-class="user-items" data-usertype="experimenter">
+            <div class="list-group list-group-flush user-items" data-usertype="experimenter">
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No experimenters assigned</span>
                 </div>
                 @foreach (var (index, experimenter) in Model.Experimenters)
                 {
-                    <div class="d-none"
-                         data-class="experimenter-item"
+                    <div class="d-none experimenter-item"
                          data-index="@index"
                          data-id="@experimenter.Id"
                          data-name="@experimenter.Name">
@@ -216,8 +210,7 @@
 </div>
 
 <script id="lab-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2"
-         data-class="lab-item-expanded"
+    <div class="list-group-item list-group-item-action py-2 lab-item-expanded"
          data-index="{{:index}}"
          data-storage-fixed="{{:storageFixed}}"
          data-storage-session="{{:storageSession}}">
@@ -240,8 +233,8 @@
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SubjectCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:index}}].SubjectCount")"
-                           value="{{:subjects}}" data-submit-on="change" data-class="lab-item-subjects">
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-subjects" name="@Html.Name("Labs[{{:index}}].SubjectCount")"
+                           value="{{:subjects}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
@@ -254,25 +247,25 @@
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:index}}].SessionCount")"
-                           value="{{:sessions}}" data-submit-on="change" data-class="lab-item-sessions">
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-sessions" name="@Html.Name("Labs[{{:index}}].SessionCount")"
+                           value="{{:sessions}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionDurationMinutes)</label>
-                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:index}}].SessionDurationMinutes")"
-                           value="{{:duration}}" placeholder="minutes" data-submit-on="change" data-class="lab-item-duration">
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-duration" name="@Html.Name("Labs[{{:index}}].SessionDurationMinutes")"
+                           value="{{:duration}}" placeholder="minutes" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
-                    <label class="col col-form-label d-lg-none">Total duration</label>
-                    <span class="col-6 col-lg form-control-plaintext form-control-sm" data-class="lab-item-total-duration"></span>
+                    <label class="col col-form-label d-lg-none lab-item-total-duration">Total duration</label>
+                    <span class="col-6 col-lg form-control-plaintext form-control-sm"></span>
                 </div>
             </div>
             <div class="col-lg-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary float-right float-lg-none" data-class="remove-lab-item" data-submit-on="click">
+                <button type="button" class="btn btn-sm btn-outline-secondary float-right float-lg-none remove-lab-item" data-submit-on="click">
                     <i class="fas fa-minus-square"></i><span class="d-lg-none"> Remove</span>
                 </button>
             </div>
@@ -281,8 +274,7 @@
 </script>
 
 <script id="experimenter-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2"
-         data-class="experimenter-item-expanded"
+    <div class="list-group-item list-group-item-action py-2 experimenter-item-expanded"
          data-index="{{:index}}"
          data-id="{{:id}}"
          data-name="{{>name}}">
@@ -295,7 +287,7 @@
             </div>
 
             <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary" data-class="remove-experimenter" data-submit-on="click">
+                <button type="button" class="btn btn-sm btn-outline-secondary remove-experimenter" data-submit-on="click">
                     <i class="fas fa-minus-square"></i>
                 </button>
             </div>
