@@ -80,14 +80,25 @@
                                 <div class="form-group">
                                     @{
                                         var comments = sectionInfo.Id + "." + nameof(ISectionModel.Comments);
+                                        const string @class = "form-control form-control-sm";
+                                        const string placeholder = "Leave a comment here if something in this section requires extra explanation.";
                                     }
                                     @Html.Label(comments)
-                                    @Html.TextArea(comments, section.Comments, 3, 0, new
+                                    @if (sectionInfo.CanEdit)
                                     {
-                                        @class = "form-control form-control-sm",
-                                        placeholder = "Leave a comment here if something in this section requires extra explanation.",
-                                        data_submit_on = "change"
-                                    })
+                                        @Html.TextArea(comments, section.Comments, 3, 0, new
+                                        {
+                                            @class, placeholder, data_submit_on = "change"
+                                        })
+                                    }
+                                    else
+                                    {
+                                        @Html.TextArea(comments, section.Comments, 3, 0, new
+                                        {
+                                            @class, placeholder, disabled = (object) null, data_submit_on = "change"
+                                        })
+                                    }
+
                                 </div>
 
                                 @if (section.Approvals.Any())
