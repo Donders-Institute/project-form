@@ -7,7 +7,7 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class PaymentHandler : FormSectionHandlerBase<Payment>
+    public class PaymentHandler : FormSectionHandlerBase<PaymentSectionModel>
     {
         public PaymentHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.Payment)
         {
@@ -15,7 +15,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        protected override Task LoadAsync(Payment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(PaymentSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.SubjectCount = proposal.PaymentSubjectCount;
             model.AverageSubjectCost = proposal.PaymentAverageSubjectCost;
@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(Payment model, Proposal proposal)
+        protected override Task StoreAsync(PaymentSectionModel model, Proposal proposal)
         {
             proposal.PaymentSubjectCount = model.SubjectCount;
             proposal.PaymentAverageSubjectCost = model.AverageSubjectCost;

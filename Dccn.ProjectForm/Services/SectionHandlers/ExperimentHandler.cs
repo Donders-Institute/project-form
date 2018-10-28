@@ -10,7 +10,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class ExperimentHandler : FormSectionHandlerBase<Experiment>
+    public class ExperimentHandler : FormSectionHandlerBase<ExperimentSectionModel>
     {
         private readonly ProjectsDbContext _projectsDbContext;
         private readonly IModalityProvider _modalityProvider;
@@ -27,13 +27,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             ApprovalAuthorityRole.LabMri, ApprovalAuthorityRole.LabOther
         };
 
-        protected override async Task LoadAsync(Experiment model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(ExperimentSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.StartDate = proposal.StartDate;
             model.EndDate = proposal.EndDate;
 
             model.Labs = proposal.Labs
-                .Select(lab => new Models.Lab
+                .Select(lab => new Models.LabModel
                 {
                     Id = lab.Id,
                     Modality = _modalityProvider[lab.Modality],
@@ -46,17 +46,17 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             if (proposal.CustomQuota)
             {
-                model.StorageQuota = Experiment.StorageQuotaType.Custom;
+                model.StorageQuota = StorageQuotaModel.Custom;
                 model.CustomQuotaAmount = proposal.CustomQuotaAmount;
                 model.CustomQuotaMotivation = proposal.CustomQuotaMotivation;
             }
             else
             {
-                model.StorageQuota = Experiment.StorageQuotaType.Standard;
+                model.StorageQuota = StorageQuotaModel.Standard;
             }
 
             model.Experimenters = await proposal.Experimenters
-                .Select(async experimenter => new User
+                .Select(async experimenter => new UserModel
                 {
                     Id = experimenter.UserId,
                     Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == experimenter.UserId)).DisplayName
@@ -66,12 +66,12 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(Experiment model, Proposal proposal)
+        protected override Task StoreAsync(ExperimentSectionModel model, Proposal proposal)
         {
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
 
-            proposal.Labs = (model.Labs?.Values ?? Enumerable.Empty<Models.Lab>())
+            proposal.Labs = (model.Labs?.Values ?? Enumerable.Empty<Models.LabModel>())
                 .Select(lab => new Data.Lab
                 {
                     // FIXME: causes DELETE + INSERT instead of UPDATE
@@ -84,7 +84,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 })
                 .ToList();
 
-            if (model.StorageQuota == Experiment.StorageQuotaType.Standard)
+            if (model.StorageQuota == StorageQuotaModel.Standard)
             {
                 proposal.CustomQuota = false;
                 proposal.CustomQuotaAmount = null;
@@ -97,7 +97,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 proposal.CustomQuotaMotivation = model.CustomQuotaMotivation;
             }
 
-            proposal.Experimenters = (model.Experimenters?.Values ?? Enumerable.Empty<User>())
+            proposal.Experimenters = (model.Experimenters?.Values ?? Enumerable.Empty<UserModel>())
                 .Select( experimenter => new Experimenter
                 {
                     UserId = experimenter.Id

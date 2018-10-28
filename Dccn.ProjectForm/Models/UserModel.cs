@@ -2,7 +2,7 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    public class User
+    public class UserModel
     {
         public string Id { get; set; }
 

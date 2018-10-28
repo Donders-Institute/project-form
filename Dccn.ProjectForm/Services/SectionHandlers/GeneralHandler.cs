@@ -7,7 +7,7 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class GeneralHandler : FormSectionHandlerBase<General>
+    public class GeneralHandler : FormSectionHandlerBase<GeneralSectionModel>
     {
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
@@ -15,7 +15,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
         }
 
-        protected override Task LoadAsync(General model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(GeneralSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.OwnerName = owner.DisplayName;
             model.PrincipalInvestigatorName = supervisor.DisplayName;
@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(General model, Proposal proposal)
+        protected override Task StoreAsync(GeneralSectionModel model, Proposal proposal)
         {
             proposal.Title = model.Title;
 

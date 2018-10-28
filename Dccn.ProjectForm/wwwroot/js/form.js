@@ -148,24 +148,13 @@ jQuery(function($) {
 
     // Ethics
     $("[data-class='ethics-approval']").change(function() {
-        var $input = $(this);
-        var text = "";
-        var disabled = true;
-
-        switch ($input.val()) {
-        case "Blanket":
-            text = "CMO2014/288";
-            break;
-        case "Children":
-            text = "CMO2012/012";
-            break;
-        default:
-            disabled = false;
+        var $option = $(this.selectedOptions[0]);
+        var description = $option.data("description");
+        if (description) {
+            $("[data-class='ethics-custom']").val(description).prop("disabled", true);
+        } else {
+            $("[data-class='ethics-custom']").val("").prop("disabled", false);
         }
-
-        $("[data-class='ethics-custom']")
-            .val(text)
-            .prop("disabled", disabled);
     }).change();
 
 

@@ -6,13 +6,8 @@ using System.Linq;
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "Experiment")]
-    public class Experiment : SectionModelBase, IValidatableObject
+    public class ExperimentSectionModel : SectionModelBase, IValidatableObject
     {
-        public enum StorageQuotaType
-        {
-            Standard, Custom
-        }
-
         [Display(Name = "Start date")]
         [DataType(DataType.Date)]
         public DateTime? StartDate { get; set; }
@@ -21,7 +16,7 @@ namespace Dccn.ProjectForm.Models
         [DataType(DataType.Date)]
         public DateTime? EndDate { get; set; }
 
-        public StorageQuotaType StorageQuota { get; set; }
+        public StorageQuotaModel StorageQuota { get; set; }
 
         [Display(Name ="Storage amount", Description = "Storage amount in Gigabytes.")]
         public int? CustomQuotaAmount { get; set; }
@@ -30,10 +25,10 @@ namespace Dccn.ProjectForm.Models
         public string CustomQuotaMotivation { get; set; }
 
         [Display(Name = "Labs")]
-        public IDictionary<Guid, Lab> Labs { get; set; }
+        public IDictionary<Guid, LabModel> Labs { get; set; }
 
         [Display(Name ="Experimenters")]
-        public IDictionary<Guid, User> Experimenters { get; set; }
+        public IDictionary<Guid, UserModel> Experimenters { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {
@@ -42,10 +37,15 @@ namespace Dccn.ProjectForm.Models
                 yield return new ValidationResult("End date must come after start date.", new []{nameof(EndDate)});
             }
 
-            if ((Labs == null || !Labs.Any()) && StorageQuota != StorageQuotaType.Custom)
+            if ((Labs == null || !Labs.Any()) && StorageQuota != StorageQuotaModel.Custom)
             {
                 yield return new ValidationResult("Must specify overruling storage quota when there is no lab usage.", new []{nameof(StorageQuota)});
             }
         }
+    }
+
+    public enum StorageQuotaModel
+    {
+        Standard, Custom
     }
 }

@@ -1,4 +1,7 @@
-﻿@model Models.Ethics
+﻿@model EthicsSectionModel
+@using Dccn.ProjectForm.Extensions
+@using Dccn.ProjectForm.Models
+@using Dccn.ProjectForm.Utils
 
 <div class="accordion" id="ethics-options">
     <div class="card">
@@ -22,9 +25,20 @@
                     <div class="input-group">
                         <div class="input-group-prepend">
                             <select asp-for="ApprovalCode" class="custom-select" data-class="ethics-approval" data-submit-on="change">
-                                @foreach (var option in (Models.Ethics.ApprovalType[])Enum.GetValues(typeof(Models.Ethics.ApprovalType)))
+                                @foreach (var option in EnumUtils.GetValues<EthicsApprovalOptionModel>())
                                 {
-                                    <option value="@option" selected="@(Model.ApprovalCode == option ? "selected" : null)">@Html.DisplayFor(_ => option)</option>
+                                    <!option value="@option"
+                                             @{
+                                                 var description = option.GetDisplayDescription();
+                                                 if (description != null)
+                                                 {
+                                                     <text>data-description="@description"</text>
+                                                 }
+                                                 if (Model.ApprovalCode == option)
+                                                 {
+                                                     <text>selected</text>
+                                                 }
+                                             }>@option.GetDisplayName()</!option>
                                 }
                             </select>
                         </div>

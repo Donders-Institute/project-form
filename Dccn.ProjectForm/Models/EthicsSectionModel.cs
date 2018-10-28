@@ -3,20 +3,13 @@
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "Ethical approval")]
-    public class Ethics : SectionModelBase
+    public class EthicsSectionModel : SectionModelBase
     {
-        public enum ApprovalType
-        {
-            Blanket,
-            Children,
-            Other
-        }
-
         [Display(Name = "Approved")]
         public bool Approved { get; set; }
 
         [Display(Name = "Ethics committee approval number")]
-        public ApprovalType ApprovalCode { get; set; }
+        public EthicsApprovalOptionModel ApprovalCode { get; set; }
 
         public string CustomCode { get; set; }
 

@@ -3,7 +3,7 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class ProposalInfo
+    public class ProposalModel
     {
         public int Id { get; set; }
 

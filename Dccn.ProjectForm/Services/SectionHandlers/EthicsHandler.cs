@@ -7,7 +7,7 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class EthicsHandler : FormSectionHandlerBase<Ethics>
+    public class EthicsHandler : FormSectionHandlerBase<EthicsSectionModel>
     {
         public EthicsHandler(IAuthorityProvider authorityProvider) : base(authorityProvider, m => m.Ethics)
         {
@@ -15,7 +15,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Ethics};
 
-        protected override Task LoadAsync(Ethics model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(EthicsSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             if (proposal.EcApproved)
             {
@@ -23,13 +23,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 switch (proposal.EcCode)
                 {
                     case "CMO2014/288":
-                        model.ApprovalCode = Ethics.ApprovalType.Blanket;
+                        model.ApprovalCode = EthicsApprovalOptionModel.Blanket;
                         break;
                     case "CMO2012/012":
-                        model.ApprovalCode = Ethics.ApprovalType.Children;
+                        model.ApprovalCode = EthicsApprovalOptionModel.Children;
                         break;
                     default:
-                        model.ApprovalCode = Ethics.ApprovalType.Other;
+                        model.ApprovalCode = EthicsApprovalOptionModel.Other;
                         model.CustomCode = proposal.EcCode;
                         break;
                 }
@@ -43,20 +43,20 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(Ethics model, Proposal proposal)
+        protected override Task StoreAsync(EthicsSectionModel model, Proposal proposal)
         {
             if (model.Approved)
             {
                 proposal.EcApproved = true;
                 switch (model.ApprovalCode)
                 {
-                    case Ethics.ApprovalType.Blanket:
+                    case EthicsApprovalOptionModel.Blanket:
                         proposal.EcCode = "CMO2014/288";
                         break;
-                    case Ethics.ApprovalType.Children:
+                    case EthicsApprovalOptionModel.Children:
                         proposal.EcCode = "CMO2012/012";
                         break;
-                    case Ethics.ApprovalType.Other:
+                    case EthicsApprovalOptionModel.Other:
                         proposal.EcCode = model.CustomCode;
                         break;
                     default:

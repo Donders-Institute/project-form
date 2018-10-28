@@ -9,6 +9,7 @@ using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
+using Dccn.ProjectForm.Utils;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
@@ -37,13 +38,13 @@ namespace Dccn.ProjectForm.Pages
             _userManager = userManager;
         }
 
-        public NewProposalInfo NewProposal { get; set; }
+        public NewProposalModel NewProposal { get; set; }
 
         public bool IsSupervisor { get; private set; }
         public bool IsApprovalAuthority { get; private set; }
-        public ICollection<ProposalInfo> MyProposals { get; private set; }
-        public ICollection<ProposalInfo> SupervisedProposals { get; private set; }
-        public ICollection<PendingApproval> PendingApprovals { get; private set; }
+        public ICollection<ProposalModel> MyProposals { get; private set; }
+        public ICollection<ProposalModel> SupervisedProposals { get; private set; }
+        public ICollection<PendingApprovalModel> PendingApprovals { get; private set; }
 
         [UsedImplicitly]
         public async Task OnGetAsync()
@@ -72,15 +73,15 @@ namespace Dccn.ProjectForm.Pages
         }
 
         [UsedImplicitly]
-        public async Task<IActionResult> OnPostCreateAsync([FromForm(Name = nameof(NewProposal))] NewProposalInfo info)
+        public async Task<IActionResult> OnPostCreateAsync([FromForm(Name = nameof(NewProposal))] NewProposalModel model)
         {
             var ownerId = _userManager.GetUserId(User);
-            if (await _proposalsDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == info.Title))
+            if (await _proposalsDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == model.Title))
             {
                 ModelState.AddModelError(string.Empty, "A proposal with the same name already exists.");
             }
 
-            if (!await _projectsDbContext.Groups.AnyAsync(g => g.HeadId == info.SupervisorId))
+            if (!await _projectsDbContext.Groups.AnyAsync(g => g.HeadId == model.SupervisorId))
             {
                 ModelState.AddModelError(string.Empty, "The supervisor is not valid.");
             }
@@ -94,9 +95,9 @@ namespace Dccn.ProjectForm.Pages
             var proposal = new Proposal
             {
                 LastEditedBy = ownerId,
-                Title = info.Title,
+                Title = model.Title,
                 OwnerId = ownerId,
-                SupervisorId = info.SupervisorId,
+                SupervisorId = model.SupervisorId,
                 Experimenters = new List<Experimenter>
                 {
                     new Experimenter
@@ -112,7 +113,7 @@ namespace Dccn.ProjectForm.Pages
                         Role = StorageAccessRole.Manager
                     }
                 },
-                Approvals = ((ApprovalAuthorityRole[])Enum.GetValues(typeof(ApprovalAuthorityRole)))
+                Approvals = EnumUtils.GetValues<ApprovalAuthorityRole>()
                     .Select(role => new Approval()
                     {
                         AuthorityRole = role
@@ -121,11 +122,11 @@ namespace Dccn.ProjectForm.Pages
             };
 
             // Don't create duplicate entry if supervisor == owner
-            if (info.SupervisorId != ownerId)
+            if (model.SupervisorId != ownerId)
             {
                 proposal.DataAccessRules.Add(new StorageAccessRule
                 {
-                    UserId = info.SupervisorId,
+                    UserId = model.SupervisorId,
                     Role = StorageAccessRole.Viewer
                 });
             }
@@ -176,25 +177,25 @@ namespace Dccn.ProjectForm.Pages
                     .ToListAsync();
 
                 PendingApprovals = await approvalsQueryResult
-                    .Select(async a => new PendingApproval
+                    .Select(async a => new PendingApprovalModel
                     {
                         ProposalId = a.ProposalId,
                         SectionId = _sectionHandlers.FirstOrDefault(s => s.HasApprovalAuthorityRole(a.AuthorityRole))?.Id,
                         ProposalOwnerName = (await _projectsDbContext.Users.FindAsync(a.ProposalOwnerId)).DisplayName,
                         ProposalTitle = a.ProposalTitle,
-                        ApprovalRole = a.AuthorityRole
+                        Role = (ApprovalAuthorityRoleModel) a.AuthorityRole
                     })
                     .ToListAsync();
             }
 
-            NewProposal = new NewProposalInfo
+            NewProposal = new NewProposalModel
             {
                 SupervisorId = user.Group.HeadId,
                 Supervisors = supervisors
             };
         }
 
-        private async Task<ICollection<ProposalInfo>> LoadProposalsAsync(IQueryable<Proposal> query)
+        private async Task<ICollection<ProposalModel>> LoadProposalsAsync(IQueryable<Proposal> query)
         {
             var queryResult = await query
                 .Select(p => new
@@ -216,7 +217,7 @@ namespace Dccn.ProjectForm.Pages
                 .ToListAsync();
 
             return await queryResult
-                .Select(async p => new ProposalInfo
+                .Select(async p => new ProposalModel
                 {
                     Id = p.Id,
                     Title = p.Title,

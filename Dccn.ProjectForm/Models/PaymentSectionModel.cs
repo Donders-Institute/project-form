@@ -3,7 +3,7 @@
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "Subject payment")]
-    public class Payment : SectionModelBase
+    public class PaymentSectionModel : SectionModelBase
     {
         [Display(Name = "Subjects")]
         public int? SubjectCount { get; set; }

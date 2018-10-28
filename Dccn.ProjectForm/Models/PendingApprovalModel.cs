@@ -1,13 +1,15 @@
 ﻿using System.ComponentModel.DataAnnotations;
-using Dccn.ProjectForm.Data;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class PendingApproval
+    public class PendingApprovalModel
     {
         public int ProposalId { get; set; }
 
         public string SectionId { get; set; }
+
+        [Display(Name = "Section")]
+        public string SectionName { get; set; }
 
         [Display(Name = "Title")]
         public string ProposalTitle { get; set; }
@@ -16,6 +18,6 @@ namespace Dccn.ProjectForm.Models
         public string ProposalOwnerName { get; set; }
 
         [Display(Name = "Approval role")]
-        public ApprovalAuthorityRole ApprovalRole { get; set; }
+        public ApprovalAuthorityRoleModel Role { get; set; }
     }
 }

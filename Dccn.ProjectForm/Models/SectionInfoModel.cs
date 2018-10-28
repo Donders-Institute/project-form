@@ -4,7 +4,7 @@ using Dccn.ProjectForm.Pages;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class SectionInfo
+    public class SectionInfoModel
     {
         public string Id { get; set; }
         public Expression<Func<FormModel, ISectionModel>> Expression { get; set; }

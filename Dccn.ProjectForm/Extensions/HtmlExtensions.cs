@@ -8,10 +8,10 @@ namespace Dccn.ProjectForm.Extensions
 {
     public static class HtmlExtensions
     {
-        public static Task<IHtmlContent> FormSectionAsync<TModel>(this IHtmlHelper<TModel> helper, string sectionId)
+        public static Task<IHtmlContent> FormSectionAsync<TModel>(this IHtmlHelper<TModel> html, string sectionId)
         {
-            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(sectionId, helper.ViewData, helper.MetadataProvider);
-            var viewData = new ViewDataDictionary(helper.ViewData)
+            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(sectionId, html.ViewData, html.MetadataProvider);
+            var viewData = new ViewDataDictionary(html.ViewData)
             {
                 TemplateInfo =
                 {
@@ -19,7 +19,7 @@ namespace Dccn.ProjectForm.Extensions
                 }
             };
 
-            return helper.PartialAsync($"Sections/{sectionId}", modelExplorer.Model, viewData);
+            return html.PartialAsync($"Sections/{sectionId}", modelExplorer.Model, viewData);
         }
     }
 }

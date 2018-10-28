@@ -2,11 +2,11 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    public class Lab
+    public class LabModel
     {
         public int? Id { get; set; }
 
-        public Modality Modality { get; set; }
+        public ModalityModel Modality { get; set; }
 
         [DisplayName("Subjects")]
         public int? SubjectCount { get; set; }

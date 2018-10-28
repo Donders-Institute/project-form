@@ -1,11 +1,33 @@
 ﻿@page "{proposalId:int}"
 @model FormModel
-@using Dccn.ProjectForm.Data
 @using Dccn.ProjectForm.Models
+@using Dccn.ProjectForm.Utils
 @using Extensions
 
 @{
     ViewData["Title"] = Model.General.Title;
+}
+
+@functions
+{
+    static string GetApprovalStatusColorClass(ApprovalStatusModel status)
+    {
+        switch (status)
+        {
+            case ApprovalStatusModel.NotSubmitted:
+                return "secondary";
+            case ApprovalStatusModel.NotApplicable:
+                return "dark";
+            case ApprovalStatusModel.ApprovalPending:
+                return "info";
+            case ApprovalStatusModel.Approved:
+                return "success";
+            case ApprovalStatusModel.Rejected:
+                return "danger";
+            default:
+                throw new ArgumentOutOfRangeException();
+        }
+    }
 }
 
 <div class="row">
@@ -18,34 +40,12 @@
                 <a class="list-group-item list-group-item-action" href="#@Html.IdFor(sectionInfo.Expression)">
                     @Html.DisplayNameFor(sectionInfo.Expression)
                     <span class="ml-3 float-right">
-                        @foreach (var status in (ApprovalStatus[]) Enum.GetValues(typeof(ApprovalStatus)))
+                        @foreach (var status in EnumUtils.GetValues<ApprovalStatusModel>())
                         {
-                            var count = section.ApprovalInfo.Count(i => i.Status == status);
+                            var count = section.Approvals.Count(i => i.Status == status);
                             if (count > 0)
                             {
-                                string color;
-                                switch (status)
-                                {
-                                    case ApprovalStatus.NotSubmitted:
-                                        color = "secondary";
-                                        break;
-                                    case ApprovalStatus.NotApplicable:
-                                        color = "dark";
-                                        break;
-                                    case ApprovalStatus.ApprovalPending:
-                                        color = "info";
-                                        break;
-                                    case ApprovalStatus.Approved:
-                                        color = "success";
-                                        break;
-                                    case ApprovalStatus.Rejected:
-                                        color = "danger";
-                                        break;
-                                    default:
-                                        throw new ArgumentOutOfRangeException();
-                                }
-
-                                <span class="badge badge-pill badge-@(color)">@count</span>
+                                <span class="badge badge-pill badge-@GetApprovalStatusColorClass(status)">@count</span>
                             }
                         }
                     </span>
@@ -85,41 +85,16 @@
                                     })
                                 </div>
 
-                                @if (section.ApprovalInfo.Any())
+                                @if (section.Approvals.Any())
                                 {
                                     <div class="card">
                                         <div class="card-body bg-light">
                                             <h5 class="card-title">Approval status</h5>
                                             <ul class="list-group mb-3">
-                                                @foreach (var approvalInfo in section.ApprovalInfo)
+                                                @foreach (var approvalInfo in section.Approvals)
                                                 {
-                                                    string color;
-                                                    string statusText;
-                                                    switch (approvalInfo.Status)
-                                                    {
-                                                        case ApprovalStatus.NotSubmitted:
-                                                            color = "secondary";
-                                                            statusText = "Not submitted";
-                                                            break;
-                                                        case ApprovalStatus.NotApplicable:
-                                                            color = "dark";
-                                                            statusText = "Not applicable";
-                                                            break;
-                                                        case ApprovalStatus.ApprovalPending:
-                                                            color = "info";
-                                                            statusText = "Pending";
-                                                            break;
-                                                        case ApprovalStatus.Approved:
-                                                            color = "success";
-                                                            statusText = "Approved";
-                                                            break;
-                                                        case ApprovalStatus.Rejected:
-                                                            color = "danger";
-                                                            statusText = "Rejected";
-                                                            break;
-                                                        default:
-                                                            throw new ArgumentOutOfRangeException();
-                                                    }
+                                                    var status = approvalInfo.Status;
+
                                                     <li class="list-group-item">
                                                         <div class="row align-content-center">
                                                             <div class="col">
@@ -129,7 +104,7 @@
                                                                 <a href="mailto:@(approvalInfo.AuthorityEmail)">@approvalInfo.AuthorityEmail</a>
                                                             </div>
                                                             <div class="col text-right">
-                                                                <span class="badge badge-pill badge-@(color)">Status: @statusText</span>
+                                                                <span class="badge badge-pill badge-@GetApprovalStatusColorClass(status)">Status: @status.GetDisplayName()</span>
                                                             </div>
                                                         </div>
                                                     </li>

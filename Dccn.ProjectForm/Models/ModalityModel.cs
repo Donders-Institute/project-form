@@ -6,7 +6,7 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class Modality : IValidatableObject
+    public class ModalityModel : IValidatableObject
     {
         public string Id { get; set; }
 

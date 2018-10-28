@@ -19,37 +19,34 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Pages
 {
-    [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class FormModel : PageModel
     {
         private readonly IAuthorizationService _authorizationService;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly ProjectsDbContext _projectsDbContext;
-        private readonly IModalityProvider _modalityProvider;
         private readonly IUserManager _userManager;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IModalityProvider modalityProvider, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
+        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, ProjectsDbContext projectsDbContext, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _authorizationService = authorizationService;
             _proposalsDbContext = proposalsDbContext;
             _projectsDbContext = projectsDbContext;
-            _modalityProvider = modalityProvider;
             _userManager = userManager;
             _sectionHandlers = sectionHandlers;
         }
 
-        public General General { get; private set; } = new General();
-        public Funding Funding { get; private set; } = new Funding();
-        public Ethics Ethics { get; private set; } = new Ethics();
-        public Experiment Experiment { get; private set; } = new Experiment();
-        public DataManagement DataManagement { get; private set; } = new DataManagement();
-        public Privacy Privacy { get; private set; } = new Privacy();
-        public Payment Payment { get; private set; } = new Payment();
+        public GeneralSectionModel General { get; private set; } = new GeneralSectionModel();
+        public FundingSectionModel Funding { get; private set; } = new FundingSectionModel();
+        public EthicsSectionModel Ethics { get; private set; } = new EthicsSectionModel();
+        public ExperimentSectionModel Experiment { get; private set; } = new ExperimentSectionModel();
+        public DataSectionModel Data { get; private set; } = new DataSectionModel();
+        public PrivacySectionModel Privacy { get; private set; } = new PrivacySectionModel();
+        public PaymentSectionModel Payment { get; private set; } = new PaymentSectionModel();
 
         public byte[] Timestamp { get; private set; }
 
-        public ICollection<SectionInfo> SectionInfo { get; private set; }
+        public ICollection<SectionInfoModel> SectionInfo { get; private set; }
 
         [UsedImplicitly]
         public async Task<IActionResult> OnGetAsync(int proposalId)
@@ -69,13 +66,13 @@ namespace Dccn.ProjectForm.Pages
         [UsedImplicitly]
         public async Task<IActionResult> OnPostAsync(
             int proposalId,
-            [FromForm(Name = nameof(General))] General general,
-            [FromForm(Name = nameof(Funding))] Funding funding,
-            [FromForm(Name = nameof(Ethics))] Ethics ethics,
-            [FromForm(Name = nameof(Experiment))] Experiment experiment,
-            [FromForm(Name = nameof(DataManagement))] DataManagement dataManagement,
-            [FromForm(Name = nameof(Privacy))] Privacy privacy,
-            [FromForm(Name = nameof(Payment))] Payment payment,
+            [FromForm(Name = nameof(General))] GeneralSectionModel general,
+            [FromForm(Name = nameof(Funding))] FundingSectionModel funding,
+            [FromForm(Name = nameof(Ethics))] EthicsSectionModel ethics,
+            [FromForm(Name = nameof(Experiment))] ExperimentSectionModel experiment,
+            [FromForm(Name = nameof(Data))] DataSectionModel data,
+            [FromForm(Name = nameof(Privacy))] PrivacySectionModel privacy,
+            [FromForm(Name = nameof(Payment))] PaymentSectionModel payment,
             [FromForm(Name = nameof(Timestamp))] byte[] timestamp)
         {
             var (proposal, error) = await LoadProposalAsync(proposalId);
@@ -98,7 +95,7 @@ namespace Dccn.ProjectForm.Pages
             Funding = funding;
             Ethics = ethics;
             Experiment = experiment;
-            DataManagement = dataManagement;
+            Data = data;
             Privacy = privacy;
             Payment = payment;
 
@@ -173,7 +170,7 @@ namespace Dccn.ProjectForm.Pages
             var supervisor = await _projectsDbContext.Users.FindAsync(proposal.SupervisorId);
 
             SectionInfo = await _sectionHandlers
-                .Select(async h => new SectionInfo
+                .Select(async h => new SectionInfoModel
                 {
                     Model = h.GetModel(this),
                     Expression = h.ModelExpression,

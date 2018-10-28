@@ -2,7 +2,7 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    public class Login
+    public class LoginModel
     {
         [Required]
         public string UserName { get; set; }

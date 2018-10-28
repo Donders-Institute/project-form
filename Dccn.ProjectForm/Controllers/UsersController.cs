@@ -26,7 +26,7 @@ namespace Dccn.ProjectForm.Controllers
 
         [HttpGet]
         [ActionName("Query")]
-        public async Task<ActionResult<ICollection<User>>> QueryAsync([Required, MinLength(2)] string query, [Range(1, 25)] int limit = 10)
+        public async Task<ActionResult<ICollection<UserModel>>> QueryAsync([Required, MinLength(2)] string query, [Range(1, 25)] int limit = 10)
         {
             if (!ModelState.IsValid)
             {
@@ -40,7 +40,7 @@ namespace Dccn.ProjectForm.Controllers
                 .OrderBy(u => u.Index)
                 .ThenBy(u => u.User.DisplayName)
                 .Take(limit)
-                .Select(u => new User {Id = u.User.Id, Name = u.User.DisplayName})
+                .Select(u => new UserModel {Id = u.User.Id, Name = u.User.DisplayName})
                 .ToListAsync();
         }
 

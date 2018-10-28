@@ -1,6 +1,8 @@
-﻿@model Models.DataManagement
-@using Data
+﻿@model Dccn.ProjectForm.Models.DataSectionModel
 @using System.Web
+@using Dccn.ProjectForm.Extensions
+@using Dccn.ProjectForm.Models
+@using Dccn.ProjectForm.Utils
 
 @* Project storage access roles *@
 <div class="card mb-3">
@@ -67,7 +69,7 @@
                                class="custom-control-input"
                                type="radio"
                                id="preservation-repository"
-                               value="@Models.DataManagement.PreservationType.Repository"
+                               value="@DataPreservationModel.Repository"
                                data-class="radio-panel-input"
                                data-target="#preservation-repository-panel"
                                data-submit-on="change">
@@ -106,7 +108,7 @@
                                class="custom-control-input"
                                type="radio"
                                id="preservation-external"
-                               value="@Models.DataManagement.PreservationType.External"
+                               value="@DataPreservationModel.External"
                                data-class="radio-panel-input"
                                data-target="#preservation-external-panel"
                                data-submit-on="change">
@@ -160,17 +162,17 @@
             </div>
 
             <div class="col-auto btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                @foreach (var role in (StorageAccessRole[])Enum.GetValues(typeof(StorageAccessRole)))
+                @foreach (var role in EnumUtils.GetValues<StorageAccessRoleModel>())
                 {
-                    var roleName = Html.Name("AccessRules[{{:index}}].Role");
-
                     @:{{if role === @Html.Raw(HttpUtility.JavaScriptStringEncode(role.ToString(), true))}}
                     <label class="btn btn-outline-secondary active">
-                        <input type="radio" name="@roleName" autocomplete="off" value="@role" data-submit-on="change" checked> @role
+                        <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
+                               value="@role" data-submit-on="change" checked> @role.GetDisplayName()
                     </label>
                     @:{{else}}
                     <label class="btn btn-outline-secondary">
-                        <input type="radio" name="@roleName" autocomplete="off" value="@role" data-submit-on="change"> @role
+                        <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
+                               value="@role" data-submit-on="change"> @role.GetDisplayName()
                     </label>
                     @:{{/if}}
                 }

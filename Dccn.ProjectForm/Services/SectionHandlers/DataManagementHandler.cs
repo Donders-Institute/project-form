@@ -10,29 +10,29 @@ using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class DataManagementHandler : FormSectionHandlerBase<DataManagement>
+    public class DataManagementHandler : FormSectionHandlerBase<DataSectionModel>
     {
         private readonly ProjectsDbContext _projectsDbContext;
 
         public DataManagementHandler(IAuthorityProvider authorityProvider, ProjectsDbContext projectsDbContext)
-            : base(authorityProvider, m => m.DataManagement)
+            : base(authorityProvider, m => m.Data)
         {
             _projectsDbContext = projectsDbContext;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
-        protected override async Task LoadAsync(DataManagement model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override async Task LoadAsync(DataSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.StorageAccessRules = await proposal.DataAccessRules
-                .Select(async access => new DataManagement.StorageAccessRule
+                .Select(async access => new StorageAccessRuleModel
                 {
-                    User = new User
+                    User = new UserModel
                     {
                         Id = access.UserId,
                         Name = (await _projectsDbContext.Users.FirstOrDefaultAsync(u => u.Id == access.UserId)).DisplayName
                     },
-                    Role = access.Role,
+                    Role = (StorageAccessRoleModel) access.Role,
                     CanRemove = access.UserId != owner.Id && access.UserId != supervisor.Id,
                     CanEdit = access.UserId != owner.Id
                 })
@@ -40,8 +40,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             if (proposal.ExternalPreservation)
             {
-                model.Preservation = DataManagement.PreservationType.External;
-                model.ExternalPreservation = new DataManagement.ExternalPreservationType
+                model.Preservation = DataPreservationModel.External;
+                model.ExternalPreservation = new ExternalPreservationModel
                 {
                     Location = proposal.ExternalPreservationLocation,
                     SupervisorName = proposal.ExternalPreservationSupervisor,
@@ -50,7 +50,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             }
             else
             {
-                model.Preservation = DataManagement.PreservationType.Repository;
+                model.Preservation = DataPreservationModel.Repository;
             }
 
             model.OwnerId = owner.Id;
@@ -61,17 +61,17 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             await base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(DataManagement model, Proposal proposal)
+        protected override Task StoreAsync(DataSectionModel model, Proposal proposal)
         {
-            proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<DataManagement.StorageAccessRule>())
+            proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<StorageAccessRuleModel>())
                 .Select(access => new StorageAccessRule
                 {
                     UserId = access.User.Id,
-                    Role = access.Role
+                    Role = (StorageAccessRole) access.Role
                 })
                 .ToList();
 
-            if (model.Preservation == DataManagement.PreservationType.External)
+            if (model.Preservation == DataPreservationModel.External)
             {
                 proposal.ExternalPreservation = true;
                 proposal.ExternalPreservationLocation = model.ExternalPreservation.Location;

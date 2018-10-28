@@ -7,13 +7,12 @@ namespace Dccn.ProjectForm.Models
     {
         public string Comments { get; set; }
 
-        [BindNever]
-        public IEnumerable<SectionApprovalInfo> ApprovalInfo { get; set; }
+        [BindNever] public IEnumerable<SectionApprovalModel> Approvals { get; set; }
     }
 
     public interface ISectionModel
     {
         string Comments { get; set; }
-        IEnumerable<SectionApprovalInfo> ApprovalInfo { get; set; }
+        IEnumerable<SectionApprovalModel> Approvals { get; set; }
     }
 }

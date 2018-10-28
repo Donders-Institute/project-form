@@ -3,7 +3,7 @@
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "Funding")]
-    public class Funding : SectionModelBase
+    public class FundingSectionModel : SectionModelBase
     {
         [Display(Name = "Name", Description = "Name of the person responsible for the project's funding.")]
         public string ContactName { get; set; }

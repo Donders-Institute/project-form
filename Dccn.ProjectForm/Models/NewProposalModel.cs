@@ -5,7 +5,7 @@ using Microsoft.AspNetCore.Mvc.Rendering;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class NewProposalInfo
+    public class NewProposalModel
     {
         [Display(Name = "Title", Description = "The title of your project proposal.")]
         [Required(ErrorMessage = "A title is required.")]

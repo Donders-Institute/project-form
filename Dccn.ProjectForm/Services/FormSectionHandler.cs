@@ -58,16 +58,16 @@ namespace Dccn.ProjectForm.Services
         {
             model.Comments = proposal.Comments.FirstOrDefault(c => c.SectionId == ModelType.Name)?.Content;
 
-            model.ApprovalInfo = await proposal.Approvals
+            model.Approvals = await proposal.Approvals
                 .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
                 .Select(async a =>
                 {
                     var authority = await _authorityProvider.GetAuthorityAsync(proposal, a.AuthorityRole);
-                    return new SectionApprovalInfo
+                    return new SectionApprovalModel
                     {
                         AuthorityName = authority.DisplayName,
                         AuthorityEmail = authority.Email,
-                        Status = a.Status
+                        Status = (ApprovalStatusModel) a.Status
                     };
                 })
                 .ToListAsync();

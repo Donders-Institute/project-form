@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "Subject privacy")]
-    public class Privacy : SectionModelBase
+    public class PrivacySectionModel : SectionModelBase
     {
         public enum DataType
         {

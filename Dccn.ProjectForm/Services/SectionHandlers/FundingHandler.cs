@@ -6,7 +6,7 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class FundingHandler : FormSectionHandlerBase<Funding>
+    public class FundingHandler : FormSectionHandlerBase<FundingSectionModel>
     {
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Funding};
 
@@ -14,7 +14,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
         }
 
-        protected override Task LoadAsync(Funding model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
+        protected override Task LoadAsync(FundingSectionModel model, Proposal proposal, ProjectsUser owner, ProjectsUser supervisor)
         {
             model.ContactName = proposal.FundingContactName;
             model.ContactEmail = proposal.FundingContactEmail;
@@ -23,7 +23,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.LoadAsync(model, proposal, owner, supervisor);
         }
 
-        protected override Task StoreAsync(Funding model, Proposal proposal)
+        protected override Task StoreAsync(FundingSectionModel model, Proposal proposal)
         {
             proposal.FundingContactName = model.ContactName;
             proposal.FundingContactEmail = model.ContactEmail;

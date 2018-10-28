@@ -5,9 +5,8 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 namespace Dccn.ProjectForm.Models
 {
     [Display(Name = "General")]
-    public class General : SectionModelBase
+    public class GeneralSectionModel : SectionModelBase
     {
-        // TODO: localization
         [Display(Name = "Title.DisplayName", Description = "Title.Description")]
         [Required(ErrorMessage = "Title.Required.ErrorMessage")]
         [MinLength(10, ErrorMessage = "Title.MinLength.ErrorMessage")]
