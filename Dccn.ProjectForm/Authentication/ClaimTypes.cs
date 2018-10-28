@@ -1,6 +1,4 @@
-﻿using System.Security.Claims;
-
-namespace Dccn.ProjectForm.Authentication
+﻿namespace Dccn.ProjectForm.Authentication
 {
     public static class ClaimTypes
     {

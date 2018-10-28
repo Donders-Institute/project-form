@@ -13,7 +13,6 @@ using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.RazorPages;
 using Microsoft.EntityFrameworkCore;
 
@@ -36,13 +35,13 @@ namespace Dccn.ProjectForm.Pages
             _sectionHandlers = sectionHandlers;
         }
 
-        public GeneralSectionModel General { get; private set; } = new GeneralSectionModel();
-        public FundingSectionModel Funding { get; private set; } = new FundingSectionModel();
-        public EthicsSectionModel Ethics { get; private set; } = new EthicsSectionModel();
-        public ExperimentSectionModel Experiment { get; private set; } = new ExperimentSectionModel();
-        public DataSectionModel Data { get; private set; } = new DataSectionModel();
-        public PrivacySectionModel Privacy { get; private set; } = new PrivacySectionModel();
-        public PaymentSectionModel Payment { get; private set; } = new PaymentSectionModel();
+        public GeneralSectionModel General { get; } = new GeneralSectionModel();
+        public FundingSectionModel Funding { get; } = new FundingSectionModel();
+        public EthicsSectionModel Ethics { get; } = new EthicsSectionModel();
+        public ExperimentSectionModel Experiment { get; } = new ExperimentSectionModel();
+        public DataSectionModel Data { get; } = new DataSectionModel();
+        public PrivacySectionModel Privacy { get; } = new PrivacySectionModel();
+        public PaymentSectionModel Payment { get; } = new PaymentSectionModel();
 
         public byte[] Timestamp { get; private set; }
 
@@ -66,13 +65,7 @@ namespace Dccn.ProjectForm.Pages
         [UsedImplicitly]
         public async Task<IActionResult> OnPostAsync(
             int proposalId,
-            [FromForm(Name = nameof(General))] GeneralSectionModel general,
-            [FromForm(Name = nameof(Funding))] FundingSectionModel funding,
-            [FromForm(Name = nameof(Ethics))] EthicsSectionModel ethics,
-            [FromForm(Name = nameof(Experiment))] ExperimentSectionModel experiment,
-            [FromForm(Name = nameof(Data))] DataSectionModel data,
-            [FromForm(Name = nameof(Privacy))] PrivacySectionModel privacy,
-            [FromForm(Name = nameof(Payment))] PaymentSectionModel payment,
+            string sectionId,
             [FromForm(Name = nameof(Timestamp))] byte[] timestamp)
         {
             var (proposal, error) = await LoadProposalAsync(proposalId);
@@ -91,15 +84,11 @@ namespace Dccn.ProjectForm.Pages
                 return new ConflictResult();
             }
 
-            General = general;
-            Funding = funding;
-            Ethics = ethics;
-            Experiment = experiment;
-            Data = data;
-            Privacy = privacy;
-            Payment = payment;
-
-            await StoreFormAsync(proposal);
+            error = await StoreFormAsync(proposal, sectionId);
+            if (error != null)
+            {
+                return error;
+            }
 
             return new JsonResult(new
             {
@@ -136,7 +125,7 @@ namespace Dccn.ProjectForm.Pages
             return RedirectToPage(null, null, new { proposalId }, sectionId);
         }
 
-        private async Task<(Proposal Proposal, ActionResult Error)> LoadProposalAsync(int proposalId)
+        private async Task<(Proposal Proposal, IActionResult Error)> LoadProposalAsync(int proposalId)
         {
             var proposal = await _proposalsDbContext.Proposals
                 .Include(p => p.Labs)
@@ -187,33 +176,34 @@ namespace Dccn.ProjectForm.Pages
             }
         }
 
-        private async Task StoreFormAsync(Proposal proposal)
+        private async Task<IActionResult> StoreFormAsync(Proposal proposal, string sectionId = null)
         {
-            _proposalsDbContext.Proposals.Attach(proposal);
-
             foreach (var sectionHandler in _sectionHandlers)
             {
-                var sectionValid = true;
-
-                if (!ModelState.IsValid)
+                if (!string.IsNullOrEmpty(sectionId) && sectionId != sectionHandler.Id)
                 {
-                    sectionValid = ModelState
-                        .FindKeysWithPrefix(sectionHandler.Id)
-                        .Select(entry => entry.Value)
-                        .All(state => state.ValidationState == ModelValidationState.Valid);
+                    continue;
                 }
 
-                var sectionAuthorized = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler));
-                if (sectionValid && sectionAuthorized)
+                if (!await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler)))
                 {
-                    await sectionHandler.StoreAsync(this, proposal);
+                    return Forbid();
                 }
+
+                if (!await TryUpdateModelAsync(sectionHandler.GetModel(this), sectionHandler.ModelType, sectionHandler.Id))
+                {
+                    continue;
+                }
+
+                await sectionHandler.StoreAsync(this, proposal);
             }
 
             proposal.LastEditedOn = DateTime.Now;
             proposal.LastEditedBy = _userManager.GetUserId(User);
 
             await _proposalsDbContext.SaveChangesAsync();
+
+            return null;
         }
 
         private async Task<bool> AuthorizeAsync(Proposal proposal, IAuthorizationRequirement requirement)

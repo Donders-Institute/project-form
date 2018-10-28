@@ -27,16 +27,12 @@
                             <select asp-for="ApprovalCode" class="custom-select" data-class="ethics-approval" data-submit-on="change">
                                 @foreach (var option in EnumUtils.GetValues<EthicsApprovalOptionModel>())
                                 {
-                                    <!option value="@option"
+                                    <!option value="@option" selected="@(Model.ApprovalCode == option)"
                                              @{
                                                  var description = option.GetDisplayDescription();
                                                  if (description != null)
                                                  {
                                                      <text>data-description="@description"</text>
-                                                 }
-                                                 if (Model.ApprovalCode == option)
-                                                 {
-                                                     <text>selected</text>
                                                  }
                                              }>@option.GetDisplayName()</!option>
                                 }

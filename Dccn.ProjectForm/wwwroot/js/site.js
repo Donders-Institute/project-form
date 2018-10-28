@@ -80,7 +80,7 @@ jQuery(function($) {
         window.location.reload();
     });
 
-    $(document).ajaxError(function(_event, xhr, _settings, error) {
+    $(document).ajaxError(function(_event, xhr) {
         var $modal = $("#ajax-error-modal");
 
         var title = "Unknown error", message = null, status = null;

@@ -19,8 +19,12 @@ jQuery(function($) {
     function registerSubmitHandlers(root) {
         $(root).find("[data-submit-on]").each(function() {
             var $input = $(this);
+            var $form = $("#form");
+            var sectionId = $input.parents("[data-class='form-section']").prop("id");
+
             $input.on($input.data("submit-on"), function() {
-                $("#form").submit();
+                $form.data("section-id", sectionId);
+                $form.submit();
             });
         });
     }
@@ -30,7 +34,6 @@ jQuery(function($) {
         var $userlist = $("[data-class='user-items'][data-usertype='" + userType + "']");
 
         $("[data-class='user-add'][data-usertype='" + userType + "']").click(function(event) {
-
             var id = $autocomplete.data("id");
             if (!id || $userlist.find("[data-id='" + id + "']").length > 0) {
                 $autocomplete.addClass("border-danger");
@@ -75,17 +78,19 @@ jQuery(function($) {
                     });
                 }
             });
+        }
 
-//            $("[data-class='form-section']").each(function() {
-//                var $section = $(this);
-//                var count = $section.find(".is-invalid").length;
-//                var $badge = $section.find("[data-class='error-count']");
-//                if (count > 0) {
-//                    $badge.removeClass("d-none").text(count + " error(s)");
-//                } else {
-//                    $badge.addClass("d-none");
-//                }
-//            });
+        var sectionId = $form.data("section-id");
+        var $items, url;
+        if (sectionId) {
+            url = $form.attr("action").replace("__SECTION__", encodeURIComponent(sectionId));
+            $items = $form.find(":input").filter(function() {
+                var parentSectionId = $(this).parents("[data-class='form-section']").prop("id");
+                return !parentSectionId || parentSectionId === sectionId;
+            });
+        } else {
+            url = $form.attr("action").replace("__SECTION__", "");
+            $items = $form;
         }
 
         if ($form.data("recently-submitted")) {
@@ -95,8 +100,8 @@ jQuery(function($) {
         $form.data("recently-submitted", true);
         $.ajax({
             type: $form.attr("method"),
-            url: $form.attr("action"),
-            data: $form.serialize(),
+            url: url,
+            data: $items.serialize(),
             dataType: "json"
         }).done(function(result) {
             $("#timestamp").val(result.timestamp);

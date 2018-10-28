@@ -42,6 +42,11 @@
                     <span class="ml-3 float-right">
                         @foreach (var status in EnumUtils.GetValues<ApprovalStatusModel>())
                         {
+                            if (status == ApprovalStatusModel.NotApplicable)
+                            {
+                                continue;
+                            }
+
                             var count = section.Approvals.Count(i => i.Status == status);
                             if (count > 0)
                             {
@@ -56,7 +61,7 @@
     <div class="col">
         <div class="card">
             <div id="form-view" class="card-body" data-spy="scroll" data-target="#section-list" data-offset="18">
-                <form id="form" method="post">
+                <form asp-route-sectionId="__SECTION__" id="form" method="post">
                     @foreach (var sectionInfo in Model.SectionInfo)
                     {
                         var section = sectionInfo.Model;
@@ -65,7 +70,7 @@
                             <div class="card-header d-flex justify-content-between section-header">
                                 <h1 class="display-4">@Html.DisplayNameFor(sectionInfo.Expression)</h1>
                             </div>
-                            <fieldset class="card-body" @{if (!sectionInfo.CanEdit) { <text>disabled</text> }}>
+                            <fieldset class="card-body" disabled="@(!sectionInfo.CanEdit)">
                                 @* <h5 class="card-title">@Html.DisplayFor(_ => section.DisplayName)</h5> *@
                                 @* <h6 class="card-subtitle mb-4 text-muted">Card subtitle</h6> *@
                                 <p class="card-text">@Html.DisplayNameFor(sectionInfo.Expression)</p>

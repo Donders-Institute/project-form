@@ -6,7 +6,6 @@ namespace Dccn.ProjectForm.Models
     public class SectionModelBase : ISectionModel
     {
         public string Comments { get; set; }
-
         [BindNever] public IEnumerable<SectionApprovalModel> Approvals { get; set; }
     }
 
