@@ -33,12 +33,10 @@
 <div class="row">
     <div class="col-auto d-none d-lg-block">
         <div id="section-list" class="list-group">
-            @foreach (var sectionInfo in Model.SectionInfo)
+            @foreach (var section in Model.Sections)
             {
-                var section = sectionInfo.Model;
-
-                <a class="list-group-item list-group-item-action" href="#@Html.Id(sectionInfo.Id)">
-                    @Html.DisplayName(sectionInfo.Id)
+                <a class="list-group-item list-group-item-action" href="#@Html.Id(section.Id)">
+                    @Html.DisplayName(section.Id)
                     <span class="ml-3 float-right">
                         @foreach (var status in EnumUtils.GetValues<ApprovalStatusModel>())
                         {
@@ -62,29 +60,27 @@
         <div class="card">
             <div id="form-view" class="card-body" data-spy="scroll" data-target="#section-list" data-offset="18">
                 <form asp-route-sectionId="__SECTION__" id="form" method="post">
-                    @foreach (var sectionInfo in Model.SectionInfo)
+                    @foreach (var section in Model.Sections)
                     {
-                        var section = sectionInfo.Model;
-
-                        <div class="card mb-3 form-section" id="@Html.Id(sectionInfo.Id)">
+                        <div class="card mb-3 form-section" id="@Html.Id(section.Id)">
                             <div class="card-header d-flex justify-content-between section-header">
-                                <h1 class="display-4">@Html.DisplayName(sectionInfo.Id)</h1>
+                                <h1 class="display-4">@Html.DisplayName(section.Id)</h1>
                             </div>
-                            <fieldset class="card-body" disabled="@(!sectionInfo.CanEdit)">
+                            <fieldset class="card-body" disabled="@(!section.CanEdit)">
                                 @* <h5 class="card-title">@Html.DisplayFor(_ => section.DisplayName)</h5> *@
                                 @* <h6 class="card-subtitle mb-4 text-muted">Card subtitle</h6> *@
-                                <p class="card-text">@Html.DisplayName(sectionInfo.Id)</p>
-                                @await Html.FormSectionAsync(sectionInfo.Id)
+                                <p class="card-text">@Html.DisplayName(section.Id)</p>
+                                @await Html.FormSectionAsync(section)
                             </fieldset>
                             <div class="card-footer">
                                 <div class="form-group">
                                     @{
-                                        var comments = sectionInfo.Id + "." + nameof(ISectionModel.Comments);
+                                        var comments = section.Id + "." + nameof(ISectionModel.Comments);
                                         const string @class = "form-control form-control-sm";
                                         const string placeholder = "Leave a comment here if something in this section requires extra explanation.";
                                     }
                                     @Html.Label(comments)
-                                    @if (sectionInfo.CanEdit)
+                                    @if (section.CanEdit)
                                     {
                                         @Html.TextArea(comments, section.Comments, 3, 0, new
                                         {
@@ -98,7 +94,6 @@
                                             @class, placeholder, disabled = (object) null, data_submit_on = "change"
                                         })
                                     }
-
                                 </div>
 
                                 @if (section.Approvals.Any())
@@ -128,16 +123,16 @@
                                                     </li>
                                                 }
                                             </ul>
-                                            @if (sectionInfo.CanSubmit)
+                                            @if (section.CanSubmit)
                                             {
-                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@sectionInfo.Id">
+                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@(section.Id)">
                                                     <i class="far fa-thumbs-up"></i>
                                                     Submit for approval
                                                 </a>
                                             }
-                                            @if (sectionInfo.CanApprove)
+                                            @if (section.CanApprove)
                                             {
-                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@sectionInfo.Id">
+                                                <a class="btn btn-primary float-right" href="#" role="button" data-toggle="modal" data-target="#request-approval-modal" data-section="@(section.Id)">
                                                     <i class="far fa-thumbs-up"></i>
                                                     Submit for approval
                                                 </a>

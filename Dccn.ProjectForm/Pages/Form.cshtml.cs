@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Diagnostics;
 using System.Linq;
 using System.Net.Mail;
 using System.Threading.Tasks;
@@ -9,7 +8,6 @@ using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Email.Models;
-using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
@@ -47,7 +45,7 @@ namespace Dccn.ProjectForm.Pages
         public PrivacySectionModel Privacy { get; } = new PrivacySectionModel();
         public PaymentSectionModel Payment { get; } = new PaymentSectionModel();
 
-        public ICollection<SectionInfoModel> SectionInfo { get; private set; }
+        public ICollection<ISectionModel> Sections { get; private set; }
 
         [BindProperty]
         [Required]
@@ -180,20 +178,16 @@ namespace Dccn.ProjectForm.Pages
 
         private async Task LoadFormAsync(Proposal proposal)
         {
-            SectionInfo = await _sectionHandlers
-                .Select(async h => new SectionInfoModel
-                {
-                    Model = h.GetModel(this),
-                    Id = h.Id,
-                    CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(h)),
-                    CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(h)),
-                    CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(h))
-                })
-                .ToListAsync();
+            Sections = _sectionHandlers.Select(h => h.GetModel(this)).ToList();
 
             foreach (var sectionHandler in _sectionHandlers)
             {
                 await sectionHandler.LoadAsync(this, proposal);
+
+                var model = sectionHandler.GetModel(this);
+                model.CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler));
+                model.CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(sectionHandler));
+                model.CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler));
             }
         }
 

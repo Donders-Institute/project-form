@@ -21,21 +21,20 @@ namespace Dccn.ProjectForm.Services
         private readonly ModelMetadata _metadata;
         private readonly Func<FormModel, TModel> _compiledExpr;
 
-        protected FormSectionHandlerBase(IServiceProvider serviceProvider,
-            Expression<Func<FormModel, TModel>> expression)
+        protected FormSectionHandlerBase(IServiceProvider serviceProvider, Expression<Func<FormModel, TModel>> expression)
         {
             _authorityProvider = serviceProvider.GetService<IAuthorityProvider>();
             _compiledExpr = expression.Compile();
-            var id = ExpressionHelper.GetExpressionText(expression); // Note: this is an internal function
 
             var metadataProvider = serviceProvider.GetService<IModelMetadataProvider>();
+            var id = ExpressionHelper.GetExpressionText(expression);
             _metadata = metadataProvider.GetMetadataForProperty(typeof(FormModel), id);
         }
 
         public string Id => _metadata.Name;
         public string DisplayName => _metadata.DisplayName;
         public Type ModelType => _metadata.ModelType;
-        // public Type ModelType => typeof(TModel);
+
         protected abstract IEnumerable<ApprovalAuthorityRole> ApprovalRoles { get; }
 
         public ISectionModel GetModel(FormModel form)
@@ -67,7 +66,9 @@ namespace Dccn.ProjectForm.Services
 
         protected virtual async Task LoadAsync(TModel model, Proposal proposal)
         {
-            model.Comments = proposal.Comments.FirstOrDefault(c => c.SectionId == ModelType.Name)?.Content;
+            model.Id = Id;
+
+            model.Comments = proposal.Comments.FirstOrDefault(c => c.SectionId == Id)?.Content;
 
             model.Approvals = await proposal.Approvals
                 .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
@@ -86,7 +87,7 @@ namespace Dccn.ProjectForm.Services
 
         protected virtual Task StoreAsync(TModel model, Proposal proposal)
         {
-            var comment = proposal.Comments.FirstOrDefault(c => c.SectionId == ModelType.Name);
+            var comment = proposal.Comments.FirstOrDefault(c => c.SectionId == Id);
             if (comment != null)
             {
                 if (string.IsNullOrWhiteSpace(model.Comments))
@@ -102,7 +103,7 @@ namespace Dccn.ProjectForm.Services
             {
                 proposal.Comments.Add(new Comment
                 {
-                    SectionId = ModelType.Name,
+                    SectionId = Id,
                     Content = model.Comments
                 });
             }

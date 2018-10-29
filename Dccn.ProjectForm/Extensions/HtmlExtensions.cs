@@ -1,25 +1,24 @@
 ﻿using System.Threading.Tasks;
+using Dccn.ProjectForm.Models;
 using Microsoft.AspNetCore.Html;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.AspNetCore.Mvc.ViewFeatures;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 
 namespace Dccn.ProjectForm.Extensions
 {
     public static class HtmlExtensions
     {
-        public static Task<IHtmlContent> FormSectionAsync<TModel>(this IHtmlHelper<TModel> html, string sectionId)
+        public static Task<IHtmlContent> FormSectionAsync<TModel>(this IHtmlHelper<TModel> html, ISectionModel section)
         {
-            var modelExplorer = ExpressionMetadataProvider.FromStringExpression(sectionId, html.ViewData, html.MetadataProvider);
             var viewData = new ViewDataDictionary(html.ViewData)
             {
                 TemplateInfo =
                 {
-                    HtmlFieldPrefix = sectionId
+                    HtmlFieldPrefix = section.Id
                 }
             };
 
-            return html.PartialAsync($"Sections/{sectionId}", modelExplorer.Model, viewData);
+            return html.PartialAsync($"Sections/{section.Id}", section, viewData);
         }
     }
 }

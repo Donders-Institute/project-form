@@ -5,7 +5,6 @@ using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
