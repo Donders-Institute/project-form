@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
@@ -8,7 +9,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class PaymentHandler : FormSectionHandlerBase<PaymentSectionModel>
     {
-        public PaymentHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.Payment)
+        public PaymentHandler(IServiceProvider serviceProvider)
+            : base(serviceProvider, m => m.Payment)
         {
         }
 

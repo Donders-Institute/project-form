@@ -38,13 +38,13 @@ namespace Dccn.ProjectForm.Tests
         [Fact]
         public async Task SendEmail()
         {
-            await _service.SendEmailAsync(new Model
+            await _service.SendEmailAsync(null, new Model
             {
                 Subject = "Test",
                 Recipient = new MailAddress("j.neutelings@donders.ru.nl", "Jascha Neutelings"),
                 Foo = "foo",
                 Bar = "BAR"
-            }, null);
+            });
         }
 
         public class Model : EmailModelBase

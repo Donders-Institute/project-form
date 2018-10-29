@@ -37,8 +37,8 @@
             {
                 var section = sectionInfo.Model;
 
-                <a class="list-group-item list-group-item-action" href="#@Html.IdFor(sectionInfo.Expression)">
-                    @Html.DisplayNameFor(sectionInfo.Expression)
+                <a class="list-group-item list-group-item-action" href="#@Html.Id(sectionInfo.Id)">
+                    @Html.DisplayName(sectionInfo.Id)
                     <span class="ml-3 float-right">
                         @foreach (var status in EnumUtils.GetValues<ApprovalStatusModel>())
                         {
@@ -66,14 +66,14 @@
                     {
                         var section = sectionInfo.Model;
 
-                        <div class="card mb-3 form-section" id="@Html.IdFor(sectionInfo.Expression)">
+                        <div class="card mb-3 form-section" id="@Html.Id(sectionInfo.Id)">
                             <div class="card-header d-flex justify-content-between section-header">
-                                <h1 class="display-4">@Html.DisplayNameFor(sectionInfo.Expression)</h1>
+                                <h1 class="display-4">@Html.DisplayName(sectionInfo.Id)</h1>
                             </div>
                             <fieldset class="card-body" disabled="@(!sectionInfo.CanEdit)">
                                 @* <h5 class="card-title">@Html.DisplayFor(_ => section.DisplayName)</h5> *@
                                 @* <h6 class="card-subtitle mb-4 text-muted">Card subtitle</h6> *@
-                                <p class="card-text">@Html.DisplayNameFor(sectionInfo.Expression)</p>
+                                <p class="card-text">@Html.DisplayName(sectionInfo.Id)</p>
                                 @await Html.FormSectionAsync(sectionInfo.Id)
                             </fieldset>
                             <div class="card-footer">
@@ -120,7 +120,9 @@
                                                                 <a href="mailto:@(approvalInfo.AuthorityEmail)">@approvalInfo.AuthorityEmail</a>
                                                             </div>
                                                             <div class="col text-right">
-                                                                <span class="badge badge-pill badge-@GetApprovalStatusColorClass(status)">Status: @status.GetDisplayName()</span>
+                                                                <span class="badge badge-pill badge-@GetApprovalStatusColorClass(status)">
+                                                                    Status: @status.GetDisplayName()
+                                                                </span>
                                                             </div>
                                                         </div>
                                                     </li>
@@ -146,7 +148,7 @@
                             </div>
                         </div>
                     }
-                    <input asp-for="Timestamp" id="timestamp" type="hidden">
+                    <input asp-for="Timestamp" class="timestamp" type="hidden">
                 </form>
             </div>
         </div>
@@ -166,7 +168,8 @@
                 Are you sure you want to submit this section for approval?
             </div>
             <div class="modal-footer">
-                <form method="post" data-url="@Url.Page(null, "RequestApproval", new { section = "__SECTION__" })">
+                <form method="post" data-url="@Url.Page(null, "RequestApproval", new {sectionId = "__SECTION__"})">
+                    <input asp-for="Timestamp" class="timestamp" type="hidden">
                     <button class="btn btn-primary float-right" type="submit">Submit</button>
                 </form>
                 <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>

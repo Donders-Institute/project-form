@@ -13,8 +13,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         private readonly IUserManager _userManager;
 
-        public DataManagementHandler(IAuthorityProvider authorityProvider, IUserManager userManager)
-            : base(authorityProvider, m => m.Data)
+        public DataManagementHandler(IServiceProvider serviceProvider, IUserManager userManager)
+            : base(serviceProvider, m => m.Data)
         {
             _userManager = userManager;
         }
@@ -27,18 +27,15 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
 
             model.StorageAccessRules = await proposal.DataAccessRules
-                .Select(async access => new StorageAccessRuleModel
+                .Select(async rule => new StorageAccessRuleModel
                 {
-                    User = new UserModel
-                    {
-                        Id = access.UserId,
-                        Name = (await _userManager.GetUserByIdAsync(access.UserId)).DisplayName
-                    },
-                    Role = (StorageAccessRoleModel) access.Role,
-                    CanRemove = access.UserId != owner.Id && access.UserId != supervisor.Id,
-                    CanEdit = access.UserId != owner.Id
+                    Id = rule.UserId,
+                    Name = (await _userManager.GetUserByIdAsync(rule.UserId)).DisplayName,
+                    Role = (StorageAccessRoleModel) rule.Role,
+                    CanRemove = rule.UserId != owner.Id && rule.UserId != supervisor.Id,
+                    CanEdit = rule.UserId != owner.Id
                 })
-                .ToDictionaryAsync(_ => Guid.NewGuid());
+                .ToDictionaryAsync(rule => rule.Id);
 
             if (proposal.ExternalPreservation)
             {
@@ -66,10 +63,10 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         protected override Task StoreAsync(DataSectionModel model, Proposal proposal)
         {
             proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<StorageAccessRuleModel>())
-                .Select(access => new StorageAccessRule
+                .Select(rule => new StorageAccessRule
                 {
-                    UserId = access.User.Id,
-                    Role = (StorageAccessRole) access.Role
+                    UserId = rule.Id,
+                    Role = (StorageAccessRole) rule.Role
                 })
                 .ToList();
 

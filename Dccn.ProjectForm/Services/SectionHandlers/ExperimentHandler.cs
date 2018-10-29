@@ -14,8 +14,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         private readonly IUserManager _userManager;
         private readonly IModalityProvider _modalityProvider;
 
-        public ExperimentHandler(IAuthorityProvider authorityProvider, IUserManager userManager, IModalityProvider modalityProvider)
-            : base(authorityProvider, m => m.Experiment)
+        public ExperimentHandler(IServiceProvider serviceProvider, IUserManager userManager, IModalityProvider modalityProvider)
+            : base(serviceProvider, m => m.Experiment)
         {
             _userManager = userManager;
             _modalityProvider = modalityProvider;
@@ -32,7 +32,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             model.EndDate = proposal.EndDate;
 
             model.Labs = proposal.Labs
-                .Select(lab => new Models.LabModel
+                .Select(lab => new LabModel
                 {
                     Id = lab.Id,
                     Modality = _modalityProvider[lab.Modality],
@@ -60,7 +60,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     Id = experimenter.UserId,
                     Name = (await _userManager.GetUserByIdAsync(experimenter.UserId)).DisplayName
                 })
-                .ToDictionaryAsync(_ => Guid.NewGuid());
+                .ToDictionaryAsync(experimenter => experimenter.Id);
 
             await base.LoadAsync(model, proposal);
         }
@@ -70,8 +70,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
 
-            proposal.Labs = (model.Labs?.Values ?? Enumerable.Empty<Models.LabModel>())
-                .Select(lab => new Data.Lab
+            proposal.Labs = (model.Labs?.Values ?? Enumerable.Empty<LabModel>())
+                .Select(lab => new Lab
                 {
                     // FIXME: causes DELETE + INSERT instead of UPDATE
                     // Id = lab.Id.GetValueOrDefault(),
@@ -106,7 +106,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             return base.StoreAsync(model, proposal);
         }
 
-        protected override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
+        public override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
             var hasAnyMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
             var hasAnyNonMri = proposal.Labs.Any(l => !_modalityProvider[l.Modality].IsMri);

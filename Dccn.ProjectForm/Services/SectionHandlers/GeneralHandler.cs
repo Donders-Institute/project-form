@@ -1,9 +1,11 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
@@ -11,7 +13,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         private readonly IUserManager _userManager;
 
-        public GeneralHandler(IAuthorityProvider authorityProvider, IUserManager userManager): base(authorityProvider, m => m.General)
+        public GeneralHandler(IServiceProvider serviceProvider, IUserManager userManager)
+            : base(serviceProvider,  m => m.General)
         {
             _userManager = userManager;
         }

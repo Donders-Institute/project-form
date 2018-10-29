@@ -8,7 +8,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class EthicsHandler : FormSectionHandlerBase<EthicsSectionModel>
     {
-        public EthicsHandler(IAuthorityProvider authorityProvider) : base(authorityProvider, m => m.Ethics)
+        public EthicsHandler(IServiceProvider serviceProvider) : base(serviceProvider, m => m.Ethics)
         {
         }
 

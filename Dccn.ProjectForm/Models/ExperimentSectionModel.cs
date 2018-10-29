@@ -28,7 +28,7 @@ namespace Dccn.ProjectForm.Models
         public IDictionary<Guid, LabModel> Labs { get; set; }
 
         [Display(Name ="Experimenters")]
-        public IDictionary<Guid, UserModel> Experimenters { get; set; }
+        public IDictionary<string, UserModel> Experimenters { get; set; }
 
         public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
         {

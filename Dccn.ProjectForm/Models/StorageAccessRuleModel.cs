@@ -2,9 +2,8 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    public class StorageAccessRuleModel
+    public class StorageAccessRuleModel : UserModel
     {
-        public UserModel User { get; set; }
         public StorageAccessRoleModel Role { get; set; }
         [BindNever] public bool CanEdit { get; set; }
         [BindNever] public bool CanRemove { get; set; }

@@ -1,11 +1,14 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Diagnostics;
 using System.Linq;
+using System.Net.Mail;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
+using Dccn.ProjectForm.Email.Models;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
@@ -19,17 +22,21 @@ namespace Dccn.ProjectForm.Pages
 {
     public class FormModel : PageModel
     {
-        private readonly IAuthorizationService _authorizationService;
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly IUserManager _userManager;
+        private readonly IAuthorizationService _authorizationService;
+        private readonly IEmailService _emailService;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
+        private readonly IAuthorityProvider _authorityProvider;
 
-        public FormModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
+        public FormModel(ProposalsDbContext proposalsDbContext, IUserManager userManager, IAuthorizationService authorizationService, IEmailService emailService, IEnumerable<IFormSectionHandler> sectionHandlers, IAuthorityProvider authorityProvider)
         {
-            _authorizationService = authorizationService;
             _proposalsDbContext = proposalsDbContext;
             _userManager = userManager;
+            _authorizationService = authorizationService;
+            _emailService = emailService;
             _sectionHandlers = sectionHandlers;
+            _authorityProvider = authorityProvider;
         }
 
         public GeneralSectionModel General { get; } = new GeneralSectionModel();
@@ -40,9 +47,11 @@ namespace Dccn.ProjectForm.Pages
         public PrivacySectionModel Privacy { get; } = new PrivacySectionModel();
         public PaymentSectionModel Payment { get; } = new PaymentSectionModel();
 
-        public byte[] Timestamp { get; private set; }
-
         public ICollection<SectionInfoModel> SectionInfo { get; private set; }
+
+        [BindProperty]
+        [Required]
+        public byte[] Timestamp { get; private set; }
 
         [UsedImplicitly]
         public async Task<IActionResult> OnGetAsync(int proposalId)
@@ -53,32 +62,22 @@ namespace Dccn.ProjectForm.Pages
                 return error;
             }
 
-            Timestamp = proposal.Timestamp;
-
             await LoadFormAsync(proposal);
             return Page();
         }
 
         [UsedImplicitly]
-        public async Task<IActionResult> OnPostAsync(
-            int proposalId,
-            string sectionId,
-            [FromForm(Name = nameof(Timestamp))] byte[] timestamp)
+        public async Task<IActionResult> OnPostAsync(int proposalId, string sectionId)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var (proposal, error) = await LoadProposalAsync(proposalId);
             if (proposal == null)
             {
                 return error;
-            }
-
-            if (timestamp == null)
-            {
-                return BadRequest();
-            }
-
-            if (!proposal.Timestamp.SequenceEqual(timestamp))
-            {
-                return new ConflictResult();
             }
 
             error = await StoreFormAsync(proposal, sectionId);
@@ -94,8 +93,13 @@ namespace Dccn.ProjectForm.Pages
             });
         }
 
-        public async Task<IActionResult> OnPostRequestApprovalAsync(int proposalId, [Required][FromQuery(Name = "section")] string sectionId)
+        public async Task<IActionResult> OnPostRequestApprovalAsync(int proposalId, [Required] string sectionId)
         {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
             var (proposal, error) = await LoadProposalAsync(proposalId);
             if (proposal == null)
             {
@@ -114,10 +118,27 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            if (sectionHandler.RequestApproval(proposal))
+            foreach (var approval in sectionHandler.GetAssociatedApprovals(proposal))
             {
-                await _proposalsDbContext.SaveChangesAsync();
+                if (sectionHandler.IsAuthorityApplicable(proposal, approval.AuthorityRole))
+                {
+                    var authority = await _authorityProvider.GetAuthorityAsync(proposal, approval.AuthorityRole);
+                    await _emailService.SendEmailAsync(User, new ApprovalRequest
+                    {
+                        Applicant = _userManager.GetUserName(User),
+                        ProposalTitle = proposal.Title,
+                        SectionName = sectionHandler.DisplayName,
+                        Recipient = new MailAddress(authority.Email, authority.DisplayName),
+                    });
+                    approval.Status = ApprovalStatus.ApprovalPending;
+                }
+                else
+                {
+                    approval.Status = ApprovalStatus.NotApplicable;
+                }
             }
+
+            await _proposalsDbContext.SaveChangesAsync();
 
             return RedirectToPage(null, null, new { proposalId }, sectionId);
         }
@@ -137,17 +158,24 @@ namespace Dccn.ProjectForm.Pages
                 return (null, NotFound());
             }
 
-            if (await AuthorizeAsync(proposal, FormOperation.View))
+            if (!User.Identity.IsAuthenticated)
             {
-                return (proposal, null);
+                return (null, Challenge());
             }
 
-            if (User.Identity.IsAuthenticated)
+            if (!await AuthorizeAsync(proposal, FormOperation.View))
             {
                 return (null, Forbid());
             }
 
-            return (null, Challenge());
+            if (Timestamp != null && !proposal.Timestamp.SequenceEqual(Timestamp))
+            {
+                return (null, new ConflictResult());
+            }
+
+            Timestamp = proposal.Timestamp;
+
+            return (proposal, null);
         }
 
         private async Task LoadFormAsync(Proposal proposal)
@@ -156,11 +184,10 @@ namespace Dccn.ProjectForm.Pages
                 .Select(async h => new SectionInfoModel
                 {
                     Model = h.GetModel(this),
-                    Expression = h.ModelExpression,
                     Id = h.Id,
                     CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(h)),
                     CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(h)),
-                    CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(h)),
+                    CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(h))
                 })
                 .ToListAsync();
 

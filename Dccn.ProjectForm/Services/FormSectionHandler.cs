@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -8,6 +9,7 @@ using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
 using Dccn.ProjectForm.Services.SectionHandlers;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -16,20 +18,25 @@ namespace Dccn.ProjectForm.Services
     public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler where TModel : ISectionModel
     {
         private readonly IAuthorityProvider _authorityProvider;
+        private readonly ModelMetadata _metadata;
         private readonly Func<FormModel, TModel> _compiledExpr;
 
-        protected FormSectionHandlerBase(IAuthorityProvider authorityProvider, Expression<Func<FormModel, TModel>> expression)
+        protected FormSectionHandlerBase(IServiceProvider serviceProvider,
+            Expression<Func<FormModel, TModel>> expression)
         {
-            _authorityProvider = authorityProvider;
+            _authorityProvider = serviceProvider.GetService<IAuthorityProvider>();
             _compiledExpr = expression.Compile();
-            ModelExpression = expression.UpcastFuncResult<FormModel, TModel, ISectionModel>();
-            Id = ExpressionHelper.GetExpressionText(ModelExpression); // Note: this is an internal function
+            var id = ExpressionHelper.GetExpressionText(expression); // Note: this is an internal function
+
+            var metadataProvider = serviceProvider.GetService<IModelMetadataProvider>();
+            _metadata = metadataProvider.GetMetadataForProperty(typeof(FormModel), id);
         }
 
-        public string Id { get; }
-        public Type ModelType => typeof(TModel);
+        public string Id => _metadata.Name;
+        public string DisplayName => _metadata.DisplayName;
+        public Type ModelType => _metadata.ModelType;
+        // public Type ModelType => typeof(TModel);
         protected abstract IEnumerable<ApprovalAuthorityRole> ApprovalRoles { get; }
-        public Expression<Func<FormModel, ISectionModel>> ModelExpression { get; }
 
         public ISectionModel GetModel(FormModel form)
         {
@@ -48,7 +55,12 @@ namespace Dccn.ProjectForm.Services
             return ApprovalRoles.Contains(role);
         }
 
-        protected virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
+        public virtual IEnumerable<Task<ValidationResult>> ValidateProposalAsync(Proposal proposal)
+        {
+            return Enumerable.Empty<Task<ValidationResult>>();
+        }
+
+        public virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
             return true;
         }
@@ -109,44 +121,23 @@ namespace Dccn.ProjectForm.Services
             var section = _compiledExpr(form);
             return section == null ? Task.CompletedTask : StoreAsync(section, proposal);
         }
-
-        public bool RequestApproval(Proposal proposal)
-        {
-            var statusChanged = false;
-
-            foreach (var approval in GetAssociatedApprovals(proposal))
-            {
-                var oldStatus = approval.Status;
-                if (approval.Status == ApprovalStatus.NotSubmitted
-                    || approval.Status == ApprovalStatus.NotApplicable
-                    || approval.Status == ApprovalStatus.Rejected)
-                {
-                    approval.Status = IsAuthorityApplicable(proposal, approval.AuthorityRole)
-                        ? ApprovalStatus.ApprovalPending
-                        : ApprovalStatus.NotApplicable;
-                }
-
-                statusChanged = statusChanged || oldStatus != approval.Status;
-            }
-
-            return statusChanged;
-        }
     }
 
     public interface IFormSectionHandler
     {
         string Id { get; }
         Type ModelType { get; }
-        Expression<Func<FormModel, ISectionModel>> ModelExpression { get; }
+        string DisplayName { get; }
 
         ISectionModel GetModel(FormModel form);
         ICollection<Approval> GetAssociatedApprovals(Proposal proposal);
         bool HasApprovalAuthorityRole(ApprovalAuthorityRole role);
 
+        IEnumerable<Task<ValidationResult>> ValidateProposalAsync(Proposal proposal);
         Task LoadAsync(FormModel form, Proposal proposal);
         Task StoreAsync(FormModel form, Proposal proposal);
 
-        bool RequestApproval(Proposal proposal);
+        bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole);
     }
 
     public static class FormSectionHandlerExtensions

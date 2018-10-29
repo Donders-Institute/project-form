@@ -32,7 +32,7 @@ namespace Dccn.ProjectForm.Services
             }
             catch (Exception e)
             {
-                await emailService.SendEmailAsync(new ExceptionReport
+                await emailService.SendEmailAsync(httpContext.User, new ExceptionReport
                 {
                     Recipient = _recipient,
 
@@ -42,7 +42,7 @@ namespace Dccn.ProjectForm.Services
                     UserId = userManager.GetUserId(httpContext.User),
                     ErrorMessage = e.Message,
                     StackTrace = e.StackTrace
-                }, httpContext.User);
+                });
 
                 throw;
             }

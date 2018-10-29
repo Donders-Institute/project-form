@@ -43,7 +43,7 @@ namespace Dccn.ProjectForm.Services
             _overrideRecipient = options.OverrideRecipient;
         }
 
-        public async Task SendEmailAsync(IEmailModel email, ClaimsPrincipal user)
+        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email)
         {
             MailAddress recipientOverride = null;
             if (_overrideRecipient)
@@ -86,7 +86,7 @@ namespace Dccn.ProjectForm.Services
 
     public interface IEmailService
     {
-        Task SendEmailAsync(IEmailModel email, ClaimsPrincipal user);
+        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email);
     }
 
     public static class EmailServiceExtensions

@@ -42,7 +42,7 @@ jQuery(function($) {
             }
 
             $userlist.append(createItem(Object.assign({
-                index: generateUniqueIndex(),
+                index: id,
                 id: id,
                 name: $autocomplete.autocomplete("val")
             }, itemDefaults)));
@@ -104,7 +104,7 @@ jQuery(function($) {
             data: $items.serialize(),
             dataType: "json"
         }).done(function(result) {
-            $("#timestamp").val(result.timestamp);
+            $(".timestamp").val(result.timestamp);
             updateErrors(result.errors);
         }).always(function() {
             setTimeout(function() {

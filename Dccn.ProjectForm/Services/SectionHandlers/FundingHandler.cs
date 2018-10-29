@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
@@ -9,7 +10,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     {
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Funding};
 
-        public FundingHandler(IAuthorityProvider authorityProvider): base(authorityProvider, m => m.Funding)
+        public FundingHandler(IServiceProvider serviceProvider): base(serviceProvider, m => m.Funding)
         {
         }
 
