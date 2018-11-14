@@ -2,8 +2,12 @@
   <PropertyGroup>
     <TargetFramework>netcoreapp2.1</TargetFramework>
     <UserSecretsId>e3383948-e7ec-44df-aba7-ef5ac40ee097</UserSecretsId>
+    <StartupObject></StartupObject>
+    <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
+    <PackageReference Include="FluentValidation" Version="8.0.100" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="8.0.100" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
 
     <PackageReference Include="Handlebars.Net" Version="1.9.5" />

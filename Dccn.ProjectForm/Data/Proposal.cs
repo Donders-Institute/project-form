@@ -54,7 +54,7 @@ namespace Dccn.ProjectForm.Data
         public string ExternalPreservationSupervisor { get; set; }
         public string ExternalPreservationReference { get; set; }
 
-        public ICollection<StorageAccessRule> DataAccessRules { get; set; }
+        public ICollection<StorageAccessRule> StorageAccessRules { get; set; }
         #endregion
 
         #region Privacy

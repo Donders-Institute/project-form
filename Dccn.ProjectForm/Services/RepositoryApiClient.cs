@@ -4,7 +4,7 @@ using System.Net.Http;
 using System.Runtime.Serialization;
 using System.Threading.Tasks;
 using System.Web;
-using Dccn.ProjectForm.Data.Repository;
+using Dccn.ProjectForm.DataTransferObjects;
 using JetBrains.Annotations;
 
 namespace Dccn.ProjectForm.Services
@@ -19,14 +19,14 @@ namespace Dccn.ProjectForm.Services
             _client = client;
         }
 
-        public async Task<RepositoryUser> FindUserByEmailAddressAsync(string email)
+        public async Task<RepositoryUserDto> FindUserByEmailAddressAsync(string email)
         {
             var uri = $"users/query?email={HttpUtility.UrlEncode(email)}&detail";
 
             var response = await _client.GetAsync(uri);
             response.EnsureSuccessStatusCode();
 
-            var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUser[]>>();
+            var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUserDto[]>>();
             if (!result.Success)
             {
                 throw new ApplicationException($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
@@ -52,6 +52,6 @@ namespace Dccn.ProjectForm.Services
 
     public interface IRepositoryApiClient
     {
-        Task<RepositoryUser> FindUserByEmailAddressAsync(string email);
+        Task<RepositoryUserDto> FindUserByEmailAddressAsync(string email);
     }
 }

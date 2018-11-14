@@ -6,6 +6,6 @@ jQuery(function($) {
         var id = $button.data("proposal-id");
 
         var $form = $(this).find("form");
-        $form.prop("action", $form.data("url").replace("__ID__", encodeURIComponent(id)));
+        $form.prop("action", $form.data("url").replace(/__ID__/g, encodeURIComponent(id)));
     });
 });

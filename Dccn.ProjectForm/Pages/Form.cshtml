@@ -163,7 +163,7 @@
                 Are you sure you want to submit this section for approval?
             </div>
             <div class="modal-footer">
-                <form method="post" data-url="@Url.Page(null, "RequestApproval", new {sectionId = "__SECTION__"})">
+                <form method="post" data-url="@Url.Page(null, "RequestApproval", new {sectionId = "__SECTION__"}, null, null, "__SECTION__")">
                     <input asp-for="Timestamp" class="timestamp" type="hidden">
                     <button class="btn btn-primary float-right" type="submit">Submit</button>
                 </form>

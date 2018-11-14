@@ -91,6 +91,7 @@ namespace Dccn.ProjectForm.Pages
             });
         }
 
+        [UsedImplicitly]
         public async Task<IActionResult> OnPostRequestApprovalAsync(int proposalId, [Required] string sectionId)
         {
             if (!ModelState.IsValid)
@@ -111,9 +112,15 @@ namespace Dccn.ProjectForm.Pages
             }
 
             var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
-            if (!await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler)))
+            if (!await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler.ModelType)))
             {
                 return Forbid();
+            }
+
+            if (!await sectionHandler.ValidateProposalAsync(this, proposal))
+            {
+                await LoadFormAsync(proposal);
+                return Page();
             }
 
             foreach (var approval in sectionHandler.GetAssociatedApprovals(proposal))
@@ -146,7 +153,7 @@ namespace Dccn.ProjectForm.Pages
             var proposal = await _proposalsDbContext.Proposals
                 .Include(p => p.Labs)
                 .Include(p => p.Experimenters)
-                .Include(p => p.DataAccessRules)
+                .Include(p => p.StorageAccessRules)
                 .Include(p => p.Approvals)
                 .Include(p => p.Comments)
                 .FirstOrDefaultAsync(p => p.Id == proposalId);
@@ -185,9 +192,9 @@ namespace Dccn.ProjectForm.Pages
                 await sectionHandler.LoadAsync(this, proposal);
 
                 var model = sectionHandler.GetModel(this);
-                model.CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler));
-                model.CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(sectionHandler));
-                model.CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler));
+                model.CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler.ModelType));
+                model.CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(sectionHandler.ModelType));
+                model.CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler.ModelType));
             }
         }
 
@@ -200,7 +207,7 @@ namespace Dccn.ProjectForm.Pages
                     continue;
                 }
 
-                if (!await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler)))
+                if (!await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler.ModelType)))
                 {
                     return Forbid();
                 }

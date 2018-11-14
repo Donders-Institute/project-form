@@ -8,7 +8,7 @@ namespace Dccn.ProjectForm.Models
     public class DataSectionModel : SectionModelBase
     {
         [Display(Name = "Project Storage access roles")]
-        public IDictionary<string, StorageAccessRuleModel> StorageAccessRules { get; set; }
+        public IList<StorageAccessRuleModel> StorageAccessRules { get; set; } = new List<StorageAccessRuleModel>();
 
         [Display(Name = "Data preservation")]
         public DataPreservationModel Preservation { get; set; }

@@ -9,11 +9,11 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class DataManagementHandler : FormSectionHandlerBase<DataSectionModel>
+    public class DataSectionHandler : FormSectionHandlerBase<DataSectionModel>
     {
         private readonly IUserManager _userManager;
 
-        public DataManagementHandler(IServiceProvider serviceProvider, IUserManager userManager)
+        public DataSectionHandler(IServiceProvider serviceProvider, IUserManager userManager)
             : base(serviceProvider, m => m.Data)
         {
             _userManager = userManager;
@@ -26,7 +26,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             var owner = await _userManager.GetUserByIdAsync(proposal.OwnerId);
             var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
 
-            model.StorageAccessRules = await proposal.DataAccessRules
+            model.StorageAccessRules = await proposal.StorageAccessRules
                 .Select(async rule => new StorageAccessRuleModel
                 {
                     Id = rule.UserId,
@@ -35,7 +35,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     CanRemove = rule.UserId != owner.Id && rule.UserId != supervisor.Id,
                     CanEdit = rule.UserId != owner.Id
                 })
-                .ToDictionaryAsync(rule => rule.Id);
+                .ToListAsync();
 
             if (proposal.ExternalPreservation)
             {
@@ -62,7 +62,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override Task StoreAsync(DataSectionModel model, Proposal proposal)
         {
-            proposal.DataAccessRules = (model.StorageAccessRules?.Values ?? Enumerable.Empty<StorageAccessRuleModel>())
+            proposal.StorageAccessRules = model.StorageAccessRules
                 .Select(rule => new StorageAccessRule
                 {
                     UserId = rule.Id,

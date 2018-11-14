@@ -4,9 +4,9 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
+using Dccn.ProjectForm.DataTransferObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
-using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 
 namespace Dccn.ProjectForm.Controllers
@@ -26,7 +26,7 @@ namespace Dccn.ProjectForm.Controllers
 
         [HttpGet]
         [ActionName("Query")]
-        public async Task<ActionResult<ICollection<UserModel>>> QueryAsync([Required, MinLength(2)] string query, [Range(1, 25)] int limit = 10)
+        public async Task<ActionResult<ICollection<UserDto>>> QueryAsync([Required, MinLength(2)] string query, [Range(1, 25)] int limit = 10)
         {
             if (!ModelState.IsValid)
             {
@@ -40,7 +40,7 @@ namespace Dccn.ProjectForm.Controllers
                 .OrderBy(u => u.Index)
                 .ThenBy(u => u.User.DisplayName)
                 .Take(limit)
-                .Select(u => new UserModel {Id = u.User.Id, Name = u.User.DisplayName})
+                .Select(u => new UserDto {Id = u.User.Id, Name = u.User.DisplayName})
                 .ToListAsync();
         }
 

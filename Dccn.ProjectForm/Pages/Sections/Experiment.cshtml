@@ -39,11 +39,11 @@
         <div class="card">
             <div class="card-header d-none d-lg-block py-2">
                 <div class="row align-items-center">
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].Modality)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SubjectCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].ExtraSubjectCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionDurationMinutes)</label>
+                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().Modality)</label>
+                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SubjectCount)</label>
+                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)</label>
+                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SessionCount)</label>
+                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)</label>
                     <label class="col col-form-label col-form-label-sm">Total duration</label>
                     <div class="col-auto">
                         <div class="dropdown dropleft float-right">
@@ -78,7 +78,7 @@
                         </div>
                     </div>
                 </div>
-                @foreach (var (index, lab) in Model.Labs)
+                @foreach (var (index, lab) in Model.Labs.Select((lab, index) => (index, lab)))
                 {
                     <div class="d-none lab-item"
                          data-index="@index"
@@ -196,7 +196,7 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No experimenters assigned</span>
                 </div>
-                @foreach (var (index, experimenter) in Model.Experimenters)
+                @foreach (var (index, experimenter) in Model.Experimenters.Select((experimenter, index) => (index, experimenter)))
                 {
                     <div class="d-none experimenter-item"
                          data-index="@index"
@@ -215,6 +215,12 @@
          data-storage-fixed="{{:storageFixed}}"
          data-storage-session="{{:storageSession}}">
 
+        <input type="hidden" name="@Html.Name("Labs.Index")" value="{{:index}}">
+        <input type="hidden" name="@Html.Name("Labs[{{:index}}].Modality.Id")" value="{{:modality}}">
+@*        {{if id}} *@
+@*        <input name="@Html.Name("Labs[{{:index}}].Id")" type="hidden" value="{{:id}}"> *@
+@*        {{/if}} *@
+
         <div class="row align-items-center">
             <div class="col-lg">
                 <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
@@ -225,35 +231,31 @@
                         @:{{/if}}
                     }
                 </label>
-                <input name="@Html.Name("Labs[{{:index}}].Modality.Id")" type="hidden" value="{{:modality}}">
-                {{if id}}
-                <input name="@Html.Name("Labs[{{:index}}].Id")" type="hidden" value="{{:id}}">
-                {{/if}}
             </div>
             <div class="col-lg">
                 <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SubjectCount)</label>
+                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SubjectCount)</label>
                     <input class="col-6 col-lg form-control form-control-sm lab-item-subjects" name="@Html.Name("Labs[{{:index}}].SubjectCount")"
                            value="{{:subjects}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].ExtraSubjectCount)</label>
+                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)</label>
                     <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:index}}].ExtraSubjectCount")"
                            value="{{:extra}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionCount)</label>
+                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionCount)</label>
                     <input class="col-6 col-lg form-control form-control-sm lab-item-sessions" name="@Html.Name("Labs[{{:index}}].SessionCount")"
                            value="{{:sessions}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs[Guid.Empty].SessionDurationMinutes)</label>
+                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)</label>
                     <input class="col-6 col-lg form-control form-control-sm lab-item-duration" name="@Html.Name("Labs[{{:index}}].SessionDurationMinutes")"
                            value="{{:duration}}" placeholder="minutes" data-submit-on="change">
                 </div>
@@ -279,11 +281,13 @@
          data-id="{{:id}}"
          data-name="{{>name}}">
 
+        <input type="hidden" name="@Html.Name("Experimenters.Index")" value="{{:index}}">
+        <input type="hidden" name="@Html.Name("Experimenters[{{:index}}].Id")" value="{{:id}}">
+
         <div class="row">
             <div class="col my-auto">
                 {{>name}}
                 <span class="badge badge-info">{{:id}}</span>
-                <input name="@Html.Name("Experimenters[{{:index}}].Id")" type="hidden" value="{{:id}}">
             </div>
 
             <div class="col-auto">

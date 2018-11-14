@@ -9,12 +9,12 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class ExperimentHandler : FormSectionHandlerBase<ExperimentSectionModel>
+    public class ExperimentSectionHandler : FormSectionHandlerBase<ExperimentSectionModel>
     {
         private readonly IUserManager _userManager;
         private readonly IModalityProvider _modalityProvider;
 
-        public ExperimentHandler(IServiceProvider serviceProvider, IUserManager userManager, IModalityProvider modalityProvider)
+        public ExperimentSectionHandler(IServiceProvider serviceProvider, IUserManager userManager, IModalityProvider modalityProvider)
             : base(serviceProvider, m => m.Experiment)
         {
             _userManager = userManager;
@@ -25,6 +25,21 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
             ApprovalAuthorityRole.LabMri, ApprovalAuthorityRole.LabOther
         };
+
+        public override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
+        {
+            var hasAnyMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
+            var hasAnyNonMri = proposal.Labs.Any(l => !_modalityProvider[l.Modality].IsMri);
+            switch (authorityRole)
+            {
+                case ApprovalAuthorityRole.LabMri:
+                    return hasAnyMri;
+                case ApprovalAuthorityRole.LabOther:
+                    return hasAnyNonMri || !hasAnyMri;
+                default:
+                    throw new ArgumentOutOfRangeException(nameof(authorityRole), authorityRole, null);
+            }
+        }
 
         protected override async Task LoadAsync(ExperimentSectionModel model, Proposal proposal)
         {
@@ -41,7 +56,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     SessionCount = lab.SessionCount,
                     SessionDurationMinutes = (int?) lab.SessionDuration?.TotalMinutes
                 })
-                .ToDictionary(_ => Guid.NewGuid());
+                .ToList();
 
             if (proposal.CustomQuota)
             {
@@ -55,12 +70,12 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             }
 
             model.Experimenters = await proposal.Experimenters
-                .Select(async experimenter => new UserModel
+                .Select(async experimenter => new ExperimenterModel
                 {
                     Id = experimenter.UserId,
                     Name = (await _userManager.GetUserByIdAsync(experimenter.UserId)).DisplayName
                 })
-                .ToDictionaryAsync(experimenter => experimenter.Id);
+                .ToListAsync();
 
             await base.LoadAsync(model, proposal);
         }
@@ -70,7 +85,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
 
-            proposal.Labs = (model.Labs?.Values ?? Enumerable.Empty<LabModel>())
+            proposal.Labs = model.Labs
                 .Select(lab => new Lab
                 {
                     // FIXME: causes DELETE + INSERT instead of UPDATE
@@ -96,29 +111,14 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 proposal.CustomQuotaMotivation = model.CustomQuotaMotivation;
             }
 
-            proposal.Experimenters = (model.Experimenters?.Values ?? Enumerable.Empty<UserModel>())
-                .Select( experimenter => new Experimenter
+            proposal.Experimenters = model.Experimenters
+                .Select(experimenter => new Experimenter
                 {
                     UserId = experimenter.Id
                 })
                 .ToList();
 
             return base.StoreAsync(model, proposal);
-        }
-
-        public override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
-        {
-            var hasAnyMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
-            var hasAnyNonMri = proposal.Labs.Any(l => !_modalityProvider[l.Modality].IsMri);
-            switch (authorityRole)
-            {
-                case ApprovalAuthorityRole.LabMri:
-                    return hasAnyMri;
-                case ApprovalAuthorityRole.LabOther:
-                    return hasAnyNonMri || !hasAnyMri;
-                default:
-                    throw new ArgumentOutOfRangeException(nameof(authorityRole), authorityRole, null);
-            }
         }
     }
 }

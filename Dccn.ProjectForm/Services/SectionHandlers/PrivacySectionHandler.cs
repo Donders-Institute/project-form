@@ -5,9 +5,10 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class PrivacyHandler : FormSectionHandlerBase<PrivacySectionModel>
+    public class PrivacySectionHandler : FormSectionHandlerBase<PrivacySectionModel>
     {
-        public PrivacyHandler(IServiceProvider serviceProvider) : base(serviceProvider, m => m.Privacy)
+        public PrivacySectionHandler(IServiceProvider serviceProvider)
+            : base(serviceProvider, m => m.Privacy)
         {
         }
 

@@ -8,12 +8,12 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class GeneralHandler : FormSectionHandlerBase<GeneralSectionModel>
+    public class GeneralSectionHandler : FormSectionHandlerBase<GeneralSectionModel>
     {
         private readonly IUserManager _userManager;
 
-        public GeneralHandler(IServiceProvider serviceProvider, IUserManager userManager)
-            : base(serviceProvider,  m => m.General)
+        public GeneralSectionHandler(IServiceProvider serviceProvider, IUserManager userManager)
+            : base(serviceProvider, m => m.General)
         {
             _userManager = userManager;
         }

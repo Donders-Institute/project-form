@@ -1,12 +1,8 @@
-﻿using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using Dccn.ProjectForm.Services;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
-using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class ModalityModel : IValidatableObject
+    public class ModalityModel
     {
         public string Id { get; set; }
 
@@ -21,14 +17,5 @@ namespace Dccn.ProjectForm.Models
 
         [BindNever]
         public decimal SessionStorage { get; set; }
-
-        public IEnumerable<ValidationResult> Validate(ValidationContext validationContext)
-        {
-            var provider = validationContext.GetService<IModalityProvider>();
-            if (!provider.Exists(Id))
-            {
-                yield return new ValidationResult("Unknown lab modality.");
-            }
-        }
     }
 }

@@ -101,7 +101,7 @@ namespace Dccn.ProjectForm.Pages
                         UserId = ownerId
                     }
                 },
-                DataAccessRules = new List<StorageAccessRule>
+                StorageAccessRules = new List<StorageAccessRule>
                 {
                     new StorageAccessRule
                     {
@@ -120,7 +120,7 @@ namespace Dccn.ProjectForm.Pages
             // Don't create duplicate entry if supervisor == owner
             if (model.SupervisorId != ownerId)
             {
-                proposal.DataAccessRules.Add(new StorageAccessRule
+                proposal.StorageAccessRules.Add(new StorageAccessRule
                 {
                     UserId = model.SupervisorId,
                     Role = StorageAccessRole.Viewer

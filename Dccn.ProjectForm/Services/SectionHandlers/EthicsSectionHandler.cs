@@ -6,9 +6,10 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class EthicsHandler : FormSectionHandlerBase<EthicsSectionModel>
+    public class EthicsSectionHandler : FormSectionHandlerBase<EthicsSectionModel>
     {
-        public EthicsHandler(IServiceProvider serviceProvider) : base(serviceProvider, m => m.Ethics)
+        public EthicsSectionHandler(IServiceProvider serviceProvider)
+            : base(serviceProvider, m => m.Ethics)
         {
         }
 

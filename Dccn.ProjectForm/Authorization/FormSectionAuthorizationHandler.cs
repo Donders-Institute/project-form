@@ -1,7 +1,10 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
+using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Services;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Authorization.Infrastructure;
@@ -12,11 +15,13 @@ namespace Dccn.ProjectForm.Authorization
     {
         private readonly IUserManager _userManager;
         private readonly IAuthorityProvider _authorityProvider;
+        private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormSectionAuthorizationHandler(IUserManager userManager, IAuthorityProvider authorityProvider)
+        public FormSectionAuthorizationHandler(IUserManager userManager, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _userManager = userManager;
             _authorityProvider = authorityProvider;
+            _sectionHandlers = sectionHandlers;
         }
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FormSectionOperation requirement, Proposal proposal)
@@ -28,14 +33,14 @@ namespace Dccn.ProjectForm.Authorization
             }
 
             var userId = _userManager.GetUserId(context.User);
-            var sectionHandler = requirement.SectionHandler;
-            var approvals = sectionHandler.GetAssociatedApprovals(proposal);
+            var sectionHandler =  _sectionHandlers.Single(h => h.ModelType == requirement.SectionType);
+            var approvals =  sectionHandler.GetAssociatedApprovals(proposal);
             switch (requirement.Operation)
             {
-                case FormSectionOperation.Type.Edit when (userId == proposal.OwnerId || userId == proposal.SupervisorId) && approvals.All(CanOwnerEdit):
+                case FormSectionOperation.OperationType.Edit when (userId == proposal.OwnerId || userId == proposal.SupervisorId) && approvals.All(CanOwnerEdit):
                     context.Succeed(requirement);
                     break;
-                case FormSectionOperation.Type.Edit:
+                case FormSectionOperation.OperationType.Edit:
                 {
                     var approval = approvals.SingleOrDefault(a => _authorityProvider.GetAuthorityId(proposal, a.AuthorityRole) == userId);
                     if (approval != null && CanAuthorityEdit(approval))
@@ -45,10 +50,10 @@ namespace Dccn.ProjectForm.Authorization
 
                     break;
                 }
-                case FormSectionOperation.Type.Submit when userId == proposal.OwnerId && approvals.All(CanOwnerSubmit):
+                case FormSectionOperation.OperationType.Submit when userId == proposal.OwnerId && approvals.All(CanOwnerSubmit):
                     context.Succeed(requirement);
                     break;
-                case FormSectionOperation.Type.Approve:
+                case FormSectionOperation.OperationType.Approve:
                 {
                     var approval = approvals.SingleOrDefault(a => _authorityProvider.GetAuthorityId(proposal, a.AuthorityRole) == userId);
                     if (approval != null && CanAuthorityApprove(approval))
@@ -90,36 +95,56 @@ namespace Dccn.ProjectForm.Authorization
 
     public sealed class FormSectionOperation : OperationAuthorizationRequirement
     {
-        public enum Type
+        public enum OperationType
         {
             Edit,
             Approve,
             Submit
         }
 
-        private FormSectionOperation(Type operation, IFormSectionHandler sectionHandler)
+        private FormSectionOperation(OperationType operation, Type sectionType)
         {
+            if (!typeof(ISectionModel).IsAssignableFrom(sectionType))
+            {
+                throw new ArgumentException("Illegal type.", nameof(sectionType));
+            }
+
             Operation = operation;
-            SectionHandler = sectionHandler;
-            Name = $"{operation.ToString()} {sectionHandler}";
+            SectionType = sectionType;
+            Name = $"{operation.ToString()} {sectionType}";
         }
 
-        public static FormSectionOperation Edit(IFormSectionHandler sectionHandler)
+        public static FormSectionOperation Edit(Type sectionType)
         {
-            return new FormSectionOperation(Type.Edit, sectionHandler);
+            return new FormSectionOperation(OperationType.Edit, sectionType);
         }
 
-        public static FormSectionOperation Approve(IFormSectionHandler sectionHandler)
+        public static FormSectionOperation Approve(Type sectionType)
         {
-            return new FormSectionOperation(Type.Approve, sectionHandler);
+            return new FormSectionOperation(OperationType.Approve, sectionType);
         }
 
-        public static FormSectionOperation Submit(IFormSectionHandler sectionHandler)
+        public static FormSectionOperation Submit(Type sectionType)
         {
-            return new FormSectionOperation(Type.Submit, sectionHandler);
+            return new FormSectionOperation(OperationType.Submit, sectionType);
         }
 
-        public Type Operation { get; }
-        public IFormSectionHandler SectionHandler { get; }
+        public static FormSectionOperation Edit<TSection>() where TSection : ISectionModel
+        {
+            return new FormSectionOperation(OperationType.Edit, typeof(TSection));
+        }
+
+        public static FormSectionOperation Approve<TSection>() where TSection : ISectionModel
+        {
+            return new FormSectionOperation(OperationType.Approve, typeof(TSection));
+        }
+
+        public static FormSectionOperation Submit<TSection>() where TSection : ISectionModel
+        {
+            return new FormSectionOperation(OperationType.Submit, typeof(TSection));
+        }
+
+        public OperationType Operation { get; }
+        public Type SectionType { get; }
     }
 }

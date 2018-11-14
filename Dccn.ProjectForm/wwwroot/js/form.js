@@ -56,40 +56,25 @@ jQuery(function($) {
         });
     }
 
-    $(window).on("beforeunload", function() {
-        var errorCount = $(".is-invalid").length;
-        if (errorCount > 0) {
-            return "The form contains input validation errors. Incorrect fields are not saved. Are you sure you want to leave the page?";
-        }
-        return undefined;
-    });
+//    $(window).on("beforeunload", function() {
+//        var errorCount = $(".is-invalid").length;
+//        if (errorCount > 0) {
+//            return "The form contains input validation errors. Incorrect fields are not saved. Are you sure you want to leave the page?";
+//        }
+//        return undefined;
+//    });
 
     $("#form").data("submit-handler", function($form) {
-        function updateErrors(errors) {
-            $(".is-invalid").each(function() {
-                Validation.clearError($(this));
-            });
-
-            Object.keys(errors).forEach(function(name) {
-                var $inputs = $("[name='" + name + "']");
-                if (errors[name].length > 0) {
-                    $inputs.each(function() {
-                        Validation.setError($(this), errors[name][0]);
-                    });
-                }
-            });
-        }
-
         var sectionId = $form.data("section-id");
         var $items, url;
         if (sectionId) {
-            url = $form.attr("action").replace("__SECTION__", encodeURIComponent(sectionId));
+            url = $form.attr("action").replace(/__SECTION__/g, encodeURIComponent(sectionId));
             $items = $form.find(":input").filter(function() {
                 var parentSectionId = $(this).parents(".form-section").prop("id");
                 return !parentSectionId || parentSectionId === sectionId;
             });
         } else {
-            url = $form.attr("action").replace("__SECTION__", "");
+            url = $form.attr("action").replace(/__SECTION__/g, "");
             $items = $form;
         }
 
@@ -105,7 +90,7 @@ jQuery(function($) {
             dataType: "json"
         }).done(function(result) {
             $(".timestamp").val(result.timestamp);
-            updateErrors(result.errors);
+            Validation.updateErrors(result.errors);
         }).always(function() {
             setTimeout(function() {
                 $form.data("recently-submitted", false);
@@ -122,7 +107,7 @@ jQuery(function($) {
         var section = $button.data("section");
 
         var $form = $(this).find("form");
-        $form.prop("action", $form.data("url").replace("__SECTION__", encodeURIComponent(section)));
+        $form.prop("action", $form.data("url").replace(/__SECTION__/g, encodeURIComponent(section)));
     });
 
     $(".radio-panel-input").change(function() {
@@ -272,7 +257,7 @@ jQuery(function($) {
             {
                 source: function(query, callback) {
                     $.getJSON({
-                        url: $autocomplete.data("url").replace("__QUERY__", encodeURIComponent(query))
+                        url: $autocomplete.data("url").replace(/__QUERY__/g, encodeURIComponent(query))
                     }).done(function(data) {
                         callback(data);
                     });

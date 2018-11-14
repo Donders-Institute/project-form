@@ -6,13 +6,14 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class FundingHandler : FormSectionHandlerBase<FundingSectionModel>
+    public class FundingSectionHandler : FormSectionHandlerBase<FundingSectionModel>
     {
-        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Funding};
-
-        public FundingHandler(IServiceProvider serviceProvider): base(serviceProvider, m => m.Funding)
+        public FundingSectionHandler(IServiceProvider serviceProvider)
+            : base(serviceProvider, m => m.Funding)
         {
         }
+
+        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Funding};
 
         protected override Task LoadAsync(FundingSectionModel model, Proposal proposal)
         {

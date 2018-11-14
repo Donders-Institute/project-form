@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
@@ -9,24 +8,28 @@ using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
 using Dccn.ProjectForm.Services.SectionHandlers;
+using FluentValidation;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.Extensions.DependencyInjection;
 
 namespace Dccn.ProjectForm.Services
 {
-    public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler where TModel : ISectionModel
+    public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler<TModel> where TModel : ISectionModel, new()
     {
         private readonly IAuthorityProvider _authorityProvider;
+        private readonly IValidator<TModel> _validator;
         private readonly ModelMetadata _metadata;
         private readonly Func<FormModel, TModel> _compiledExpr;
 
         protected FormSectionHandlerBase(IServiceProvider serviceProvider, Expression<Func<FormModel, TModel>> expression)
         {
-            _authorityProvider = serviceProvider.GetService<IAuthorityProvider>();
+            _authorityProvider = serviceProvider.GetRequiredService<IAuthorityProvider>();
+            _validator = serviceProvider.GetService<IValidator<TModel>>() ?? new InlineValidator<TModel>();
             _compiledExpr = expression.Compile();
 
-            var metadataProvider = serviceProvider.GetService<IModelMetadataProvider>();
+            var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
             var id = ExpressionHelper.GetExpressionText(expression);
             _metadata = metadataProvider.GetMetadataForProperty(typeof(FormModel), id);
         }
@@ -38,6 +41,11 @@ namespace Dccn.ProjectForm.Services
         protected abstract IEnumerable<ApprovalAuthorityRole> ApprovalRoles { get; }
 
         public ISectionModel GetModel(FormModel form)
+        {
+            return ((IFormSectionHandler<TModel>) this).GetModel(form);
+        }
+
+        TModel IFormSectionHandler<TModel>.GetModel(FormModel form)
         {
             return _compiledExpr(form);
         }
@@ -54,14 +62,32 @@ namespace Dccn.ProjectForm.Services
             return ApprovalRoles.Contains(role);
         }
 
-        public virtual IEnumerable<Task<ValidationResult>> ValidateProposalAsync(Proposal proposal)
+        public Task<bool> ValidateInputAsync(FormModel form)
         {
-            return Enumerable.Empty<Task<ValidationResult>>();
+            return ValidateAsync(form, false);
+        }
+
+        public async Task<bool> ValidateProposalAsync(FormModel form, Proposal proposal)
+        {
+            await LoadAsync(form, proposal);
+            return await ValidateAsync(form, true);
         }
 
         public virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
             return true;
+        }
+
+        public Task LoadAsync(FormModel form, Proposal proposal)
+        {
+            var section = _compiledExpr(form);
+            return section == null ? Task.CompletedTask : LoadAsync(section, proposal);
+        }
+
+        public Task StoreAsync(FormModel form, Proposal proposal)
+        {
+            var section = _compiledExpr(form);
+            return section == null ? Task.CompletedTask : StoreAsync(section, proposal);
         }
 
         protected virtual async Task LoadAsync(TModel model, Proposal proposal)
@@ -111,17 +137,22 @@ namespace Dccn.ProjectForm.Services
             return Task.CompletedTask;
         }
 
-        public Task LoadAsync(FormModel form, Proposal proposal)
+        private async Task<bool> ValidateAsync(FormModel form, bool full)
         {
-            var section = _compiledExpr(form);
-            return section == null ? Task.CompletedTask : LoadAsync(section, proposal);
-        }
+            if (_validator == null)
+            {
+                return true;
+            }
 
-        public Task StoreAsync(FormModel form, Proposal proposal)
-        {
-            var section = _compiledExpr(form);
-            return section == null ? Task.CompletedTask : StoreAsync(section, proposal);
+            var result = await _validator.ValidateAsync(_compiledExpr(form), ruleSet: full ? "default,Submit" : null);
+            result.AddToModelState(form.ModelState, Id);
+            return result.IsValid;
         }
+    }
+
+    public interface IFormSectionHandler<out TModel> : IFormSectionHandler
+    {
+        new TModel GetModel(FormModel form);
     }
 
     public interface IFormSectionHandler
@@ -134,7 +165,8 @@ namespace Dccn.ProjectForm.Services
         ICollection<Approval> GetAssociatedApprovals(Proposal proposal);
         bool HasApprovalAuthorityRole(ApprovalAuthorityRole role);
 
-        IEnumerable<Task<ValidationResult>> ValidateProposalAsync(Proposal proposal);
+        Task<bool> ValidateInputAsync(FormModel form);
+        Task<bool> ValidateProposalAsync(FormModel form, Proposal proposal);
         Task LoadAsync(FormModel form, Proposal proposal);
         Task StoreAsync(FormModel form, Proposal proposal);
 
@@ -146,13 +178,22 @@ namespace Dccn.ProjectForm.Services
         public static IServiceCollection AddFormSectionHandlers(this IServiceCollection services)
         {
             services
-                .AddTransient<IFormSectionHandler, GeneralHandler>()
-                .AddTransient<IFormSectionHandler, FundingHandler>()
-                .AddTransient<IFormSectionHandler, EthicsHandler>()
-                .AddTransient<IFormSectionHandler, ExperimentHandler>()
-                .AddTransient<IFormSectionHandler, DataManagementHandler>()
-                .AddTransient<IFormSectionHandler, PrivacyHandler>()
-                .AddTransient<IFormSectionHandler, PaymentHandler>();
+                .AddTransient<IFormSectionHandler<GeneralSectionModel>, GeneralSectionHandler>()
+                .AddTransient<IFormSectionHandler<FundingSectionModel>, FundingSectionHandler>()
+                .AddTransient<IFormSectionHandler<EthicsSectionModel>, EthicsSectionHandler>()
+                .AddTransient<IFormSectionHandler<ExperimentSectionModel>, ExperimentSectionHandler>()
+                .AddTransient<IFormSectionHandler<DataSectionModel>, DataSectionHandler>()
+                .AddTransient<IFormSectionHandler<PrivacySectionModel>, PrivacySectionHandler>()
+                .AddTransient<IFormSectionHandler<PaymentSectionModel>, PaymentSectionHandler>();
+
+            services
+                .AddTransient<IFormSectionHandler, GeneralSectionHandler>()
+                .AddTransient<IFormSectionHandler, FundingSectionHandler>()
+                .AddTransient<IFormSectionHandler, EthicsSectionHandler>()
+                .AddTransient<IFormSectionHandler, ExperimentSectionHandler>()
+                .AddTransient<IFormSectionHandler, DataSectionHandler>()
+                .AddTransient<IFormSectionHandler, PrivacySectionHandler>()
+                .AddTransient<IFormSectionHandler, PaymentSectionHandler>();
 
             return services;
         }

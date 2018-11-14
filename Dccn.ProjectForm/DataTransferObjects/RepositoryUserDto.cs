@@ -4,9 +4,9 @@ using System.Collections.Generic;
 // ReSharper disable ClassNeverInstantiated.Global
 // ReSharper disable UnusedMember.Global
 
-namespace Dccn.ProjectForm.Data.Repository
+namespace Dccn.ProjectForm.DataTransferObjects
 {
-    public class RepositoryUser
+    public class RepositoryUserDto
     {
         public string ApiAuthToken { get; set; }
         public DateTime? AttributeLastUpdatedDateTime { get; set; }

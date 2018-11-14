@@ -7,9 +7,9 @@ using Dccn.ProjectForm.Models;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
-    public class PaymentHandler : FormSectionHandlerBase<PaymentSectionModel>
+    public class PaymentSectionHandler : FormSectionHandlerBase<PaymentSectionModel>
     {
-        public PaymentHandler(IServiceProvider serviceProvider)
+        public PaymentSectionHandler(IServiceProvider serviceProvider)
             : base(serviceProvider, m => m.Payment)
         {
         }

@@ -64,7 +64,24 @@ var Validation = (function() {
     $.validator.unobtrusive.options = validationOptions;
 
     return {
+        updateErrors: function(errors) {
+            $(errorClass).each(function() {
+                Validation.clearError($(this));
+            });
+
+            Object.keys(errors).forEach(function(name) {
+                var $inputs = $("[name='" + name + "']");
+                if (errors[name].length > 0) {
+                    $inputs.each(function() {
+                        Validation.setError($(this), errors[name][0]);
+                    });
+                }
+            });
+        },
         setError: function($element, message) {
+            if ($element.is("input[type='hidden']")) {
+                $element = $element.parent();
+            }
             highlight($element);
             placeError($("<" + errorElement + "/>", { "class": errorClass }).text(message), $element);
         },
@@ -138,5 +155,6 @@ jQuery(function($) {
         callback();
     });
 
+    Validation.updateErrors(JSON.parse($("#validation-errors").html()));
     $("#content").removeClass("invisible");
 });

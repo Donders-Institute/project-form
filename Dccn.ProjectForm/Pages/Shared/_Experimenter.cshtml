@@ -1,0 +1,20 @@
+﻿@model Dccn.ProjectForm.Models.UserModel
+
+<div class="list-group-item list-group-item-action py-2 experimenter-item-expanded"
+     data-id="@Model.Id"
+     data-name="@Model.Name">
+
+    <div class="row">
+        <div class="col my-auto">
+            @Html.DisplayFor(m => m.Name)
+            <span class="badge badge-info">@Html.DisplayFor(m => m.Id)</span>
+        </div>
+
+        <div class="col-auto">
+            <button type="button" class="btn btn-sm btn-outline-secondary remove-experimenter" data-submit-on="click">
+                <i class="fas fa-minus-square"></i>
+            </button>
+        </div>
+    </div>
+    <input asp-for="Id" type="hidden">
+</div>

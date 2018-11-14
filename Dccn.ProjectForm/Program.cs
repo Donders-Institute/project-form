@@ -14,7 +14,7 @@ namespace Dccn.ProjectForm
         public static void Main(string[] args)
         {
             var host = CreateWebHostBuilder(args).Build();
-            var logger = host.Services.GetService<ILogger<Startup>>();
+            var logger = host.Services.GetRequiredService<ILogger<Startup>>();
 
             try
             {

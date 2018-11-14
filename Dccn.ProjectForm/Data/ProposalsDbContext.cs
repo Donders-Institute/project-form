@@ -37,7 +37,7 @@ namespace Dccn.ProjectForm.Data
                 b.HasMany(e => e.Approvals).WithOne(e => e.Proposal).HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Labs).WithOne().HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Experimenters).WithOne().HasForeignKey(e => e.ProposalId);
-                b.HasMany(e => e.DataAccessRules).WithOne().HasForeignKey(e => e.ProposalId);
+                b.HasMany(e => e.StorageAccessRules).WithOne().HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Comments).WithOne().HasForeignKey(e => e.ProposalId);
 
                 b.HasIndex(e => e.OwnerId);

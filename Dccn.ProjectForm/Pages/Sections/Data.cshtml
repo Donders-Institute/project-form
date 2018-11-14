@@ -34,7 +34,7 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No access roles assigned</span>
                 </div>
-                @foreach (var (index, rule) in Model.StorageAccessRules)
+                @foreach (var (index, rule) in Model.StorageAccessRules.Select((rule, index) => (index, rule)))
                 {
                     <div class="d-none access-item"
                          data-index="@index"
@@ -149,11 +149,13 @@
          data-can-edit="{{:canEdit}}"
          data-can-remove="{{:canRemove}}">
 
+        <input name="@Html.Name("AccessRules.Index")" type="hidden" value="{{:index}}">
+        <input name="@Html.Name("AccessRules[{{:index}}].User.Id")" type="hidden" value="{{:id}}">
+
         <div class="row">
             <div class="col my-auto">
                 {{>name}}
                 <span class="badge badge-info">{{:id}}</span>
-                <input name="@Html.Name("AccessRules[{{:index}}].User.Id")" type="hidden" value="{{:id}}">
             </div>
 
             <div class="col-auto btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
@@ -163,14 +165,14 @@
                     <label class="btn btn-outline-secondary active">
                         <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
                                value="@role" data-submit-on="change" checked> @role.GetDisplayName()
-                    </label>
-                    @:{{else}}
-                    <label class="btn btn-outline-secondary">
-                        <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
-                               value="@role" data-submit-on="change"> @role.GetDisplayName()
-                    </label>
-                    @:{{/if}}
-                }
+                        </label>
+                        @:{{else}}
+                        <label class="btn btn-outline-secondary">
+                            <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
+                                   value="@role" data-submit-on="change"> @role.GetDisplayName()
+                            </label>
+                            @:{{/if}}
+                        }
             </div>
 
             @* <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}"> *@

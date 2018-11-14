@@ -7,6 +7,7 @@ using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Services;
+using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -62,6 +63,11 @@ namespace Dccn.ProjectForm
                 {
                     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                     options.Filters.Add(new AuthorizeFilter(policy));
+                })
+                .AddFluentValidation(options =>
+                {
+                    options.LocalizationEnabled = true;
+                    // options.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
 
             services.AddHttpClient<IRepositoryApiClient, RepositoryApiClient>(client =>
@@ -89,6 +95,7 @@ namespace Dccn.ProjectForm
                 .AddTransient<IModalityProvider, ModalityProvider>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
                 .AddFormSectionHandlers()
+                .AddValidators()
                 .AddEmail("/Email/Templates");
         }
 
@@ -102,10 +109,8 @@ namespace Dccn.ProjectForm
             else
             {
                 app.UseExceptionHandler("/Error");
+                app.UseExceptionReporter(_configuration.GetSection("ExceptionReporter").Get<EmailAddress>());
             }
-
-            // TODO: staging/production only
-            app.UseExceptionReporter(_configuration.GetSection("ExceptionReporter").Get<EmailAddress>());
 
             app.UseStatusCodePages();
 

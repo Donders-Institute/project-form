@@ -4,6 +4,7 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data.Projects;
+using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Authentication
 {
@@ -18,7 +19,7 @@ namespace Dccn.ProjectForm.Authentication
 
         public string GetUserId(ClaimsPrincipal principal)
         {
-            return principal.FindFirst(ClaimTypes.UserId).Value;
+            return principal.FindFirst(ClaimTypes.UserId)?.Value;
         }
 
         public string GetUserName(ClaimsPrincipal principal)
@@ -28,12 +29,12 @@ namespace Dccn.ProjectForm.Authentication
 
         public string GetEmailAddress(ClaimsPrincipal principal)
         {
-            return principal.FindFirst(ClaimTypes.EmailAddress).Value;
+            return principal.FindFirst(ClaimTypes.EmailAddress)?.Value;
         }
 
         public string GetPrimaryGroupId(ClaimsPrincipal principal)
         {
-            return principal.FindFirst(ClaimTypes.Group).Value;
+            return principal.FindFirst(ClaimTypes.Group)?.Value;
         }
 
         public IEnumerable<Role> GetRoles(ClaimsPrincipal principal)
@@ -54,6 +55,11 @@ namespace Dccn.ProjectForm.Authentication
         public Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId)
         {
             return _dbContext.Groups.FindAsync(groupId);
+        }
+
+        public Task<bool> GroupExistsAsync(string groupId)
+        {
+            return _dbContext.Groups.AnyAsync(g => g.Id == groupId);
         }
 
         public IQueryable<ProjectsGroup> QueryGroups()
@@ -82,6 +88,11 @@ namespace Dccn.ProjectForm.Authentication
             return user;
         }
 
+        public Task<bool> UserExistsAsync(string userId)
+        {
+            return _dbContext.Users.AnyAsync(u => u.Id == userId);
+        }
+
         public IQueryable<ProjectsUser> QueryUsers()
         {
             return _dbContext.Users;
@@ -99,10 +110,12 @@ namespace Dccn.ProjectForm.Authentication
 
         Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
         Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId);
+        Task<bool> GroupExistsAsync(string groupId);
         IQueryable<ProjectsGroup> QueryGroups();
 
         Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false);
         Task<ProjectsUser> GetUserByIdAsync(string userId, bool includeGroup = false);
+        Task<bool> UserExistsAsync(string userId);
         IQueryable<ProjectsUser> QueryUsers();
     }
 }

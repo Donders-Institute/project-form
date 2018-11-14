@@ -98,7 +98,7 @@ namespace Dccn.ProjectForm.Services
                 .AddTransient<IEmailService, EmailService>()
                 .AddSingleton<ITemplateRenderService>(provider =>
                 {
-                    var environment = provider.GetService<IHostingEnvironment>();
+                    var environment = provider.GetRequiredService<IHostingEnvironment>();
                     var handlebars = Handlebars.Create(new HandlebarsConfiguration
                     {
                         FileSystem = new TemplateFileSystem(environment, templatePath),
