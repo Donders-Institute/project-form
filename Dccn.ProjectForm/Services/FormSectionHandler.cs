@@ -8,6 +8,7 @@ using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
 using Dccn.ProjectForm.Services.SectionHandlers;
+using Dccn.ProjectForm.Services.Validators;
 using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
@@ -150,7 +151,7 @@ namespace Dccn.ProjectForm.Services
         }
     }
 
-    public interface IFormSectionHandler<out TModel> : IFormSectionHandler
+    public interface IFormSectionHandler<out TModel> : IFormSectionHandler where TModel : ISectionModel
     {
         new TModel GetModel(FormModel form);
     }
@@ -194,6 +195,20 @@ namespace Dccn.ProjectForm.Services
                 .AddTransient<IFormSectionHandler, DataSectionHandler>()
                 .AddTransient<IFormSectionHandler, PrivacySectionHandler>()
                 .AddTransient<IFormSectionHandler, PaymentSectionHandler>();
+
+            return services;
+        }
+
+        public static IServiceCollection AddFormSectionValidators(this IServiceCollection services)
+        {
+            services
+                .AddTransient<IValidator<GeneralSectionModel>, GeneralSectionValidator>()
+                .AddTransient<IValidator<FundingSectionModel>, FundingSectionValidator>()
+                .AddTransient<IValidator<EthicsSectionModel>, EthicsSectionValidator>()
+                .AddTransient<IValidator<ExperimentSectionModel>, ExperimentSectionValidator>()
+                .AddTransient<IValidator<DataSectionModel>, DataSectionValidator>()
+                .AddTransient<IValidator<PrivacySectionModel>, PrivacySectionValidator>()
+                .AddTransient<IValidator<PaymentSectionModel>, PaymentSectionValidator>();
 
             return services;
         }

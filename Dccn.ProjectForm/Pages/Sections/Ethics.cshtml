@@ -7,14 +7,14 @@
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="Approved"
+                <input asp-for="Status"
                        class="custom-control-input radio-panel-input"
                        id="ethics-approved"
                        type="radio"
-                       value="@true"
+                       value="@EthicsApprovalStatusModel.Approved"
                        data-target="#ethics-approved-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="ethics-approved">Approved</label>
+                <label class="custom-control-label" for="ethics-approved">@EthicsApprovalStatusModel.Approved.GetDisplayName()</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-approved-panel" data-parent="#ethics-options">
@@ -46,14 +46,14 @@
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="Approved"
+                <input asp-for="Status"
                        class="custom-control-input radio-panel-input"
                        id="ethics-not-approved"
                        type="radio"
-                       value="@false"
+                       value="@EthicsApprovalStatusModel.Pending"
                        data-target="#ethics-not-approved-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="ethics-not-approved">Not approved</label>
+                <label class="custom-control-label" for="ethics-not-approved">@EthicsApprovalStatusModel.Pending.GetDisplayName()</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-not-approved-panel" data-parent="#ethics-options">

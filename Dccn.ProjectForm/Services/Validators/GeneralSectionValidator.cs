@@ -7,10 +7,7 @@ namespace Dccn.ProjectForm.Services.Validators
     {
         public GeneralSectionValidator()
         {
-            RuleFor(s => s.Title)
-                .NotNull()
-                .NotEmpty()
-                .MinimumLength(10);
+            RuleFor(s => s.Title).NotEmpty().MinimumLength(10);
         }
     }
 }

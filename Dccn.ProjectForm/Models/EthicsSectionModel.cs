@@ -6,7 +6,7 @@ namespace Dccn.ProjectForm.Models
     public class EthicsSectionModel : SectionModelBase
     {
         [Display(Name = "Approved")]
-        public bool Approved { get; set; }
+        public EthicsApprovalStatusModel Status { get; set; }
 
         [Display(Name = "Ethics committee approval number")]
         public EthicsApprovalOptionModel ApprovalCode { get; set; }

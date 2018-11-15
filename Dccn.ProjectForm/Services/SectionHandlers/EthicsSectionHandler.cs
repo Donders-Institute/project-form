@@ -19,7 +19,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
             if (proposal.EcApproved)
             {
-                model.Approved = true;
+                model.Status = EthicsApprovalStatusModel.Approved;
                 switch (proposal.EcCode)
                 {
                     case "CMO2014/288":
@@ -36,7 +36,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             }
             else
             {
-                model.Approved = false;
+                model.Status = EthicsApprovalStatusModel.Pending;
                 model.CorrespondenceNumber = proposal.EcReference;
             }
 
@@ -45,30 +45,33 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         protected override Task StoreAsync(EthicsSectionModel model, Proposal proposal)
         {
-            if (model.Approved)
+            switch (model.Status)
             {
-                proposal.EcApproved = true;
-                switch (model.ApprovalCode)
-                {
-                    case EthicsApprovalOptionModel.Blanket:
-                        proposal.EcCode = "CMO2014/288";
-                        break;
-                    case EthicsApprovalOptionModel.Children:
-                        proposal.EcCode = "CMO2012/012";
-                        break;
-                    case EthicsApprovalOptionModel.Other:
-                        proposal.EcCode = model.CustomCode;
-                        break;
-                    default:
-                        throw new ArgumentOutOfRangeException();
-                }
-                proposal.EcReference = null;
-            }
-            else
-            {
-                proposal.EcApproved = false;
-                proposal.EcCode = null;
-                proposal.EcReference = model.CorrespondenceNumber;
+                case EthicsApprovalStatusModel.Approved:
+                    proposal.EcApproved = true;
+                    switch (model.ApprovalCode)
+                    {
+                        case EthicsApprovalOptionModel.Blanket:
+                            proposal.EcCode = "CMO2014/288";
+                            break;
+                        case EthicsApprovalOptionModel.Children:
+                            proposal.EcCode = "CMO2012/012";
+                            break;
+                        case EthicsApprovalOptionModel.Other:
+                            proposal.EcCode = model.CustomCode;
+                            break;
+                        default:
+                            throw new ArgumentOutOfRangeException();
+                    }
+                    proposal.EcReference = null;
+                    break;
+                case EthicsApprovalStatusModel.Pending:
+                    proposal.EcApproved = false;
+                    proposal.EcCode = null;
+                    proposal.EcReference = model.CorrespondenceNumber;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
 
             return base.StoreAsync(model, proposal);

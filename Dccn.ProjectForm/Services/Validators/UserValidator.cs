@@ -15,7 +15,6 @@ namespace Dccn.ProjectForm.Services.Validators
             var userManager = serviceProvider.GetRequiredService<IUserManager>();
 
             RuleFor(u => u.Id)
-                .NotNull()
                 .NotEmpty()
                 .MustAsync((id, _) => userManager.UserExistsAsync(id))
                 .Must(id => collection.Count(u => u.Id == id) == 1);

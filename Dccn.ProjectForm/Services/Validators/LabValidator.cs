@@ -11,10 +11,7 @@ namespace Dccn.ProjectForm.Services.Validators
         {
             var modalityProvider = serviceProvider.GetRequiredService<IModalityProvider>();
 
-            RuleFor(l => l.Modality.Id)
-                .NotNull()
-                .NotEmpty()
-                .Must(id => modalityProvider.Exists(id));
+            RuleFor(l => l.Modality.Id).NotEmpty().Must(id => modalityProvider.Exists(id));
 
             RuleFor(l => l.SubjectCount).GreaterThanOrEqualTo(0);
             RuleFor(l => l.ExtraSubjectCount).GreaterThanOrEqualTo(0);

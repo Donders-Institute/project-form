@@ -73,8 +73,7 @@ namespace Dccn.ProjectForm
             services.AddHttpClient<IRepositoryApiClient, RepositoryApiClient>(client =>
             {
                 var options = _configuration.GetSection(RepositoryApiOptions.SectionName).Get<RepositoryApiOptions>();
-                var credentials =
-                    Convert.ToBase64String(Encoding.ASCII.GetBytes($"{options.UserName}:{options.Password}"));
+                var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{options.UserName}:{options.Password}"));
 
                 client.BaseAddress = new Uri(options.BaseUri);
                 client.DefaultRequestHeaders.Accept.Clear();
@@ -95,7 +94,7 @@ namespace Dccn.ProjectForm
                 .AddTransient<IModalityProvider, ModalityProvider>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
                 .AddFormSectionHandlers()
-                .AddValidators()
+                .AddFormSectionValidators()
                 .AddEmail("/Email/Templates");
         }
 

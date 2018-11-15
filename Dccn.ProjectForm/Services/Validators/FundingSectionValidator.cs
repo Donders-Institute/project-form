@@ -7,15 +7,13 @@ namespace Dccn.ProjectForm.Services.Validators
     {
         public FundingSectionValidator()
         {
-            RuleFor(s => s.ContactName).NotEmpty();
-            RuleFor(s => s.ContactEmail).NotEmpty().EmailAddress();
-            RuleFor(s => s.FinancialCode).NotEmpty();
+            RuleFor(s => s.ContactEmail).EmailAddress();
 
             RuleSet("Submit", () =>
             {
-                RuleFor(s => s.ContactName).NotNull();
-                RuleFor(s => s.ContactEmail).NotNull();
-                RuleFor(s => s.FinancialCode).NotNull();
+                RuleFor(s => s.ContactName).NotEmpty();
+                RuleFor(s => s.ContactEmail).NotEmpty();
+                RuleFor(s => s.FinancialCode).NotEmpty();
             });
         }
     }

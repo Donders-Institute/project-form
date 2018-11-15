@@ -8,8 +8,6 @@ namespace Dccn.ProjectForm.Models
     public class GeneralSectionModel : SectionModelBase
     {
         [Display(Name = "Title.DisplayName", Description = "Title.Description")]
-        [Required(ErrorMessage = "Title.Required.ErrorMessage")]
-        [MinLength(10, ErrorMessage = "Title.MinLength.ErrorMessage")]
         public string Title { get; set; }
 
         [BindNever]

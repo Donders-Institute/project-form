@@ -7,18 +7,18 @@ namespace Dccn.ProjectForm.Services.Validators
     {
         public EthicsSectionValidator()
         {
-            When(s => s.Approved, () =>
-            {
-                RuleFor(s => s.CorrespondenceNumber).NotEmpty();
-            });
-            Unless(s => s.Approved, () =>
-            {
-
-            });
+            RuleFor(s => s.ApprovalCode).IsInEnum().When(s => s.Status == EthicsApprovalStatusModel.Approved);
 
             RuleSet("Submit", () =>
             {
-
+                When(s => s.Status == EthicsApprovalStatusModel.Approved, () =>
+                {
+                    RuleFor(s => s.CustomCode).NotEmpty().When(s => s.ApprovalCode == EthicsApprovalOptionModel.Other);
+                });
+                When(s => s.Status == EthicsApprovalStatusModel.Pending, () =>
+                {
+                    RuleFor(s => s.CorrespondenceNumber).NotEmpty();
+                });
             });
         }
     }
