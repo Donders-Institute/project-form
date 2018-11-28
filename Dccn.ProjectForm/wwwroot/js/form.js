@@ -2,19 +2,19 @@
 
 jQuery(function($) {
     // Misc
-//    function generateUniqueIndex() {
-//        var uuid;
-//
-//        do {
-//            uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-//                var r = Math.random() * 16 | 0;
-//                var v = c === "x" ? r : r & 0x3 | 0x8;
-//                return v.toString(16);
-//            });
-//        } while ($("[data-index='" + uuid + "']").length > 0);
-//
-//        return uuid;
-//    }
+    function generateUniqueIndex() {
+        var uuid;
+
+        do {
+            uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+                var r = Math.random() * 16 | 0;
+                var v = c === "x" ? r : r & 0x3 | 0x8;
+                return v.toString(16);
+            });
+        } while ($("[data-index='" + uuid + "']").length > 0);
+
+        return uuid;
+    }
 
     function debounce(func, wait, immediate) {
         var timeout;
