@@ -19,7 +19,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             _userManager = userManager;
         }
 
-        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
+        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.DataManager};
 
         protected override async Task LoadAsync(DataSectionModel model, Proposal proposal)
         {

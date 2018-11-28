@@ -1,21 +1,18 @@
-﻿using System;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using System.Linq;
-using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
-using Dccn.ProjectForm.Pages;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Mvc.ViewFeatures.Internal;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Controllers
 {
-    public class CollectionsController : Controller
+    [ApiController]
+    public class CollectionsController : ControllerBase
     {
         private readonly ProposalsDbContext _proposalsDbContext;
         private readonly IUserManager _userManager;
@@ -29,7 +26,7 @@ namespace Dccn.ProjectForm.Controllers
         }
 
         [HttpPost("/Experimenters/Add/{proposalId}", Name = "AddExperimenter")]
-        public async Task<IActionResult> AddExperimenterAsync(int proposalId, [Required] string userId)
+        public async Task<ActionResult<Experimenter>> AddExperimenterAsync(int proposalId, [Required] byte[] timestamp, [Required] string userId)
         {
             if (!ModelState.IsValid)
             {
@@ -51,6 +48,11 @@ namespace Dccn.ProjectForm.Controllers
                 return Forbid();
             }
 
+            if (!proposal.Timestamp.SequenceEqual(timestamp))
+            {
+                return Conflict();
+            }
+
             var user = await _userManager.GetUserByIdAsync(userId);
             if (user == null)
             {
@@ -64,21 +66,16 @@ namespace Dccn.ProjectForm.Controllers
                 return BadRequest(ModelState);
             }
 
-            proposal.Experimenters.Add(new Experimenter
+            var experimenter = new Experimenter
             {
                 UserId = user.Id
-            });
+            };
+
+            proposal.Experimenters.Add(experimenter);
 
             await _proposalsDbContext.SaveChangesAsync();
 
-            Expression<Func<FormModel, ExperimenterModel>> expr = m => m.Experiment.Experimenters[proposal.Experimenters.Count];
-            ViewData.TemplateInfo.HtmlFieldPrefix = ExpressionHelper.GetExpressionText(expr);
-
-            return PartialView("_Experimenter", new ExperimenterModel
-            {
-                Id = user.Id,
-                Name = user.DisplayName
-            });
+            return experimenter;
         }
     }
 }

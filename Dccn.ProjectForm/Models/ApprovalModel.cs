@@ -2,7 +2,7 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    public class PendingApprovalModel
+    public class ApprovalModel
     {
         public int ProposalId { get; set; }
 
@@ -19,5 +19,8 @@ namespace Dccn.ProjectForm.Models
 
         [Display(Name = "Approval role")]
         public ApprovalAuthorityRoleModel Role { get; set; }
+
+        [Display(Name = "Status")]
+        public ApprovalStatusModel Status { get; set; }
     }
 }

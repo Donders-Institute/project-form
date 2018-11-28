@@ -7,17 +7,19 @@
 
         public ApprovalAuthorityRole AuthorityRole { get; set; }
         public ApprovalStatus Status { get; set; }
-        public string ApprovedBy { get; set; }
+        public string ValidatedBy { get; set; }
     }
 
     public enum ApprovalAuthorityRole
     {
+        Supervisor,
         Ethics,
+        Funding,
         LabMri,
         LabOther,
+        DataManager,
         Privacy,
-        Funding,
-        Supervisor,
+        Payment,
         Director,
         Administration
     }

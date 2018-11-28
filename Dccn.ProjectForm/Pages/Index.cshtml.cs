@@ -40,7 +40,7 @@ namespace Dccn.ProjectForm.Pages
         public bool IsApprovalAuthority { get; private set; }
         public ICollection<ProposalModel> MyProposals { get; private set; }
         public ICollection<ProposalModel> SupervisedProposals { get; private set; }
-        public ICollection<PendingApprovalModel> PendingApprovals { get; private set; }
+        public ICollection<ApprovalModel> Approvals { get; private set; }
 
         [UsedImplicitly]
         public async Task OnGetAsync()
@@ -110,7 +110,7 @@ namespace Dccn.ProjectForm.Pages
                     }
                 },
                 Approvals = EnumUtils.GetValues<ApprovalAuthorityRole>()
-                    .Select(role => new Approval()
+                    .Select(role => new Approval
                     {
                         AuthorityRole = role
                     })
@@ -127,7 +127,7 @@ namespace Dccn.ProjectForm.Pages
                 });
             }
 
-            _proposalsDbContext.Add(proposal);
+            _proposalsDbContext.Proposals.Add(proposal);
             await _proposalsDbContext.SaveChangesAsync();
 
             return RedirectToPage("Form", new {proposalId = proposal.Id});
@@ -162,26 +162,33 @@ namespace Dccn.ProjectForm.Pages
             {
                 var approvalsQueryResult = await _proposalsDbContext.Approvals
                     .Where(a => authorityRoles.Contains(a.AuthorityRole))
-                    .Where(a => a.Status == ApprovalStatus.ApprovalPending)
+                    .Where(a => a.Status == ApprovalStatus.ApprovalPending || a.Status == ApprovalStatus.Rejected || a.Status == ApprovalStatus.Approved)
                     .Select(a => new
                     {
                         a.ProposalId,
                         ProposalOwnerId = a.Proposal.OwnerId,
                         ProposalTitle = a.Proposal.Title,
-                        a.AuthorityRole
+                        a.AuthorityRole,
+                        a.Status
                     })
                     .ToListAsync();
 
-                PendingApprovals = await approvalsQueryResult
-                    .Select(async a => new PendingApprovalModel
+                var unorderedApprovals = await approvalsQueryResult
+                    .Select(async a => new ApprovalModel
                     {
                         ProposalId = a.ProposalId,
                         SectionId = _sectionHandlers.FirstOrDefault(s => s.HasApprovalAuthorityRole(a.AuthorityRole))?.Id,
                         ProposalOwnerName = (await _userManager.GetUserByIdAsync(a.ProposalOwnerId)).DisplayName,
                         ProposalTitle = a.ProposalTitle,
-                        Role = (ApprovalAuthorityRoleModel) a.AuthorityRole
+                        Role = (ApprovalAuthorityRoleModel) a.AuthorityRole,
+                        Status = (ApprovalStatusModel) a.Status
                     })
                     .ToListAsync();
+
+                Approvals = unorderedApprovals
+                    .Where(a => a.Status == ApprovalStatusModel.ApprovalPending)
+                    .Concat(unorderedApprovals.Where(a => a.Status != ApprovalStatusModel.ApprovalPending))
+                    .ToList();
             }
 
             NewProposal = new NewProposalModel

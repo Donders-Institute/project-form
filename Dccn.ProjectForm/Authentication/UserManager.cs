@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Microsoft.EntityFrameworkCore;
 
@@ -37,14 +38,14 @@ namespace Dccn.ProjectForm.Authentication
             return principal.FindFirst(ClaimTypes.Group)?.Value;
         }
 
-        public IEnumerable<Role> GetRoles(ClaimsPrincipal principal)
+        public IEnumerable<ApprovalAuthorityRole> GetRoles(ClaimsPrincipal principal)
         {
-            return principal.FindAll(ClaimTypes.Role).Select(r => Enum.Parse<Role>(r.Value));
+            return principal.FindAll(ClaimTypes.Role).Select(r => Enum.Parse<ApprovalAuthorityRole>(r.Value));
         }
 
-        public bool IsInRole(ClaimsPrincipal principal, Role role)
+        public bool IsInRole(ClaimsPrincipal principal, ApprovalAuthorityRole role)
         {
-            return principal.IsInRole(Enum.GetName(typeof(Role), role));
+            return principal.IsInRole(Enum.GetName(typeof(ApprovalAuthorityRole), role));
         }
 
         public Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal)
@@ -105,8 +106,8 @@ namespace Dccn.ProjectForm.Authentication
         string GetUserName(ClaimsPrincipal principal);
         string GetEmailAddress(ClaimsPrincipal principal);
         string GetPrimaryGroupId(ClaimsPrincipal principal);
-        IEnumerable<Role> GetRoles(ClaimsPrincipal principal);
-        bool IsInRole(ClaimsPrincipal principal, Role role);
+        IEnumerable<ApprovalAuthorityRole> GetRoles(ClaimsPrincipal principal);
+        bool IsInRole(ClaimsPrincipal principal, ApprovalAuthorityRole role);
 
         Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
         Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId);

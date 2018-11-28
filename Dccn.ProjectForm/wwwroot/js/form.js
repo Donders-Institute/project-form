@@ -2,29 +2,42 @@
 
 jQuery(function($) {
     // Misc
-    function generateUniqueIndex() {
-        var uuid;
+//    function generateUniqueIndex() {
+//        var uuid;
+//
+//        do {
+//            uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
+//                var r = Math.random() * 16 | 0;
+//                var v = c === "x" ? r : r & 0x3 | 0x8;
+//                return v.toString(16);
+//            });
+//        } while ($("[data-index='" + uuid + "']").length > 0);
+//
+//        return uuid;
+//    }
 
-        do {
-            uuid = "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, function(c) {
-                var r = Math.random() * 16 | 0;
-                var v = c === "x" ? r : r & 0x3 | 0x8;
-                return v.toString(16);
-            });
-        } while ($("[data-index='" + uuid + "']").length > 0);
-
-        return uuid;
+    function debounce(func, wait, immediate) {
+        var timeout;
+        return function() {
+            var context = this, args = arguments;
+            var later = function() {
+                timeout = null;
+                if (!immediate) func.apply(context, args);
+            };
+            var callNow = immediate && !timeout;
+            clearTimeout(timeout);
+            timeout = setTimeout(later, wait);
+            if (callNow) func.apply(context, args);
+        };
     }
 
     function registerSubmitHandlers(root) {
         $(root).find("[data-submit-on]").each(function() {
             var $input = $(this);
-            var $form = $("#form");
-            var sectionId = $input.parents(".form-section").prop("id");
+            var $section = $input.parents(".form-section");
 
             $input.on($input.data("submit-on"), function() {
-                $form.data("section-id", sectionId);
-                $form.submit();
+                $section.submit();
             });
         });
     }
@@ -64,50 +77,28 @@ jQuery(function($) {
 //        return undefined;
 //    });
 
-    $("#form").data("submit-handler", function($form) {
-        var sectionId = $form.data("section-id");
-        var $items, url;
-        if (sectionId) {
-            url = $form.attr("action").replace(/__SECTION__/g, encodeURIComponent(sectionId));
-            $items = $form.find(":input").filter(function() {
-                var parentSectionId = $(this).parents(".form-section").prop("id");
-                return !parentSectionId || parentSectionId === sectionId;
-            });
-        } else {
-            url = $form.attr("action").replace(/__SECTION__/g, "");
-            $items = $form;
-        }
+//    $(".form-section").each(function() {
+//        var $section = $(this);
+//        $section.find("button[type='submit']").click(function() {
+//            $section
+//        })
+//    })
 
-        if ($form.data("recently-submitted")) {
-            $form.data("resubmit", true);
+    $(".form-section").data("submit-handler", function($section, event) {
+        var $clickedElement = $(document.activeElement);
+        if ($clickedElement.is("button[type='submit']")) {
             return;
         }
-        $form.data("recently-submitted", true);
+
         $.ajax({
-            type: $form.attr("method"),
-            url: url,
-            data: $items.serialize(),
+            type: $section.attr("method"),
+            url: $section.attr("action"),
+            data: $section.serialize(),
             dataType: "json"
         }).done(function(result) {
             $(".timestamp").val(result.timestamp);
             Validation.updateErrors(result.errors);
-        }).always(function() {
-            setTimeout(function() {
-                $form.data("recently-submitted", false);
-                if ($form.data("resubmit")) {
-                    $form.data("resubmit", false);
-                    $form.submit();
-                }
-            }, 1000);
         });
-    });
-
-    $("#request-approval-modal").on("show.bs.modal", function(event) {
-        var $button = $(event.relatedTarget);
-        var section = $button.data("section");
-
-        var $form = $(this).find("form");
-        $form.prop("action", $form.data("url").replace(/__SECTION__/g, encodeURIComponent(section)));
     });
 
     $(".radio-panel-input").change(function() {
@@ -320,25 +311,25 @@ jQuery(function($) {
 
 
     // Payment
-    $(".cost-subjects,.cost-average").change(function() {
-        var subjects = parseInt($(".cost-subjects").val());
-        var averageCost = parseFloat($(".cost-average").val());
+    $("#cost-subjects,#cost-average").change(function() {
+        var subjects = parseInt($("#cost-subjects").val());
+        var averageCost = parseFloat($("#cost-average").val());
         var totalCost = subjects * averageCost;
         if (!isNaN(totalCost)) {
-            $(".cost-predicted").val(totalCost.toFixed(2));
+            $("#cost-predicted").val(totalCost.toFixed(2));
         } else {
-            $(".cost-predicted").val("");
+            $("#cost-predicted").val("");
         }
-    });
+    }).change();
 
-    $(".quota-overrule").change(function() {
-        var $this = $(this);
-        if ($this.prop("checked")) {
-            $(".quota-custom").prop("disabled", false);
-        } else {
-            $(".quota-custom").prop("disabled", true).val("");
-        }
-    });
+//    $(".quota-overrule").change(function() {
+//        var $this = $(this);
+//        if ($this.prop("checked")) {
+//            $(".quota-custom").prop("disabled", false);
+//        } else {
+//            $(".quota-custom").prop("disabled", true).val("");
+//        }
+//    });
 
 
 

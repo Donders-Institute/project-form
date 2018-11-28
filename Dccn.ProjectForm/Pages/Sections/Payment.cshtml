@@ -9,7 +9,7 @@
                     <i class="fas fa-hashtag"></i>
                 </div>
             </div>
-            <input asp-for="SubjectCount" class="form-control cost-subjects" data-submit-on="change">
+            <input asp-for="SubjectCount" id="cost-subjects" class="form-control" data-submit-on="change">
         </div>
     </div>
     <div class="col-md form-group">
@@ -20,7 +20,7 @@
                     <i class="fas fa-euro-sign"></i>
                 </div>
             </div>
-            <input asp-for="AverageSubjectCost" class="form-control cost-average" data-submit-on="change">
+            <input asp-for="AverageSubjectCost" id="cost-average" class="form-control" data-submit-on="change">
         </div>
     </div>
     <div class="col-md form-group">
@@ -31,7 +31,7 @@
                     <i class="fas fa-euro-sign"></i>
                 </div>
             </div>
-            <input class="form-control cost-predicted" disabled>
+            <input id="cost-predicted" class="form-control" disabled>
         </div>
     </div>
     <div class="col-md form-group">

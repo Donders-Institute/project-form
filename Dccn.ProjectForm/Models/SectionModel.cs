@@ -10,8 +10,10 @@ namespace Dccn.ProjectForm.Models
         [BindNever] public string Id { get; set; }
         [BindNever] public IEnumerable<SectionApprovalModel> Approvals { get; set; }
         [BindNever] public bool CanEdit { get; set; }
-        [BindNever] public bool CanApprove { get; set; }
         [BindNever] public bool CanSubmit { get; set; }
+        [BindNever] public bool CanRetract { get; set; }
+        [BindNever] public bool CanApprove { get; set; }
+        [BindNever] public bool CanReject { get; set; }
     }
 
     public interface ISectionModel
@@ -20,7 +22,9 @@ namespace Dccn.ProjectForm.Models
         string Comments { get; set; }
         IEnumerable<SectionApprovalModel> Approvals { get; set; }
         bool CanEdit { get; set; }
-        bool CanApprove { get; set; }
         bool CanSubmit { get; set; }
+        bool CanRetract { get; set; }
+        bool CanApprove { get; set; }
+        bool CanReject { get; set; }
     }
 }

@@ -6,8 +6,8 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.0.100" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="8.0.100" />
+    <PackageReference Include="FluentValidation" Version="8.0.101" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="8.0.101" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
 
     <PackageReference Include="Handlebars.Net" Version="1.9.5" />

@@ -44,6 +44,7 @@ namespace Dccn.ProjectForm.Pages
         public DataSectionModel Data { get; } = new DataSectionModel();
         public PrivacySectionModel Privacy { get; } = new PrivacySectionModel();
         public PaymentSectionModel Payment { get; } = new PaymentSectionModel();
+        public SubmissionSectionModel Submission { get; } = new SubmissionSectionModel();
 
         public ICollection<ISectionModel> Sections { get; private set; }
 
@@ -92,7 +93,7 @@ namespace Dccn.ProjectForm.Pages
         }
 
         [UsedImplicitly]
-        public async Task<IActionResult> OnPostRequestApprovalAsync(int proposalId, [Required] string sectionId)
+        public async Task<IActionResult> OnPostSubmitAsync(int proposalId, [Required] string sectionId)
         {
             if (!ModelState.IsValid)
             {
@@ -103,12 +104,6 @@ namespace Dccn.ProjectForm.Pages
             if (proposal == null)
             {
                 return error;
-            }
-
-            if (!ModelState.IsValid)
-            {
-                await LoadFormAsync(proposal);
-                return Page();
             }
 
             var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
@@ -128,20 +123,192 @@ namespace Dccn.ProjectForm.Pages
                 if (sectionHandler.IsAuthorityApplicable(proposal, approval.AuthorityRole))
                 {
                     var authority = await _authorityProvider.GetAuthorityAsync(proposal, approval.AuthorityRole);
-                    await _emailService.SendEmailAsync(User, new ApprovalRequest
+                    // Is dummy authority (no approval required)?
+                    if (authority == null)
                     {
-                        Applicant = _userManager.GetUserName(User),
-                        ProposalTitle = proposal.Title,
-                        SectionName = sectionHandler.DisplayName,
-                        Recipient = new MailAddress(authority.Email, authority.DisplayName),
-                    });
-                    approval.Status = ApprovalStatus.ApprovalPending;
+                        approval.Status = ApprovalStatus.Approved;
+                    }
+                    else
+                    {
+                        await _emailService.SendEmailAsync(User, new ApprovalRequest
+                        {
+                            Applicant = _userManager.GetUserName(User),
+                            ProposalTitle = proposal.Title,
+                            SectionName = sectionHandler.DisplayName,
+                            Recipient = new MailAddress(authority.Email, authority.DisplayName),
+                        });
+                        approval.Status = ApprovalStatus.ApprovalPending;
+                    }
                 }
                 else
                 {
                     approval.Status = ApprovalStatus.NotApplicable;
                 }
             }
+
+            await _proposalsDbContext.SaveChangesAsync();
+
+            return RedirectToPage(null, null, new { proposalId }, sectionId);
+        }
+
+        [UsedImplicitly]
+        public async Task<IActionResult> OnPostRetractAsync(int proposalId, [Required] string sectionId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (proposal, error) = await LoadProposalAsync(proposalId);
+            if (proposal == null)
+            {
+                return error;
+            }
+
+            var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
+            if (!await AuthorizeAsync(proposal, FormSectionOperation.Retract(sectionHandler.ModelType)))
+            {
+                return Forbid();
+            }
+
+            foreach (var approval in sectionHandler.GetAssociatedApprovals(proposal))
+            {
+                approval.Status = ApprovalStatus.NotSubmitted;
+                approval.ValidatedBy = null;
+            }
+
+            await _proposalsDbContext.SaveChangesAsync();
+
+            return RedirectToPage(null, null, new { proposalId }, sectionId);
+        }
+
+        [UsedImplicitly]
+        public Task<IActionResult> OnPostApproveAsync(int proposalId, [Required] string sectionId)
+        {
+            return ApproveOrRejectAsync(proposalId, sectionId, true);
+        }
+
+        [UsedImplicitly]
+        public Task<IActionResult> OnPostRejectAsync(int proposalId, [Required] string sectionId)
+        {
+            return ApproveOrRejectAsync(proposalId, sectionId, false);
+        }
+
+        [UsedImplicitly]
+        public async Task<IActionResult> OnPostAddExperimenterAsync(int proposalId, [Required] string userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (proposal, error) = await LoadProposalAsync(proposalId);
+            if (proposal == null)
+            {
+                return error;
+            }
+
+            if (!await AuthorizeAsync(proposal, FormSectionOperation.Edit<ExperimentSectionModel>()))
+            {
+                return Forbid();
+            }
+
+            var user = await _userManager.GetUserByIdAsync(userId);
+            if (user == null)
+            {
+                ModelState.AddModelError(nameof(userId), "User with the given ID does not exist.");
+                return BadRequest(ModelState);
+            }
+
+            if (proposal.Experimenters.Any(e => e.UserId == user.Id))
+            {
+                ModelState.AddModelError(nameof(userId), "Experimenter already in list.");
+                return BadRequest(ModelState);
+            }
+
+            proposal.Experimenters.Add(new Experimenter
+            {
+                UserId = user.Id
+            });
+
+            await _proposalsDbContext.SaveChangesAsync();
+
+            return new JsonResult(new ExperimenterModel
+            {
+                Id = user.Id,
+                Name = user.DisplayName
+            });
+        }
+
+        [UsedImplicitly]
+        public async Task<IActionResult> OnPostRemoveExperimenterAsync(int proposalId, [Required] string userId)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (proposal, error) = await LoadProposalAsync(proposalId);
+            if (proposal == null)
+            {
+                return error;
+            }
+
+            if (!await AuthorizeAsync(proposal, FormSectionOperation.Edit<ExperimentSectionModel>()))
+            {
+                return Forbid();
+            }
+
+            var experimenter = proposal.Experimenters.FirstOrDefault(e => e.UserId == userId);
+            if (experimenter == null)
+            {
+                ModelState.AddModelError(nameof(userId), "Experimenter not in list.");
+                return BadRequest(ModelState);
+            }
+
+            proposal.Experimenters.Remove(experimenter);
+
+            await _proposalsDbContext.SaveChangesAsync();
+
+            return new OkResult();
+        }
+
+        private async Task<IActionResult> ApproveOrRejectAsync(int proposalId, string sectionId, bool approve)
+        {
+            if (!ModelState.IsValid)
+            {
+                return BadRequest(ModelState);
+            }
+
+            var (proposal, error) = await LoadProposalAsync(proposalId);
+            if (proposal == null)
+            {
+                return error;
+            }
+
+            var sectionHandler = _sectionHandlers.Single(h => h.Id == sectionId);
+            var operation = approve
+                ? FormSectionOperation.Approve(sectionHandler.ModelType)
+                : FormSectionOperation.Reject(sectionHandler.ModelType);
+            if (!await AuthorizeAsync(proposal, operation))
+            {
+                return Forbid();
+            }
+
+            if (!await sectionHandler.ValidateProposalAsync(this, proposal))
+            {
+                await LoadFormAsync(proposal);
+                return Page();
+            }
+
+            var approval = sectionHandler
+                .GetAssociatedApprovals(proposal)
+                .Single(a => _userManager.IsInRole(User, a.AuthorityRole)
+                             || a.AuthorityRole == ApprovalAuthorityRole.Supervisor
+                             && proposal.SupervisorId == _userManager.GetUserId(User));
+
+            approval.Status = approve ? ApprovalStatus.Approved : ApprovalStatus.Rejected;
+            approval.ValidatedBy = _userManager.GetUserId(User);
 
             await _proposalsDbContext.SaveChangesAsync();
 
@@ -193,8 +360,10 @@ namespace Dccn.ProjectForm.Pages
 
                 var model = sectionHandler.GetModel(this);
                 model.CanEdit = await AuthorizeAsync(proposal, FormSectionOperation.Edit(sectionHandler.ModelType));
-                model.CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(sectionHandler.ModelType));
                 model.CanSubmit = await AuthorizeAsync(proposal, FormSectionOperation.Submit(sectionHandler.ModelType));
+                model.CanRetract = await AuthorizeAsync(proposal, FormSectionOperation.Retract(sectionHandler.ModelType));
+                model.CanApprove = await AuthorizeAsync(proposal, FormSectionOperation.Approve(sectionHandler.ModelType));
+                model.CanReject = await AuthorizeAsync(proposal, FormSectionOperation.Reject(sectionHandler.ModelType));
             }
         }
 

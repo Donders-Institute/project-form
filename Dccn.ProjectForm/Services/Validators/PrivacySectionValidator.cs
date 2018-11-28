@@ -5,6 +5,9 @@ namespace Dccn.ProjectForm.Services.Validators
 {
     public class PrivacySectionValidator : AbstractValidator<PrivacySectionModel>
     {
-        // TODO
+        public PrivacySectionValidator()
+        {
+
+        }
     }
 }

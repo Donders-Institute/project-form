@@ -7,20 +7,25 @@ namespace Dccn.ProjectForm.Extensions
 {
     public static class EnumExtensions
     {
-        public static string GetDisplayName(this Enum @enum)
+        public static string GetName<TEnum>(this TEnum @enum) where TEnum : Enum
         {
-            return GetDisplayAttribute(@enum)?.GetName() ?? Enum.GetName(@enum.GetType(), @enum);
+            return Enum.GetName(typeof(TEnum), @enum);
         }
 
-        public static string GetDisplayDescription(this Enum @enum)
+        public static string GetDisplayName<TEnum>(this TEnum @enum) where TEnum : Enum
+        {
+            return GetDisplayAttribute(@enum)?.GetName() ?? @enum.GetName();
+        }
+
+        public static string GetDisplayDescription<TEnum>(this TEnum @enum) where TEnum : Enum
         {
             return GetDisplayAttribute(@enum)?.GetDescription();
         }
 
-        private static DisplayAttribute GetDisplayAttribute(Enum @enum)
+        private static DisplayAttribute GetDisplayAttribute<TEnum>(TEnum @enum) where TEnum : Enum
         {
-            return @enum.GetType()
-                .GetMember(@enum.ToString())
+            return typeof(TEnum)
+                .GetMember(@enum.GetName())
                 .First()
                 .GetCustomAttribute<DisplayAttribute>();
         }

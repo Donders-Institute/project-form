@@ -21,11 +21,11 @@ namespace Dccn.ProjectForm.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Proposal proposal)
         {
-            if (_userManager.IsInRole(context.User, Role.Administrator))
-            {
-                context.Succeed(requirement);
-                return Task.CompletedTask;
-            }
+//            if (_userManager.IsInRole(context.User, Role.Administrator))
+//            {
+//                context.Succeed(requirement);
+//                return Task.CompletedTask;
+//            }
 
             var userId = _userManager.GetUserId(context.User);
             if (requirement == FormOperation.View)

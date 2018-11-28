@@ -1,131 +1,111 @@
 ﻿@model Models.PrivacySectionModel
+@using Models
 
 <div class="form-group">
     <label asp-for="DataTypes"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Names
-                    @* <input asp-for="DataTypes" type="checkbox" autocomplete="off" value="@Models.Privacy.DataType.Name"> Names *@
+    <div class="form-row">
+        <div class="col-auto btn-group btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
+            @foreach (var (id, info) in Model.DataTypes)
+            {
+                <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
+                    <input asp-for="DataTypes[id].Present" autocomplete="off" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Addresses
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> E-mail addresses
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Phone numbers
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Dates of birth
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> SONA ID's
-                </label>
-            </div>
+            }
         </div>
-        <input class="form-control" type="text" placeholder="Other">
+        <div class="col">
+            <textarea asp-for="CustomDataTypes" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other (one per line)" rows="1" data-submit-on="change"></textarea>
+        </div>
     </div>
     <small asp-description-for="DataTypes"></small>
 </div>
 
 <div class="form-group">
     <label asp-for="Motivations"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Experiment scheduling
+    <div class="form-row">
+        <div class="col-auto btn-group btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
+            @foreach (var (id, info) in Model.Motivations)
+            {
+                <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
+                    <input name="@Html.NameFor(m => m.Motivations[id].Present)" type="checkbox" autocomplete="off"
+                           @{if (info.Present) { <text> checked</text> }}
+                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Incidental findings
-                </label>
-            </div>
+            }
         </div>
-        <input class="form-control" type="text" placeholder="Other">
+        <div class="col">
+            <textarea asp-for="CustomMotivations" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other (one per line)" rows="1" data-submit-on="change"></textarea>
+        </div>
     </div>
     <small asp-description-for="Motivations"></small>
 </div>
 
 <div class="form-group">
     <label asp-for="StorageLocations"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Home folder (M:\)
+    <div class="form-row">
+        <div class="col-auto btn-group btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
+            @foreach (var (id, info) in Model.StorageLocations)
+            {
+                <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
+                    <input name="@Html.NameFor(m => m.StorageLocations[id].Present)" type="checkbox" autocomplete="off"
+                           @{if (info.Present) { <text> checked</text> }}
+                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Project folder (P:\)
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> DCC
-                </label>
-            </div>
+            }
         </div>
-        <input class="form-control" type="text" placeholder="Other">
+        <div class="col">
+            <textarea asp-for="CustomStorageLocations" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other (one per line)" rows="1" data-submit-on="change"></textarea>
+        </div>
     </div>
     <small asp-description-for="StorageLocations"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="Accessors"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Managers
+    <label asp-for="DataAccessors"></label>
+    <div class="form-row">
+        <div class="col-auto btn-group btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
+            @foreach (var (id, info) in Model.DataAccessors)
+            {
+                <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
+                    <input name="@Html.NameFor(m => m.DataAccessors[id].Present)" type="checkbox" autocomplete="off"
+                           @{if (info.Present) { <text> checked</text> }}
+                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Contributors
-                </label>
-            </div>
+            }
         </div>
-        <input class="form-control" type="text" placeholder="Other">
+        <div class="col">
+            <textarea asp-for="CustomDataAccessors" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other (one per line)" rows="1" data-submit-on="change"></textarea>
+        </div>
     </div>
-    <small asp-description-for="Accessors"></small>
+    <small asp-description-for="DataAccessors"></small>
 </div>
 
 <div class="form-group">
     <label asp-for="SecurityMeasures"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Password protection
+    <div class="form-row">
+        <div class="col-auto btn-group btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
+            @foreach (var (id, info) in Model.SecurityMeasures)
+            {
+                <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
+                    <input name="@Html.NameFor(m => m.SecurityMeasures[id].Present)" type="checkbox" autocomplete="off"
+                           @{if (info.Present) { <text> checked</text> }}
+                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="checkbox" autocomplete="off"> Key-file encryption
-                </label>
-            </div>
+            }
         </div>
-        <input class="form-control" type="text" placeholder="Other">
+        <div class="col">
+            <textarea asp-for="CustomSecurityMeasures" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other (one per line)" rows="1" data-submit-on="change"></textarea>
+        </div>
     </div>
     <small asp-description-for="SecurityMeasures"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="DataDisposalTerm"></label>
-    <div class="w-100"></div>
-    <div class="input-group input-group-sm">
-        <div class="input-group-append">
-            <div class="btn-group btn-group-sm btn-group-toggle" data-toggle="buttons">
-                <label class="btn btn-outline-secondary">
-                    <input type="radio" autocomplete="off"> 1 month after ending data acquisition
-                </label>
-                <label class="btn btn-outline-secondary">
-                    <input type="radio" autocomplete="off"> 1 year after ending data acquisition
-                </label>
-            </div>
-        </div>
-        <input class="form-control" type="text" placeholder="Other">
-    </div>
-    <small asp-description-for="DataDisposalTerm"></small>
+    <label asp-for="DataDisposalTermDays"></label>
+    <input asp-for="DataDisposalTermDays" class="form-control" data-submit-on="change"/>
+    <small asp-description-for="DataDisposalTermDays"></small>
 </div>

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
@@ -20,6 +21,7 @@ namespace Dccn.ProjectForm.Services
     public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler<TModel> where TModel : ISectionModel, new()
     {
         private readonly IAuthorityProvider _authorityProvider;
+        private readonly IUserManager _userManager;
         private readonly IValidator<TModel> _validator;
         private readonly ModelMetadata _metadata;
         private readonly Func<FormModel, TModel> _compiledExpr;
@@ -27,7 +29,8 @@ namespace Dccn.ProjectForm.Services
         protected FormSectionHandlerBase(IServiceProvider serviceProvider, Expression<Func<FormModel, TModel>> expression)
         {
             _authorityProvider = serviceProvider.GetRequiredService<IAuthorityProvider>();
-            _validator = serviceProvider.GetService<IValidator<TModel>>() ?? new InlineValidator<TModel>();
+            _userManager = serviceProvider.GetRequiredService<IUserManager>();
+            _validator = serviceProvider.GetService<IValidator<TModel>>();
             _compiledExpr = expression.Compile();
 
             var metadataProvider = serviceProvider.GetRequiredService<IModelMetadataProvider>();
@@ -76,6 +79,11 @@ namespace Dccn.ProjectForm.Services
 
         public virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
+            if (!ApprovalRoles.Contains(authorityRole))
+            {
+                throw new ArgumentOutOfRangeException(nameof(authorityRole));
+            }
+
             return true;
         }
 
@@ -102,8 +110,25 @@ namespace Dccn.ProjectForm.Services
                 .Select(async a =>
                 {
                     var authority = await _authorityProvider.GetAuthorityAsync(proposal, a.AuthorityRole);
+                    if (authority == null)
+                    {
+                        return new SectionApprovalModel
+                        {
+                            IsAutoApproved = true,
+                            Status = (ApprovalStatusModel) a.Status
+                        };
+                    }
+
+                    // Show authority who approved the section at the time as opposed to current approval role
+                    if (a.Status == ApprovalStatus.Approved || a.Status == ApprovalStatus.Rejected)
+                    {
+                        authority = await _userManager.GetUserByIdAsync(a.ValidatedBy);
+                    }
+
                     return new SectionApprovalModel
                     {
+                        IsAutoApproved = false,
+                        AuthorityRole = (ApprovalAuthorityRoleModel) a.AuthorityRole,
                         AuthorityName = authority.DisplayName,
                         AuthorityEmail = authority.Email,
                         Status = (ApprovalStatusModel) a.Status
@@ -185,7 +210,8 @@ namespace Dccn.ProjectForm.Services
                 .AddTransient<IFormSectionHandler<ExperimentSectionModel>, ExperimentSectionHandler>()
                 .AddTransient<IFormSectionHandler<DataSectionModel>, DataSectionHandler>()
                 .AddTransient<IFormSectionHandler<PrivacySectionModel>, PrivacySectionHandler>()
-                .AddTransient<IFormSectionHandler<PaymentSectionModel>, PaymentSectionHandler>();
+                .AddTransient<IFormSectionHandler<PaymentSectionModel>, PaymentSectionHandler>()
+                .AddTransient<IFormSectionHandler<SubmissionSectionModel>, SubmissionSectionHandler>();
 
             services
                 .AddTransient<IFormSectionHandler, GeneralSectionHandler>()
@@ -194,7 +220,8 @@ namespace Dccn.ProjectForm.Services
                 .AddTransient<IFormSectionHandler, ExperimentSectionHandler>()
                 .AddTransient<IFormSectionHandler, DataSectionHandler>()
                 .AddTransient<IFormSectionHandler, PrivacySectionHandler>()
-                .AddTransient<IFormSectionHandler, PaymentSectionHandler>();
+                .AddTransient<IFormSectionHandler, PaymentSectionHandler>()
+                .AddTransient<IFormSectionHandler, SubmissionSectionHandler>();
 
             return services;
         }

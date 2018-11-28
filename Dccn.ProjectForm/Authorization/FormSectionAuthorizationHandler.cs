@@ -26,14 +26,14 @@ namespace Dccn.ProjectForm.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FormSectionOperation requirement, Proposal proposal)
         {
-            if (_userManager.IsInRole(context.User, Role.Administrator))
-            {
-                context.Succeed(requirement);
-                return Task.CompletedTask;
-            }
+//            if (_userManager.IsInRole(context.User, Role.Administrator))
+//            {
+//                context.Succeed(requirement);
+//                return Task.CompletedTask;
+//            }
 
             var userId = _userManager.GetUserId(context.User);
-            var sectionHandler =  _sectionHandlers.Single(h => h.ModelType == requirement.SectionType);
+            var sectionHandler =  _sectionHandlers.First(h => h.ModelType == requirement.SectionType);
             var approvals =  sectionHandler.GetAssociatedApprovals(proposal);
             switch (requirement.Operation)
             {
@@ -53,6 +53,9 @@ namespace Dccn.ProjectForm.Authorization
                 case FormSectionOperation.OperationType.Submit when userId == proposal.OwnerId && approvals.All(CanOwnerSubmit):
                     context.Succeed(requirement);
                     break;
+                case FormSectionOperation.OperationType.Retract when userId == proposal.OwnerId && approvals.All(CanOwnerRetract):
+                    context.Succeed(requirement);
+                    break;
                 case FormSectionOperation.OperationType.Approve:
                 {
                     var approval = approvals.SingleOrDefault(a => _authorityProvider.GetAuthorityId(proposal, a.AuthorityRole) == userId);
@@ -63,6 +66,19 @@ namespace Dccn.ProjectForm.Authorization
 
                     break;
                 }
+                case FormSectionOperation.OperationType.Reject:
+                {
+                    var approval = approvals.SingleOrDefault(a => _authorityProvider.GetAuthorityId(proposal, a.AuthorityRole) == userId);
+                    if (approval != null && CanAuthorityReject(approval))
+                    {
+                        context.Succeed(requirement);
+                    }
+
+                    break;
+                }
+                default:
+                    context.Fail();
+                    break;
             }
 
             return Task.CompletedTask;
@@ -71,25 +87,39 @@ namespace Dccn.ProjectForm.Authorization
         private static bool CanOwnerEdit(Approval approval)
         {
             return approval.Status == ApprovalStatus.NotSubmitted
-                   || approval.Status == ApprovalStatus.NotApplicable
-                   || approval.Status == ApprovalStatus.Rejected;
+                   || approval.Status == ApprovalStatus.NotApplicable;
         }
 
         private static bool CanOwnerSubmit(Approval approval)
         {
             return approval.Status == ApprovalStatus.NotSubmitted
-                   || approval.Status == ApprovalStatus.NotApplicable
-                   || approval.Status == ApprovalStatus.Rejected;
+                   || approval.Status == ApprovalStatus.NotApplicable;
+        }
+
+        private static bool CanOwnerRetract(Approval approval)
+        {
+            return approval.Status == ApprovalStatus.NotApplicable
+                   || approval.Status == ApprovalStatus.ApprovalPending
+                   || approval.Status == ApprovalStatus.Rejected
+                   || approval.Status == ApprovalStatus.Approved;
         }
 
         private static bool CanAuthorityEdit(Approval approval)
         {
-            return approval.Status == ApprovalStatus.ApprovalPending;
+            return approval.Status == ApprovalStatus.ApprovalPending
+                   || approval.Status == ApprovalStatus.Rejected;
         }
 
         private static bool CanAuthorityApprove(Approval approval)
         {
-            return approval.Status == ApprovalStatus.ApprovalPending;
+            return approval.Status == ApprovalStatus.ApprovalPending
+                   || approval.Status == ApprovalStatus.Rejected;
+        }
+
+        private static bool CanAuthorityReject(Approval approval)
+        {
+            return approval.Status == ApprovalStatus.ApprovalPending
+                   || approval.Status == ApprovalStatus.Approved;
         }
     }
 
@@ -98,8 +128,10 @@ namespace Dccn.ProjectForm.Authorization
         public enum OperationType
         {
             Edit,
+            Submit,
+            Retract,
             Approve,
-            Submit
+            Reject
         }
 
         private FormSectionOperation(OperationType operation, Type sectionType)
@@ -119,14 +151,24 @@ namespace Dccn.ProjectForm.Authorization
             return new FormSectionOperation(OperationType.Edit, sectionType);
         }
 
+        public static FormSectionOperation Submit(Type sectionType)
+        {
+            return new FormSectionOperation(OperationType.Submit, sectionType);
+        }
+
+        public static FormSectionOperation Retract(Type sectionType)
+        {
+            return new FormSectionOperation(OperationType.Retract, sectionType);
+        }
+
         public static FormSectionOperation Approve(Type sectionType)
         {
             return new FormSectionOperation(OperationType.Approve, sectionType);
         }
 
-        public static FormSectionOperation Submit(Type sectionType)
+        public static FormSectionOperation Reject(Type sectionType)
         {
-            return new FormSectionOperation(OperationType.Submit, sectionType);
+            return new FormSectionOperation(OperationType.Reject, sectionType);
         }
 
         public static FormSectionOperation Edit<TSection>() where TSection : ISectionModel
@@ -134,14 +176,24 @@ namespace Dccn.ProjectForm.Authorization
             return new FormSectionOperation(OperationType.Edit, typeof(TSection));
         }
 
+        public static FormSectionOperation Submit<TSection>() where TSection : ISectionModel
+        {
+            return new FormSectionOperation(OperationType.Submit, typeof(TSection));
+        }
+
+        public static FormSectionOperation Retract<TSection>() where TSection : ISectionModel
+        {
+            return new FormSectionOperation(OperationType.Retract, typeof(TSection));
+        }
+
         public static FormSectionOperation Approve<TSection>() where TSection : ISectionModel
         {
             return new FormSectionOperation(OperationType.Approve, typeof(TSection));
         }
 
-        public static FormSectionOperation Submit<TSection>() where TSection : ISectionModel
+        public static FormSectionOperation Reject<TSection>() where TSection : ISectionModel
         {
-            return new FormSectionOperation(OperationType.Submit, typeof(TSection));
+            return new FormSectionOperation(OperationType.Reject, typeof(TSection));
         }
 
         public OperationType Operation { get; }

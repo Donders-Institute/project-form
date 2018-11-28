@@ -1,8 +1,10 @@
-﻿using System;
+﻿using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Extensions;
+using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.Cookies;
@@ -18,13 +20,17 @@ namespace Dccn.ProjectForm.Authentication
     [UsedImplicitly]
     public class SignInManager : ISignInManager
     {
+        public const string AuthenticationScheme = CookieAuthenticationDefaults.AuthenticationScheme;
+
         private readonly IHostingEnvironment _environment;
+        private readonly IAuthorityProvider _authorityProvider;
         private readonly LdapOptions _ldapOptions;
         private readonly ILogger _logger;
 
-        public SignInManager(IHostingEnvironment environment, IOptionsSnapshot<LdapOptions> ldapOptions, IUserManager userManager, ILogger<SignInManager> logger)
+        public SignInManager(IHostingEnvironment environment, IAuthorityProvider authorityProvider, IOptionsSnapshot<LdapOptions> ldapOptions, ILogger<SignInManager> logger, IUserManager userManager)
         {
             _environment = environment;
+            _authorityProvider = authorityProvider;
             _ldapOptions = ldapOptions.Value;
             _logger = logger;
             UserManager = userManager;
@@ -47,35 +53,31 @@ namespace Dccn.ProjectForm.Authentication
                 return false;
             }
 
-            var identity = new ClaimsIdentity(CookieAuthenticationDefaults.AuthenticationScheme, ClaimTypes.UserName, ClaimTypes.Role);
-
+            var identity = new ClaimsIdentity(AuthenticationScheme, ClaimTypes.UserName, ClaimTypes.Role);
             identity.AddClaim(new Claim(ClaimTypes.UserId, user.Id));
             identity.AddClaim(new Claim(ClaimTypes.UserName, user.DisplayName));
             identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
             identity.AddClaim(new Claim(ClaimTypes.Group, user.GroupId));
-            if (user.IsHead)
-            {
-                identity.AddClaim(new Claim(ClaimTypes.Role, Enum.GetName(typeof(Role), Role.Supervisor)));
-            }
+            identity.AddClaims(_authorityProvider.GetAuthorityRoles(user.Id).Select(r => new Claim(ClaimTypes.Role, r.GetName())));
 
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = isPersistent
             };
 
-            await httpContext.SignInAsync(CookieAuthenticationDefaults.AuthenticationScheme, new ClaimsPrincipal(identity), authProperties);
+            await httpContext.SignInAsync(AuthenticationScheme, new ClaimsPrincipal(identity), authProperties);
 
             return true;
         }
 
         public async Task SignOutAsync(HttpContext httpContext)
         {
-            await httpContext.SignOutAsync(CookieAuthenticationDefaults.AuthenticationScheme);
+            await httpContext.SignOutAsync(AuthenticationScheme);
         }
 
         public bool IsSignedIn(ClaimsPrincipal user)
         {
-            return user.Identity.IsAuthenticated && user.Identity.AuthenticationType == CookieAuthenticationDefaults.AuthenticationScheme;
+            return user.Identity.IsAuthenticated && user.Identity.AuthenticationType == AuthenticationScheme;
         }
 
         private bool CheckPasswordSignIn(ProjectsUser user, string password)

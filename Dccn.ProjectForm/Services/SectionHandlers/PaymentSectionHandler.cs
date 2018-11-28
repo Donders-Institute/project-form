@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
@@ -14,7 +13,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         {
         }
 
-        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
+        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Payment};
 
         protected override Task LoadAsync(PaymentSectionModel model, Proposal proposal)
         {

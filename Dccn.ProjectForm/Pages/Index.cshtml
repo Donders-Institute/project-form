@@ -8,16 +8,16 @@
 {
     <div class="card mb-3">
         <div class="card-header">
-            <h1 class="display-4">Pending approvals</h1>
+            <h1 class="display-4">Approvals</h1>
         </div>
         <div class="card-body">
-            <p class="card-text">Project proposals that require your approval.</p>
+            <p class="card-text">Project proposals that you have approved or that require your approval.</p>
             <div class="card">
                 <ul class="list-group list-group-flush">
                     <li class="list-group-item list-group-placeholder">
                         <span class="text-muted font-italic">No pending approvals</span>
                     </li>
-                    @foreach (var approval in Model.PendingApprovals)
+                    @foreach (var approval in Model.Approvals)
                     {
                         <li class="list-group-item">
                             <div class="row">
@@ -29,6 +29,9 @@
 
                                         <dt class="col-3">@Html.DisplayNameFor(_ => approval.Role)</dt>
                                         <dd class="col-9">@Html.DisplayFor(_ => approval.Role)</dd>
+
+                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.Status)</dt>
+                                        <dd class="col-9">@Html.DisplayFor(_ => approval.Status)</dd>
                                     </dl>
                                 </div>
 

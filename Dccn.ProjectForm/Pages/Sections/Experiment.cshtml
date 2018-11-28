@@ -1,7 +1,7 @@
 ﻿@model Models.ExperimentSectionModel
 @using System.Web
-@using Dccn.ProjectForm.Models
-@using Dccn.ProjectForm.Services
+@using Models
+@using Services
 @inject IModalityProvider ModalityProvider
 
 @* Start/end date *@
@@ -173,7 +173,7 @@
     <div class="card-body">
         <h5 class="card-title">Experimenters</h5>
         <h6 class="card-subtitle text-muted mb-3">
-            Experimenters are allowed to do lab booking for the project By default, the project owner is an experimenter.
+            Experimenters are allowed to do lab booking for the project. By default, the project owner is an experimenter.
         </h6>
         <div class="card">
             <div class="card-header py-2">
@@ -185,7 +185,7 @@
                                data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" >
                     </div>
                     <div class="col-auto">
-                        <button type="button" class="btn btn-sm btn-outline-secondary user-add"
+                        <button class="btn btn-sm btn-outline-secondary user-add" type="button"
                                 data-usertype="experimenter" data-submit-on="click">
                             <i class="fas fa-plus-square"></i>
                         </button>

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using JetBrains.Annotations;
 
 namespace Dccn.ProjectForm.Data
@@ -58,7 +59,12 @@ namespace Dccn.ProjectForm.Data
         #endregion
 
         #region Privacy
-        // TODO
+        public ICollection<string> PrivacyDataTypes { get; set; } = new Collection<string>();
+        public ICollection<string> PrivacyMotivations { get; set; } = new Collection<string>();
+        public ICollection<string> PrivacyStorageLocations { get; set; } = new Collection<string>();
+        public ICollection<string> PrivacyDataAccessors { get; set; } = new Collection<string>();
+        public ICollection<string> PrivacySecurityMeasures { get; set; } = new Collection<string>();
+        public TimeSpan? PrivacyDataDisposalTerm { get; set; }
         #endregion
 
         #region Payment

@@ -1,5 +1,8 @@
-﻿using JetBrains.Annotations;
+﻿using System.Collections.Generic;
+using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
+using Newtonsoft.Json;
 
 namespace Dccn.ProjectForm.Data
 {
@@ -33,6 +36,16 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.EndDate).HasColumnType("DATE");
                 b.Property(e => e.PaymentAverageSubjectCost).HasColumnType("decimal(5, 2)");
                 b.Property(e => e.PaymentMaxTotalCost).HasColumnType("decimal(6, 2)");
+
+                var jsonConverter = new ValueConverter<ICollection<string>, string>(
+                                        m => JsonConvert.SerializeObject(m),
+                                        p => JsonConvert.DeserializeObject<ICollection<string>>(p));
+
+                b.Property(e => e.PrivacyDataTypes).IsRequired().HasConversion(jsonConverter);
+                b.Property(e => e.PrivacyMotivations).IsRequired().HasConversion(jsonConverter);
+                b.Property(e => e.PrivacyStorageLocations).IsRequired().HasConversion(jsonConverter);
+                b.Property(e => e.PrivacyDataAccessors).IsRequired().HasConversion(jsonConverter);
+                b.Property(e => e.PrivacySecurityMeasures).IsRequired().HasConversion(jsonConverter);
 
                 b.HasMany(e => e.Approvals).WithOne(e => e.Proposal).HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Labs).WithOne().HasForeignKey(e => e.ProposalId);

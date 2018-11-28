@@ -33,7 +33,9 @@ var Validation = (function() {
 
     function clearError($element) {
         $element.data("observer").disconnect();
+        $element.removeData("observer");
         $element.data("popper").destroy();
+        $element.removeData("popper");
     }
 
     var validationOptions =  {
@@ -53,9 +55,23 @@ var Validation = (function() {
             var $form = $(form);
             var submitHandler = $form.data("submit-handler");
             if (submitHandler) {
-                submitHandler($form, event);
+                // FIXME: awful hack
+                var $clickedElement = $(document.activeElement);
+                if ($clickedElement.is("button[type='submit']")) {
+                    var action = $clickedElement.prop("formAction");
+                    if (action) {
+                        $form.prop("action", action);
+                    }
+                    var method = $clickedElement.prop("formMethod");
+                    if (method) {
+                        $form.prop("method", method);
+                    }
+                    return form.submit();
+                }
+
+                return submitHandler($form, event);
             } else {
-                form.submit();
+                return form.submit();
             }
         }
     };
@@ -79,13 +95,16 @@ var Validation = (function() {
             });
         },
         setError: function($element, message) {
-            if ($element.is("input[type='hidden']")) {
+            while ($element.is(":hidden")) {
                 $element = $element.parent();
             }
             highlight($element);
             placeError($("<" + errorElement + "/>", { "class": errorClass }).text(message), $element);
         },
         clearError: function($element) {
+            while ($element.is(":hidden")) {
+                $element = $element.parent();
+            }
             unhighlight($element);
             clearError($element);
         }

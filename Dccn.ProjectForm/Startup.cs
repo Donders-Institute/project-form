@@ -43,10 +43,10 @@ namespace Dccn.ProjectForm
             });
 
             services
-                .AddAuthentication(CookieAuthenticationDefaults.AuthenticationScheme)
+                .AddAuthentication(SignInManager.AuthenticationScheme)
                 .AddCookie(options =>
                 {
-                    options.ExpireTimeSpan = TimeSpan.FromDays(7);
+                    options.ExpireTimeSpan = TimeSpan.FromDays(1);
                     options.SlidingExpiration = true;
                     options.Cookie.HttpOnly = true;
                     options.Cookie.SameSite = SameSiteMode.Strict;

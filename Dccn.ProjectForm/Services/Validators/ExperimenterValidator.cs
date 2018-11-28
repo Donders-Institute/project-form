@@ -6,7 +6,8 @@ namespace Dccn.ProjectForm.Services.Validators
 {
     public class ExperimenterValidator : UserValidator<ExperimenterModel>
     {
-        public ExperimenterValidator(IServiceProvider serviceProvider, IEnumerable<ExperimenterModel> collection) : base(serviceProvider, collection)
+        public ExperimenterValidator(IServiceProvider serviceProvider, IEnumerable<ExperimenterModel> collection)
+            : base(serviceProvider, collection)
         {
         }
     }

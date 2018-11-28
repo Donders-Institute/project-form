@@ -18,12 +18,12 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             _userManager = userManager;
         }
 
-        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
+        protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Supervisor};
 
         protected override async Task LoadAsync(GeneralSectionModel model, Proposal proposal)
         {
             var owner = await _userManager.GetUserByIdAsync(proposal.OwnerId);
-            var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+            var supervisor = await _userManager.GetUserByIdAsync(proposal.SupervisorId);
 
             model.OwnerName = owner.DisplayName;
             model.SupervisorName = supervisor.DisplayName;
