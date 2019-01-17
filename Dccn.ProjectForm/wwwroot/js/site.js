@@ -175,5 +175,6 @@ jQuery(function($) {
     });
 
     Validation.updateErrors(JSON.parse($("#validation-errors").html()));
+    $('[data-toggle="tooltip"]').tooltip();
     $("#content").removeClass("invisible");
 });

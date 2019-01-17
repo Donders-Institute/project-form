@@ -1,7 +1,13 @@
-﻿namespace Dccn.ProjectForm.Models
+﻿using System.ComponentModel.DataAnnotations;
+
+namespace Dccn.ProjectForm.Models
 {
     public enum StorageQuotaModel
     {
-        Standard, Custom
+        [Display(Name = "Form.Experiment.StorageQuota.Standard")]
+        Standard,
+
+        [Display(Name = "Form.Experiment.StorageQuota.Custom")]
+        Custom
     }
 }

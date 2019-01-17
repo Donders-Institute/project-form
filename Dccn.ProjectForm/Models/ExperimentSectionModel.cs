@@ -4,35 +4,29 @@ using System.ComponentModel.DataAnnotations;
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Experiment")]
+    [Display(Name = "Form.Experiment.Title", Description = "Form.Experiment.Description")]
     public class ExperimentSectionModel : SectionModelBase
     {
-//        public ExperimentSectionModel()
-//        {
-//            Labs = Enumerable.Empty<LabModel>();
-//            Experimenters = Enumerable.Empty<ExperimenterModel>();
-//        }
-
-        [Display(Name = "Start date")]
+        [Display(Name = "Form.Experiment.StartDate.Label", Description = "Form.Experiment.StartDate.Description")]
         [DataType(DataType.Date)]
         public DateTime? StartDate { get; set; }
 
-        [Display(Name ="End date")]
+        [Display(Name ="Form.Experiment.EndDate.Label", Description = "Form.Experiment.EndDate.Description")]
         [DataType(DataType.Date)]
         public DateTime? EndDate { get; set; }
 
         public StorageQuotaModel StorageQuota { get; set; }
 
-        [Display(Name ="Storage amount", Description = "Storage amount in Gigabytes.")]
-        public int? CustomQuotaAmount { get; set; }
+        [Display(Name = "Form.Experiment.CustomQuotaAmount.Label", Description = "Form.Experiment.CustomQuotaAmount.Description")]
+        public int? CustomStorageQuota { get; set; }
 
-        [Display(Name ="Motivation")]
-        public string CustomQuotaMotivation { get; set; }
+        [Display(Name = "Form.Experiment.CustomStorageQuotaMotivation.Label", Description = "Form.Experiment.CustomStorageQuotaMotivation.Description")]
+        public string CustomStorageQuotaMotivation { get; set; }
 
-        [Display(Name = "Labs")]
+        [Display(Name = "Form.Experiment.Labs.Label", Description = "Form.Experiment.Labs.Description")]
         public IList<LabModel> Labs { get; set; } = new List<LabModel>();
 
-        [Display(Name ="Experimenters")]
+        [Display(Name = "Form.Experiment.Experimenters.Label")]
         public IList<ExperimenterModel> Experimenters { get; set; } = new List<ExperimenterModel>();
     }
 }

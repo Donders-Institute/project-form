@@ -20,7 +20,7 @@ namespace Dccn.ProjectForm.Data.Projects
         public string Email { get; private set; }
         public string InstituteId { get; private set; }
 
-        public bool Hidden { get; private set; }
+        public CheckinStatus Status { get; private set; }
 
         public string DisplayName
         {
@@ -44,6 +44,13 @@ namespace Dccn.ProjectForm.Data.Projects
         }
 
         public bool IsHead => Group.HeadId == Id;
-        public bool IsPi => IsHead && Group.HeadIsPi;
+    }
+
+    public enum CheckinStatus
+    {
+        Tentative,
+        CheckedIn,
+        CheckedOut,
+        CheckedOutExtended
     }
 }

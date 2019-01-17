@@ -28,10 +28,5 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Project ID")]
         [DisplayFormat(NullDisplayText = "<not set>")]
         public string ProjectId { get; set; }
-
-        public int NotSubmitted { get; set; }
-        public int Pending { get; set; }
-        public int Approved { get; set; }
-        public int Rejected { get; set; }
     }
 }

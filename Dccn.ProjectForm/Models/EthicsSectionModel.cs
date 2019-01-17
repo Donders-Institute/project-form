@@ -2,18 +2,17 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Ethical approval")]
+    [Display(Name = "Form.Ethics.Title", Description = "Form.Ethics.Description")]
     public class EthicsSectionModel : SectionModelBase
     {
-        [Display(Name = "Approved")]
         public EthicsApprovalStatusModel Status { get; set; }
 
-        [Display(Name = "Ethics committee approval number")]
+        [Display(Name = "Form.Ethics.Approved.ApprovalCode.Label", Description = "Form.Ethics.Approved.ApprovalCode.Description")]
         public EthicsApprovalOptionModel ApprovalCode { get; set; }
 
         public string CustomCode { get; set; }
 
-        [Display(Name = "Correspondence number")]
+        [Display(Name = "Form.Ethics.Pending.CorrespondenceNumber.Label", Description = "Form.Ethics.Pending.CorrespondenceNumber.Description")]
         public string CorrespondenceNumber { get; set; }
     }
 }

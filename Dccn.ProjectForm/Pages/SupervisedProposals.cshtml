@@ -1,0 +1,61 @@
+﻿@page
+@model SupervisedProposalsModel
+@{
+    ViewData["Title"] = "Supervised project proposals";
+}
+
+<div class="card">
+    <div class="card-header">
+        <h1 class="display-4">Supervised proposals</h1>
+    </div>
+    <div class="card-body">
+        <p class="card-text">Manage proposals of which you are the supervisor.</p>
+        <ul class="list-group">
+            <li class="list-group-item list-group-placeholder">
+                <span class="text-muted font-italic">No proposals</span>
+            </li>
+            @foreach (var proposal in Model.Proposals)
+            {
+                <li class="list-group-item">
+                    <div class="row">
+                        <div class="col">
+                            <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
+                            <dl class="row mb-0">
+                                <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
+                                <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
+
+                                <dt class="col-3">@Html.DisplayNameFor(_ => proposal.OwnerName)</dt>
+                                <dd class="col-9">@Html.DisplayFor(_ => proposal.OwnerName)</dd>
+
+                                <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
+                                <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
+
+                                <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
+                                <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
+
+                                <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
+                                <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
+                            </dl>
+                        </div>
+
+                        <div class="btn-group col-auto my-auto" role="group">
+                            <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
+                                <span class="d-none d-sm-inline mr-1">View</span>
+                                <i class="fas fa-edit"></i>
+                            </a>
+                        </div>
+                    </div>
+                </li>
+            }
+        </ul>
+    </div>
+</div>
+
+@section Scripts {
+    <environment include="Development">
+        <script src="~/js/index.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/index.min.js"></script>
+    </environment>
+}

@@ -38,14 +38,24 @@ namespace Dccn.ProjectForm.Authentication
             return principal.FindFirst(ClaimTypes.Group)?.Value;
         }
 
-        public IEnumerable<ApprovalAuthorityRole> GetRoles(ClaimsPrincipal principal)
+        public IEnumerable<ApprovalAuthorityRole> GetApprovalRoles(ClaimsPrincipal principal)
         {
-            return principal.FindAll(ClaimTypes.Role).Select(r => Enum.Parse<ApprovalAuthorityRole>(r.Value));
+            return principal.FindAll(ClaimTypes.ApprovalRole).Select(r => Enum.Parse<ApprovalAuthorityRole>(r.Value));
         }
 
-        public bool IsInRole(ClaimsPrincipal principal, ApprovalAuthorityRole role)
+        public bool IsInApprovalRole(ClaimsPrincipal principal, ApprovalAuthorityRole role)
         {
-            return principal.IsInRole(Enum.GetName(typeof(ApprovalAuthorityRole), role));
+            return GetApprovalRoles(principal).Contains(role);
+        }
+
+        public IEnumerable<Role> GetRoles(ClaimsPrincipal principal)
+        {
+            return principal.FindAll(ClaimTypes.Role).Select(r => Enum.Parse<Role>(r.Value));
+        }
+
+        public bool IsInRole(ClaimsPrincipal principal, Role role)
+        {
+            return principal.IsInRole(Enum.GetName(typeof(Role), role));
         }
 
         public Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal)
@@ -106,8 +116,10 @@ namespace Dccn.ProjectForm.Authentication
         string GetUserName(ClaimsPrincipal principal);
         string GetEmailAddress(ClaimsPrincipal principal);
         string GetPrimaryGroupId(ClaimsPrincipal principal);
-        IEnumerable<ApprovalAuthorityRole> GetRoles(ClaimsPrincipal principal);
-        bool IsInRole(ClaimsPrincipal principal, ApprovalAuthorityRole role);
+        IEnumerable<Role> GetRoles(ClaimsPrincipal principal);
+        bool IsInRole(ClaimsPrincipal principal, Role role);
+        IEnumerable<ApprovalAuthorityRole> GetApprovalRoles(ClaimsPrincipal principal);
+        bool IsInApprovalRole(ClaimsPrincipal principal, ApprovalAuthorityRole role);
 
         Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
         Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId);

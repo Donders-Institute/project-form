@@ -1,19 +1,19 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Data management")]
+    [Display(Name = "Form.Data.Title", Description = "Form.Data.Description")]
     public class DataSectionModel : SectionModelBase
     {
-        [Display(Name = "Project Storage access roles")]
-        public IList<StorageAccessRuleModel> StorageAccessRules { get; set; } = new List<StorageAccessRuleModel>();
+        [Display(Name = "Form.Data.ProjectStorage.Label", Description = "Form.Data.ProjectStorage.Description")]
+        public IEnumerable<StorageAccessRuleModel> StorageAccessRules { get; set; } = Enumerable.Empty<StorageAccessRuleModel>();
 
-        [Display(Name = "Data preservation")]
+        [Display(Name = "Form.Data.Preservation.Label", Description = "Form.Data.Preservation.Description")]
         public DataPreservationModel Preservation { get; set; }
 
-        [Display(Name = "External storage")]
         public ExternalPreservationModel ExternalPreservation { get; set; }
 
         [BindNever] public string OwnerId { get; set; }

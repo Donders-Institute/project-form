@@ -9,6 +9,7 @@ namespace Dccn.ProjectForm.Services.Validators
         public DataSectionValidator(IServiceProvider serviceProvider)
         {
             RuleForEach(s => s.StorageAccessRules)
+                .OverrideIndexer((section, rules, rule, index) => $"[{rule.Id}]")
                 .NotNull()
                 .SetValidator(s => new StorageAccessRuleValidator(serviceProvider, s.StorageAccessRules));
 

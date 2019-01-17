@@ -1,6 +1,5 @@
 using System;
-using System.Net.Http.Headers;
-using System.Text;
+using System.Net.Mail;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Configuration;
@@ -8,7 +7,6 @@ using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Services;
 using FluentValidation.AspNetCore;
-using Microsoft.AspNetCore.Authentication.Cookies;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
@@ -16,8 +14,10 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Localization;
 
 namespace Dccn.ProjectForm
 {
@@ -35,11 +35,13 @@ namespace Dccn.ProjectForm
             services.AddDbContext<ProjectsDbContext>(options =>
             {
                 options.UseMySql(_configuration.GetConnectionString("ProjectsDatabase"));
+                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
 
             services.AddDbContext<ProposalsDbContext>(options =>
             {
                 options.UseSqlServer(_configuration.GetConnectionString("ProposalsDatabase"));
+                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
 
             services
@@ -53,11 +55,14 @@ namespace Dccn.ProjectForm
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
 
-            services.AddLocalization(options => options.ResourcesPath = "Resources");
+            services.AddLocalization(options =>
+            {
+                options.ResourcesPath = "Resources";
+            });
 
             services
                 .AddMvc()
-                .SetCompatibilityVersion(CompatibilityVersion.Version_2_1)
+                .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
                 .AddDataAnnotationsLocalization()
                 .AddMvcOptions(options =>
                 {
@@ -70,21 +75,11 @@ namespace Dccn.ProjectForm
                     // options.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
 
-            services.AddHttpClient<IRepositoryApiClient, RepositoryApiClient>(client =>
-            {
-                var options = _configuration.GetSection(RepositoryApiOptions.SectionName).Get<RepositoryApiOptions>();
-                var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{options.UserName}:{options.Password}"));
-
-                client.BaseAddress = new Uri(options.BaseUri);
-                client.DefaultRequestHeaders.Accept.Clear();
-                client.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
-                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
-            });
-
             services
                 .Configure<LdapOptions>(_configuration.GetSection(LdapOptions.SectionName))
                 .Configure<EmailOptions>(_configuration.GetSection(EmailOptions.SectionName))
-                .Configure<FormOptions>(_configuration.GetSection(FormOptions.SectionName));
+                .Configure<FormOptions>(_configuration.GetSection(FormOptions.SectionName))
+                .Configure<RepositoryApiOptions>(_configuration.GetSection(RepositoryApiOptions.SectionName));
 
             services
                 .AddTransient<IUserManager, UserManager>()
@@ -93,6 +88,10 @@ namespace Dccn.ProjectForm
                 .AddScoped<IAuthorizationHandler, FormSectionAuthorizationHandler>()
                 .AddTransient<IModalityProvider, ModalityProvider>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
+                .AddSingleton<IStringLocalizerFactory, TomlStringLocalizerFactory>(s => new TomlStringLocalizerFactory(s, "Messages.toml"))
+                .AddTransient(typeof(IStringLocalizer<>), typeof(TomlStringLocalizer<>))
+                .AddTransient<IStringLocalizer, TomlStringLocalizer>()
+                .AddRepositoryApiClient()
                 .AddFormSectionHandlers()
                 .AddFormSectionValidators()
                 .AddEmail("/Email/Templates");
@@ -108,7 +107,11 @@ namespace Dccn.ProjectForm
             else
             {
                 app.UseExceptionHandler("/Error");
-                app.UseExceptionReporter(_configuration.GetSection("ExceptionReporter").Get<EmailAddress>());
+                var reportAddress = _configuration.GetSection("ExceptionReporter")?.Get<EmailAddress>();
+                if (reportAddress != null)
+                {
+                    app.UseExceptionReporter(new MailAddress(reportAddress.Address, reportAddress.DisplayName));
+                }
             }
 
             app.UseStatusCodePages();

@@ -26,14 +26,21 @@ namespace Dccn.ProjectForm.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FormSectionOperation requirement, Proposal proposal)
         {
-//            if (_userManager.IsInRole(context.User, Role.Administrator))
-//            {
-//                context.Succeed(requirement);
-//                return Task.CompletedTask;
-//            }
+            if (_userManager.IsInRole(context.User, Role.Administrator))
+            {
+                context.Succeed(requirement);
+                return Task.CompletedTask;
+            }
 
             var userId = _userManager.GetUserId(context.User);
             var sectionHandler =  _sectionHandlers.First(h => h.ModelType == requirement.SectionType);
+
+            if (sectionHandler.NeedsApprovalBy(proposal).Any())
+            {
+                context.Fail();
+                return Task.CompletedTask;
+            }
+
             var approvals =  sectionHandler.GetAssociatedApprovals(proposal);
             switch (requirement.Operation)
             {

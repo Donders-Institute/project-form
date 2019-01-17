@@ -1,9 +1,9 @@
-﻿{{!> Layout}}
+﻿{{!!> Layout}}
 
 {{#with email}}
-<h1>Hello, {{recipient.displayName}}</h1>
 
-<p>
-    <i>{{applicant}}</i> requested approval for the <i>{{sectionName}}</i> section of their project proposal <i>{{proposalTitle}}</i>.
-</p>
+Dear {{{approverName}}},
+{{{applicantName}}} has a PPM form with title {{{proposalTitle}}} for which you are asked to sign for your approval.
+{{{pageLink}}}
+
 {{/with}}

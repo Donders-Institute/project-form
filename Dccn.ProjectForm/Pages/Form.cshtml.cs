@@ -130,12 +130,15 @@ namespace Dccn.ProjectForm.Pages
                     }
                     else
                     {
-                        await _emailService.SendEmailAsync(User, new ApprovalRequest
+                        await _emailService.SendEmailAsync(User, new ApprovalRequestModel
                         {
-                            Applicant = _userManager.GetUserName(User),
+                            Recipient = new MailAddress(authority.Email, authority.DisplayName),
+
+                            ApproverName = authority.DisplayName,
+                            ApplicantName = _userManager.GetUserName(User),
                             ProposalTitle = proposal.Title,
                             SectionName = sectionHandler.DisplayName,
-                            Recipient = new MailAddress(authority.Email, authority.DisplayName),
+                            PageLink = Url.Page(null, null, new { proposalId }, "https", null, sectionHandler.Id)
                         });
                         approval.Status = ApprovalStatus.ApprovalPending;
                     }
@@ -195,7 +198,7 @@ namespace Dccn.ProjectForm.Pages
         }
 
         [UsedImplicitly]
-        public async Task<IActionResult> OnPostAddExperimenterAsync(int proposalId, [Required] string userId)
+        public async Task<IActionResult> OnPostAddLabAsync(int proposalId, [Required] string modality)
         {
             if (!ModelState.IsValid)
             {
@@ -213,35 +216,26 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            var user = await _userManager.GetUserByIdAsync(userId);
-            if (user == null)
+            var lab = new Lab
             {
-                ModelState.AddModelError(nameof(userId), "User with the given ID does not exist.");
-                return BadRequest(ModelState);
-            }
+                Modality = modality
+            };
 
-            if (proposal.Experimenters.Any(e => e.UserId == user.Id))
-            {
-                ModelState.AddModelError(nameof(userId), "Experimenter already in list.");
-                return BadRequest(ModelState);
-            }
-
-            proposal.Experimenters.Add(new Experimenter
-            {
-                UserId = user.Id
-            });
+            proposal.Labs.Add(lab);
+            proposal.LastEditedOn = DateTime.Now;
+            proposal.LastEditedBy = _userManager.GetUserId(User);
 
             await _proposalsDbContext.SaveChangesAsync();
 
-            return new JsonResult(new ExperimenterModel
+            return new JsonResult(new
             {
-                Id = user.Id,
-                Name = user.DisplayName
+                LabId = lab.Id,
+                proposal.Timestamp
             });
         }
 
         [UsedImplicitly]
-        public async Task<IActionResult> OnPostRemoveExperimenterAsync(int proposalId, [Required] string userId)
+        public async Task<IActionResult> OnPostRemoveLabAsync(int proposalId, [Required] int labId)
         {
             if (!ModelState.IsValid)
             {
@@ -259,18 +253,23 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            var experimenter = proposal.Experimenters.FirstOrDefault(e => e.UserId == userId);
-            if (experimenter == null)
+            var lab = proposal.Labs.FirstOrDefault(e => e.Id == labId);
+            if (lab == null)
             {
-                ModelState.AddModelError(nameof(userId), "Experimenter not in list.");
+                ModelState.AddModelError(nameof(labId), "Lab with the given ID does not exist.");
                 return BadRequest(ModelState);
             }
 
-            proposal.Experimenters.Remove(experimenter);
+            proposal.Labs.Remove(lab);
+            proposal.LastEditedOn = DateTime.Now;
+            proposal.LastEditedBy = _userManager.GetUserId(User);
 
             await _proposalsDbContext.SaveChangesAsync();
 
-            return new OkResult();
+            return new JsonResult(new
+            {
+                proposal.Timestamp
+            });
         }
 
         private async Task<IActionResult> ApproveOrRejectAsync(int proposalId, string sectionId, bool approve)
@@ -303,7 +302,7 @@ namespace Dccn.ProjectForm.Pages
 
             var approval = sectionHandler
                 .GetAssociatedApprovals(proposal)
-                .Single(a => _userManager.IsInRole(User, a.AuthorityRole)
+                .Single(a => _userManager.IsInApprovalRole(User, a.AuthorityRole)
                              || a.AuthorityRole == ApprovalAuthorityRole.Supervisor
                              && proposal.SupervisorId == _userManager.GetUserId(User));
 

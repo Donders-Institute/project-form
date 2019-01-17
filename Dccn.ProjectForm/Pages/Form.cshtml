@@ -21,7 +21,14 @@
                             var icons = status.GetIconClasses();
                         }
                         <span class="badge badge-pill badge-@status.GetColor()" style="width: 2.5em">
-                            <i class="@icons"></i>
+                            @if (icons != null)
+                            {
+                                <i class="@icons"></i>
+                            }
+                            else
+                            {
+                                @:&nbsp;
+                            }
                         </span>
                     </span>
                 </a>
@@ -39,6 +46,13 @@
                                 <h1 class="display-4">@Html.DisplayName(section.Id)</h1>
                             </div>
                             <fieldset class="card-body" disabled="@(!section.CanEdit)">
+                                @{
+                                    var description = Html.Description(section.Id);
+                                }
+                                @if (description != null)
+                                {
+                                    <h6 class="card-subtitle text-muted mb-3">@description</h6>
+                                }
                                 @await Html.FormSectionAsync(section)
                             </fieldset>
                             <div class="card-footer">
@@ -73,17 +87,14 @@
                                                     <li class="list-group-item">
                                                         <div class="row align-content-center">
                                                             <div class="col">
-                                                                @approvalInfo.AuthorityRole.GetDisplayName()
+                                                                <a href="mailto:@(approvalInfo.AuthorityEmail)">@Html.DisplayFor(_ => approvalInfo.AuthorityName)</a>
                                                             </div>
                                                             <div class="col">
-                                                                @Html.DisplayFor(_ => approvalInfo.AuthorityName)
+                                                                @Html.DisplayName(approvalInfo.AuthorityRole)
                                                             </div>
-                                                            <div class="col">
-                                                                <a href="mailto:@(approvalInfo.AuthorityEmail)">@Html.DisplayFor(_ => approvalInfo.AuthorityEmail)</a>
-                                                            </div>
-                                                            <div class="col text-right">
+                                                            <div class="col-auto">
                                                                 <span class="badge badge-pill badge-@status.GetColor()">
-                                                                    Status: @status.GetDisplayName()
+                                                                    Status: @Html.DisplayName(status)
                                                                 </span>
                                                             </div>
                                                         </div>

@@ -3,11 +3,11 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "twitter-bootstrap@4.1.3",
+      "library": "twitter-bootstrap@4.2.1",
       "destination": "wwwroot/lib/twitter-bootstrap/"
     },
     {
-      "library": "autocomplete.js@0.31.0",
+      "library": "autocomplete.js@0.35.0",
       "destination": "wwwroot/lib/autocomplete.js/"
     },
     {
@@ -15,7 +15,7 @@
       "destination": "wwwroot/lib/jquery/"
     },
     {
-      "library": "jsrender@1.0.0-rc.70",
+      "library": "jsrender@1.0.1",
       "destination": "wwwroot/lib/jsrender/"
     },
     {
@@ -23,19 +23,19 @@
       "destination": "wwwroot/lib/jquery.inputmask/"
     },
     {
-      "library": "moment.js@2.22.2",
+      "library": "moment.js@2.23.0",
       "destination": "wwwroot/lib/moment.js/"
     },
     {
-      "library": "popper.js@1.14.4",
+      "library": "popper.js@1.14.6",
       "destination": "wwwroot/lib/popper.js/"
     },
     {
-      "library": "jquery-validate@1.17.0",
+      "library": "jquery-validate@1.19.0",
       "destination": "wwwroot/lib/jquery-validate/"
     },
     {
-      "library": "jquery-validation-unobtrusive@3.2.10",
+      "library": "jquery-validation-unobtrusive@3.2.11",
       "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
     },
     {

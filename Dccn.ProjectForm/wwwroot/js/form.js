@@ -84,7 +84,7 @@ jQuery(function($) {
 //        })
 //    })
 
-    $(".form-section").data("submit-handler", function($section, event) {
+    $(".form-section").data("submit-handler", function($section) {
         var $clickedElement = $(document.activeElement);
         if ($clickedElement.is("button[type='submit']")) {
             return;
@@ -155,9 +155,16 @@ jQuery(function($) {
         }
 
         $item.find(".remove-lab-item").click(function() {
-            $item.remove();
-            updateLabItems();
-            updateStandardQuota();
+            var $button = $(this);
+            $.post({
+                url: $button.data("url"),
+                dataType: "json"
+            }).done(function(result) {
+                $(".timestamp").val(result.timestamp);
+                $item.remove();
+                updateLabItems();
+                updateStandardQuota();
+            });
         });
 
         $item.find(".lab-item-subjects,.lab-item-sessions,.lab-item-duration").change(updateTotalDuration);
@@ -202,14 +209,20 @@ jQuery(function($) {
 
     $(".add-lab-item").click(function() {
         var $button = $(this);
-        $(".lab-items").append(createLabItem({
-            index: generateUniqueIndex(),
-            modality: $button.data("modality"),
-            storageFixed: $button.data("storage-fixed"),
-            storageSession: $button.data("storage-session")
-        }));
-        updateLabItems();
-        updateStandardQuota();
+        $.post({
+            url: $button.data("url"),
+            dataType: "json"
+        }).done(function(result) {
+            $(".timestamp").val(result.timestamp);
+            $(".lab-items").append(createLabItem({
+                index: result.labId,
+                modality: $button.data("modality"),
+                storageFixed: $button.data("storage-fixed"),
+                storageSession: $button.data("storage-session")
+            }));
+            updateLabItems();
+            updateStandardQuota();
+        });
     });
 
     $(".lab-item").replaceWith(function() {
@@ -259,13 +272,13 @@ jQuery(function($) {
                 templates: {
                     suggestion: function(suggestion) {
                         return $("<div></div>")
-                            .text(suggestion.name + " ")
-                            .append($("<span></span>", { "class": "badge badge-info" }).text(suggestion.id))
+                            .text(suggestion.name)
+                            .append($("<span></span>", { "class": "badge badge-info ml-1" }).text(suggestion.id))
                             .html();
                     },
                     empty: function(params) {
                         return $("<div></div>")
-                            .text(" No results for '" + params.query + "'.")
+                            .text("No results for '" + params.query + "'.")
                             .html();
                     }
                 },

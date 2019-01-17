@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         protected override async Task LoadAsync(DataSectionModel model, Proposal proposal)
         {
             var owner = await _userManager.GetUserByIdAsync(proposal.OwnerId);
-            var supervisor = await _userManager.GetUserByIdAsync(proposal.OwnerId);
+            var supervisor = await _userManager.GetUserByIdAsync(proposal.SupervisorId);
 
             model.StorageAccessRules = await proposal.StorageAccessRules
                 .Select(async rule => new StorageAccessRuleModel

@@ -106,6 +106,12 @@
 
 <div class="form-group">
     <label asp-for="DataDisposalTermDays"></label>
-    <input asp-for="DataDisposalTermDays" class="form-control" data-submit-on="change"/>
+    <div class="input-group">
+        <input asp-for="DataDisposalTermDays" class="form-control" data-submit-on="change"/>
+        <div class="input-group-append input-group-text">
+            Days
+        </div>
+    </div>
+
     <small asp-description-for="DataDisposalTermDays"></small>
 </div>

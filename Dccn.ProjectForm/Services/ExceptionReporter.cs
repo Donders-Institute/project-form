@@ -3,12 +3,12 @@ using System.Diagnostics;
 using System.Net.Mail;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
-using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Email.Models;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Http.Extensions;
+using Microsoft.Extensions.Logging;
 
 namespace Dccn.ProjectForm.Services
 {
@@ -24,7 +24,7 @@ namespace Dccn.ProjectForm.Services
         }
 
         [UsedImplicitly]
-        public async Task Invoke(HttpContext httpContext, IUserManager userManager, IEmailService emailService)
+        public async Task Invoke(HttpContext httpContext, IUserManager userManager, IEmailService emailService, ILogger<ExceptionReporter> logger)
         {
             try
             {
@@ -32,17 +32,24 @@ namespace Dccn.ProjectForm.Services
             }
             catch (Exception e)
             {
-                await emailService.SendEmailAsync(httpContext.User, new ExceptionReport
+                try
                 {
-                    Recipient = _recipient,
+                    await emailService.SendEmailNoOverrideAsync(new ExceptionReportModel
+                    {
+                        Recipient = _recipient,
 
-                    RequestId = Activity.Current?.Id ?? httpContext.TraceIdentifier,
-                    RequestMethod = httpContext.Request.Method,
-                    RequestUrl = httpContext.Request.GetDisplayUrl(),
-                    UserId = userManager.GetUserId(httpContext.User),
-                    ErrorMessage = e.Message,
-                    StackTrace = e.StackTrace
-                });
+                        RequestId = Activity.Current?.Id ?? httpContext.TraceIdentifier,
+                        RequestMethod = httpContext.Request.Method,
+                        RequestUrl = httpContext.Request.GetDisplayUrl(),
+                        UserId = userManager.GetUserId(httpContext.User),
+                        ErrorMessage = e.Message,
+                        StackTrace = e.StackTrace
+                    });
+                }
+                catch (Exception e2)
+                {
+                    logger.LogError(e2, "An exception occurred while trying to report another exception");
+                }
 
                 throw;
             }
@@ -51,10 +58,9 @@ namespace Dccn.ProjectForm.Services
 
     public static class ExceptionReporterExtensions
     {
-        [PublicAPI]
-        public static IApplicationBuilder UseExceptionReporter(this IApplicationBuilder builder, EmailAddress recipient)
+        public static IApplicationBuilder UseExceptionReporter(this IApplicationBuilder builder, MailAddress recipient)
         {
-            return builder.UseMiddleware<ExceptionReporter>(new MailAddress(recipient.Address, recipient.DisplayName));
+            return builder.UseMiddleware<ExceptionReporter>(recipient);
         }
     }
 }

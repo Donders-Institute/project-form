@@ -17,5 +17,10 @@ namespace Dccn.ProjectForm.Extensions
         {
             return (await Task.WhenAll(source)).ToDictionary(keySelector);
         }
+
+        public static IEnumerable<T> Yield<T>(this T item)
+        {
+            yield return item;
+        }
     }
 }

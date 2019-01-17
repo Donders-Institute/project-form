@@ -2,6 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
+using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Services;
@@ -58,7 +59,12 @@ namespace Dccn.ProjectForm.Authentication
             identity.AddClaim(new Claim(ClaimTypes.UserName, user.DisplayName));
             identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
             identity.AddClaim(new Claim(ClaimTypes.Group, user.GroupId));
-            identity.AddClaims(_authorityProvider.GetAuthorityRoles(user.Id).Select(r => new Claim(ClaimTypes.Role, r.GetName())));
+            identity.AddClaims(_authorityProvider.GetAuthorityRoles(user.Id).Select(r => new Claim(ClaimTypes.ApprovalRole, r.GetName())));
+
+            if (user.IsHead)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, Role.Supervisor.GetName()));
+            }
 
             var authProperties = new AuthenticationProperties
             {

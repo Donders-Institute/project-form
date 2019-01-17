@@ -1,21 +1,20 @@
-﻿using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+﻿using System.ComponentModel.DataAnnotations;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "General")]
+    [Display(Name = "Form.General.Title")]
     public class GeneralSectionModel : SectionModelBase
     {
-        [Display(Name = "Title.DisplayName", Description = "Title.Description")]
+        [Display(Name = "Form.General.PpmTitle.Label", Description = "Form.General.PpmTitle.Description")]
         public string Title { get; set; }
 
         [BindNever]
-        [DisplayName("Project owner")]
+        [Display(Name = "Form.General.OwnerName.Label", Description = "Form.General.OwnerName.Description")]
         public string OwnerName { get; set; }
 
         [BindNever]
-        [DisplayName("Principal Investigator")]
+        [Display(Name = "Form.General.SupervisorName.Label", Description = "Form.General.SupervisorName.Description")]
         public string SupervisorName { get; set; }
     }
 }

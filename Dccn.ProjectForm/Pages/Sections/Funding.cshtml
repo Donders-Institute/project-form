@@ -15,7 +15,7 @@
                         <i class="fas fa-user"></i>
                     </div>
                 </div>
-                <input asp-for="ContactName" class="form-control" data-submit-on="change">
+                <input asp-for="ContactName" class="form-control user-query" data-usertype="contact" data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" data-submit-on="change">
             </div>
             <small asp-description-for="ContactName"></small>
         </div>

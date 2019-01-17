@@ -61,8 +61,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             if (proposal.CustomQuota)
             {
                 model.StorageQuota = StorageQuotaModel.Custom;
-                model.CustomQuotaAmount = proposal.CustomQuotaAmount;
-                model.CustomQuotaMotivation = proposal.CustomQuotaMotivation;
+                model.CustomStorageQuota = proposal.CustomQuotaAmount;
+                model.CustomStorageQuotaMotivation = proposal.CustomQuotaMotivation;
             }
             else
             {
@@ -107,8 +107,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             else
             {
                 proposal.CustomQuota = true;
-                proposal.CustomQuotaAmount = model.CustomQuotaAmount;
-                proposal.CustomQuotaMotivation = model.CustomQuotaMotivation;
+                proposal.CustomQuotaAmount = model.CustomStorageQuota;
+                proposal.CustomQuotaMotivation = model.CustomStorageQuotaMotivation;
             }
 
             proposal.Experimenters = model.Experimenters

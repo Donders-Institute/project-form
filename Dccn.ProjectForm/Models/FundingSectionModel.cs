@@ -2,16 +2,16 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Funding")]
+    [Display(Name = "Form.Funding.Title")]
     public class FundingSectionModel : SectionModelBase
     {
-        [Display(Name = "Name", Description = "Name of the person responsible for the project's funding.")]
+        [Display(Name = "Form.Funding.ContactName.Label", Description = "Form.Funding.ContactName.Description")]
         public string ContactName { get; set; }
 
-        [Display(Name = "Email address", Description = "E-mail address of the contact person.")]
+        [Display(Name = "Form.Funding.ContactEmail.Label", Description = "Form.Funding.ContactEmail.Description")]
         public string ContactEmail { get; set; }
 
-        [Display(Name = "Financial code", Description = "Financial code or reference.")]
+        [Display(Name = "Form.Funding.FinancialCode.Label", Description = "Form.Funding.FinancialCode.Description")]
         public string FinancialCode { get; set; }
     }
 }

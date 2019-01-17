@@ -45,7 +45,6 @@ namespace Dccn.ProjectForm.Services
 
         public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email)
         {
-            MailAddress recipientOverride = null;
             if (_overrideRecipient)
             {
                 if (user == null)
@@ -55,9 +54,15 @@ namespace Dccn.ProjectForm.Services
 
                 var userName = _userManager.GetUserName(user);
                 var userEmail = _userManager.GetEmailAddress(user);
-                recipientOverride = new MailAddress(userEmail, userName);
+
+                email.OverrideRecipient(new MailAddress(userEmail, userName));
             }
 
+            await SendEmailNoOverrideAsync(email);
+        }
+
+        public async Task SendEmailNoOverrideAsync(IEmailModel email)
+        {
             var templatePath = Path.ChangeExtension(email.TemplateName, "hbs");
             var model = new
             {
@@ -73,11 +78,11 @@ namespace Dccn.ProjectForm.Services
             };
 
             var body = await _renderService.RenderAsync(templatePath, model);
-            var message = new MailMessage(_sender, recipientOverride ?? email.Recipient)
+            var message = new MailMessage(_sender, email.Recipient)
             {
                 Subject = email.Subject,
                 Body = body,
-                IsBodyHtml = true
+                IsBodyHtml = false
             };
 
             await _client.SendMailAsync(message);
@@ -87,6 +92,7 @@ namespace Dccn.ProjectForm.Services
     public interface IEmailService
     {
         Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email);
+        Task SendEmailNoOverrideAsync(IEmailModel email);
     }
 
     public static class EmailServiceExtensions

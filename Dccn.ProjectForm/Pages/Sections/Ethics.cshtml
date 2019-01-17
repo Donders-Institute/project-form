@@ -14,11 +14,12 @@
                        value="@EthicsApprovalStatusModel.Approved"
                        data-target="#ethics-approved-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="ethics-approved">@EthicsApprovalStatusModel.Approved.GetDisplayName()</label>
+                <label class="custom-control-label" for="ethics-approved">@Html.DisplayName(EthicsApprovalStatusModel.Approved)</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-approved-panel" data-parent="#ethics-options">
             <div class="card-body">
+                <h6 class="card-subtitle text-muted mb-3">@Html.Description(EthicsApprovalStatusModel.Approved)</h6>
                 <div class="form-group">
                     <label asp-for="ApprovalCode"></label>
                     <div class="input-group">
@@ -28,17 +29,18 @@
                                 {
                                     <!option value="@option" selected="@(Model.ApprovalCode == option)"
                                              @{
-                                                 var description = option.GetDisplayDescription();
+                                                 var description = Html.Description(option);
                                                  if (description != null)
                                                  {
                                                      <text>data-description="@description"</text>
                                                  }
-                                             }>@option.GetDisplayName()</!option>
+                                             }>@Html.DisplayName(option)</!option>
                                 }
                             </select>
                         </div>
                         <input asp-for="CustomCode" class="form-control ethics-custom" placeholder="Enter study-specific approval CMO number" data-submit-on="change">
                     </div>
+                    <small asp-description-for="ApprovalCode"></small>
                 </div>
             </div>
         </fieldset>
@@ -53,11 +55,13 @@
                        value="@EthicsApprovalStatusModel.Pending"
                        data-target="#ethics-not-approved-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="ethics-not-approved">@EthicsApprovalStatusModel.Pending.GetDisplayName()</label>
+                <label class="custom-control-label" for="ethics-not-approved">@Html.DisplayName(EthicsApprovalStatusModel.Pending)</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-not-approved-panel" data-parent="#ethics-options">
             <div class="card-body">
+                <h6 class="card-subtitle text-muted mb-3">@Html.Description(EthicsApprovalStatusModel.Approved)</h6>
+
                 <div class="form-group">
                     <label asp-for="CorrespondenceNumber"></label>
                     <input asp-for="CorrespondenceNumber" class="form-control" data-submit-on="change">

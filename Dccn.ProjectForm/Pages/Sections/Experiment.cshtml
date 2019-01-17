@@ -1,8 +1,11 @@
 ﻿@model Models.ExperimentSectionModel
 @using System.Web
+@using Dccn.ProjectForm.Extensions
+@using Microsoft.Extensions.Localization
 @using Models
 @using Services
 @inject IModalityProvider ModalityProvider
+@inject IStringLocalizer Localizer
 
 @* Start/end date *@
 <div class="form-row">
@@ -16,6 +19,7 @@
             </div>
             <input asp-for="StartDate" class="form-control" data-submit-on="change">
         </div>
+        <small asp-description-for="StartDate"></small>
     </div>
     <div class="col-sm form-group">
         <label asp-for="EndDate"></label>
@@ -27,6 +31,7 @@
             </div>
             <input asp-for="EndDate" class="form-control" data-submit-on="change">
         </div>
+        <small asp-description-for="EndDate"></small>
     </div>
 </div>
 
@@ -34,17 +39,35 @@
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">@Html.DisplayNameFor(m => m.Labs)</h5>
-        <h6 class="card-subtitle text-muted mb-3">Use of the labs.</h6>
+        <h6 class="card-subtitle text-muted mb-3">@Html.DescriptionFor(m => m.Labs)</h6>
 
         <div class="card">
             <div class="card-header d-none d-lg-block py-2">
-                <div class="row align-items-center">
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().Modality)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SubjectCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SessionCount)</label>
-                    <label class="col col-form-label col-form-label-sm">@Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)</label>
-                    <label class="col col-form-label col-form-label-sm">Total duration</label>
+                <div class="form-row align-items-center">
+                    <label class="col col-form-label col-form-label-sm">
+                        @Html.DisplayNameFor(m => m.Labs.First().Modality)
+                        <i asp-tooltip-for="Labs.First().Modality"></i>
+                    </label>
+                    <label class="col col-form-label col-form-label-sm">
+                        @Html.DisplayNameFor(m => m.Labs.First().SubjectCount)
+                        <i asp-tooltip-for="Labs.First().SubjectCount"></i>
+                    </label>
+                    <label class="col col-form-label col-form-label-sm">
+                        @Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)
+                        <i asp-tooltip-for="Labs.First().ExtraSubjectCount"></i>
+                    </label>
+                    <label class="col col-form-label col-form-label-sm">
+                        @Html.DisplayNameFor(m => m.Labs.First().SessionCount)
+                        <i asp-tooltip-for="Labs.First().SessionCount"></i>
+                    </label>
+                    <label class="col col-form-label col-form-label-sm">
+                        @Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)
+                        <i asp-tooltip-for="Labs.First().SessionDurationMinutes"></i>
+                    </label>
+                    <label class="col col-form-label col-form-label-sm">
+                        @Localizer["Form.Experiment.Labs.TotalDuration.Label"]
+                        <i asp-tooltip="Form.Experiment.Labs.TotalDuration.Description"></i>
+                    </label>
                     <div class="col-auto">
                         <div class="dropdown dropleft float-right">
                             <button class="btn btn-sm btn-outline-secondary" type="button" data-toggle="dropdown">
@@ -59,7 +82,8 @@
                                             data-modality="@modality.Id"
                                             data-storage-fixed="@modality.FixedStorage"
                                             data-storage-session="@modality.SessionStorage"
-                                            data-submit-on="click">
+                                            data-submit-on="click"
+                                            data-url="@Url.Page(null, "AddLab", new { modality = modality.Id })">
                                         @modality.DisplayName
                                     </button>
                                 }
@@ -78,10 +102,10 @@
                         </div>
                     </div>
                 </div>
-                @foreach (var (index, lab) in Model.Labs.Select((lab, index) => (index, lab)))
+                @foreach (var lab in Model.Labs)
                 {
                     <div class="d-none lab-item"
-                         data-index="@index"
+                         data-index="@lab.Id"
                          data-id="@lab.Id"
                          data-modality="@lab.Modality.Id"
                          data-subjects="@lab.SubjectCount"
@@ -93,12 +117,6 @@
                     </div>
                 }
             </div>
-            @* <div class="card-footer d-none d-lg-block py-2"> *@
-            @*     <div class="row"> *@
-            @*         <input class="col form-control-plaintext form-control-sm" value="@Model.Labs.Values.Sum(l => l.SubjectCount)" disabled> *@
-            @*         <input class="col form-control-plaintext form-control-sm" value="@Model.Labs.Values.Sum(l => l.Storage)" disabled> *@
-            @*     </div> *@
-            @* </div> *@
         </div>
     </div>
 </div>
@@ -115,14 +133,16 @@
                        value="@StorageQuotaModel.Standard"
                        data-target="#quota-standard-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="quota-standard">Use standard storage quota (<span class="quota-standard-value">...</span>)</label>
+                <label class="custom-control-label" for="quota-standard">@Html.DisplayName(StorageQuotaModel.Standard) (<span class="quota-standard-value">...</span>)</label>
             </div>
         </div>
         <fieldset class="collapse" id="quota-standard-panel" data-parent="#quota-options">
             <div class="card-body">
                 <h5 class="card-title">Standard storage quota</h5>
                 <h6 class="card-subtitle text-muted mb-3">
-                    Use overruling storage quota in case the project uses imported data. This requires a motivation.
+                    Preferably apply for standard quota, which is based on standard quota
+                    per subject per session for the different modalities you have included in your experiment.
+                    See <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=quota">here</a> for more information.
                 </h6>
                 <p class="card-text">The calculated quota is: <span class="quota-standard-value">...</span>.</p>
             </div>
@@ -138,29 +158,32 @@
                        value="@StorageQuotaModel.Custom"
                        data-target="#quota-custom-panel"
                        data-submit-on="change">
-                <label class="custom-control-label" for="quota-custom">Use overruling storage quota</label>
+                <label class="custom-control-label" for="quota-custom">@Html.DisplayName(StorageQuotaModel.Custom)</label>
             </div>
         </div>
         <fieldset class="collapse" id="quota-custom-panel" data-parent="#quota-options">
             <div class="card-body">
                 <h5 class="card-title">Overruling storage quota</h5>
                 <h6 class="card-subtitle text-muted mb-3">
-                    Use overruling storage quota in case the project uses imported data. This requires a motivation.
+                    Use overruling storage quota in case the project uses imported data or in case the default
+                    quota per subject per session does not fit for your special requirements.
+                    A motivation is mandatory when applying for overruling storage quota.
+                    See <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=quota">here</a> for more information.
                 </h6>
                 <div class="form-group">
-                    <label asp-for="CustomQuotaAmount"></label>
+                    <label asp-for="CustomStorageQuota"></label>
                     <div class="input-group">
-                        <input asp-for="CustomQuotaAmount" class="form-control" data-submit-on="change">
+                        <input asp-for="CustomStorageQuota" class="form-control" data-submit-on="change">
                         <div class="input-group-append">
                             <span class="input-group-text">GB</span>
                         </div>
                     </div>
-                    <small asp-description-for="CustomQuotaAmount"></small>
+                    <small asp-description-for="CustomStorageQuota"></small>
                 </div>
                 <div class="form-group">
-                    <label asp-for="CustomQuotaMotivation"></label>
-                    <textarea asp-for="CustomQuotaMotivation" class="form-control" rows="3"
-                              placeholder="Please explain why you need a custom amount of storage."
+                    <label asp-for="CustomStorageQuotaMotivation"></label>
+                    <textarea asp-for="CustomStorageQuotaMotivation" class="form-control" rows="3"
+                              placeholder="@Html.DescriptionFor(m => m.CustomStorageQuotaMotivation)"
                               data-submit-on="change"></textarea>
                 </div>
             </div>
@@ -173,16 +196,19 @@
     <div class="card-body">
         <h5 class="card-title">Experimenters</h5>
         <h6 class="card-subtitle text-muted mb-3">
-            Experimenters are allowed to do lab booking for the project. By default, the project owner is an experimenter.
+            Experimenters are allowed to do lab bookings for the project. The project owner is an experimenter by default.
         </h6>
         <div class="card">
             <div class="card-header py-2">
                 <div class="row">
-                    <label class="col-auto col-form-label col-form-label-sm">Add experimenter</label>
+                    <label class="col-auto col-form-label col-form-label-sm">
+                        Add experimenter
+                        <i asp-tooltip="Search and select another colleague from the list. Click <i class='fas fa-plus-square mx-1'></i> to add more experimenters. Click <i class='fas fa-minus-square mx-1'></i> to remove an experimenter." data-html="true"></i>
+                    </label>
                     <div class="col">
                         <input class="form-control form-control-sm user-query" type="text"
                                placeholder="Search for a DCCN member to add as experimenter" data-usertype="experimenter"
-                               data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" >
+                               data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})">
                     </div>
                     <div class="col-auto">
                         <button class="btn btn-sm btn-outline-secondary user-add" type="button"
@@ -196,10 +222,10 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No experimenters assigned</span>
                 </div>
-                @foreach (var (index, experimenter) in Model.Experimenters.Select((experimenter, index) => (index, experimenter)))
+                @foreach (var experimenter in Model.Experimenters)
                 {
                     <div class="d-none experimenter-item"
-                         data-index="@index"
+                         data-index="@experimenter.Id"
                          data-id="@experimenter.Id"
                          data-name="@experimenter.Name">
                     </div>
@@ -217,11 +243,8 @@
 
         <input type="hidden" name="@Html.Name("Labs.Index")" value="{{:index}}">
         <input type="hidden" name="@Html.Name("Labs[{{:index}}].Modality.Id")" value="{{:modality}}">
-@*        {{if id}} *@
-@*        <input name="@Html.Name("Labs[{{:index}}].Id")" type="hidden" value="{{:id}}"> *@
-@*        {{/if}} *@
 
-        <div class="row align-items-center">
+        <div class="form-row align-items-center">
             <div class="col-lg">
                 <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
                     @foreach (var modality in ModalityProvider.Values)
@@ -284,8 +307,8 @@
         <input type="hidden" name="@Html.Name("Experimenters.Index")" value="{{:index}}">
         <input type="hidden" name="@Html.Name("Experimenters[{{:index}}].Id")" value="{{:id}}">
 
-        <div class="row">
-            <div class="col my-auto">
+        <div class="row align-items-center">
+            <div class="col">
                 {{>name}}
                 <span class="badge badge-info">{{:id}}</span>
             </div>

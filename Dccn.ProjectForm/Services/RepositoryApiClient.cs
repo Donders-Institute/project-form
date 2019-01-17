@@ -1,11 +1,16 @@
 ﻿using System;
 using System.Linq;
 using System.Net.Http;
+using System.Net.Http.Headers;
 using System.Runtime.Serialization;
+using System.Text;
 using System.Threading.Tasks;
 using System.Web;
+using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.DataTransferObjects;
 using JetBrains.Annotations;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 
 namespace Dccn.ProjectForm.Services
 {
@@ -27,7 +32,7 @@ namespace Dccn.ProjectForm.Services
             response.EnsureSuccessStatusCode();
 
             var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUserDto[]>>();
-            if (!result.Success)
+            if (!result.Succeeded)
             {
                 throw new ApplicationException($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
             }
@@ -37,21 +42,45 @@ namespace Dccn.ProjectForm.Services
 
         private class ApiResult<TData>
         {
-            [DataMember(Name="ec")]
+            [DataMember(Name = "ec")]
             public int ErrorCode { get; set; }
 
-            [DataMember(Name="errmsg")]
+            [DataMember(Name = "errmsg")]
             public string ErrorMessage { get; set; }
 
-            [DataMember(Name="data")]
+            [DataMember(Name = "data")]
             public TData Data { get; set; }
 
-            public bool Success => ErrorCode == 0;
+            public bool Succeeded => ErrorCode == 0;
         }
     }
 
     public interface IRepositoryApiClient
     {
         Task<RepositoryUserDto> FindUserByEmailAddressAsync(string email);
+    }
+
+    public static class RespositoryApiClientExtensions
+    {
+        public static IServiceCollection AddRepositoryApiClient(this IServiceCollection collection)
+        {
+            collection.AddHttpClient<IRepositoryApiClient, RepositoryApiClient>((services, client) =>
+            {
+                var options = services.GetService<IOptions<RepositoryApiOptions>>()?.Value;
+                if (options == null)
+                {
+                    return;
+                }
+
+                var credentials = Convert.ToBase64String(Encoding.ASCII.GetBytes($"{options.UserName}:{options.Password}"));
+
+                client.BaseAddress = new Uri(options.BaseUri);
+                client.DefaultRequestHeaders.Accept.Clear();
+                client.DefaultRequestHeaders.Accept.Add(MediaTypeWithQualityHeaderValue.Parse("application/json"));
+                client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Basic", credentials);
+            });
+
+            return collection;
+        }
     }
 }

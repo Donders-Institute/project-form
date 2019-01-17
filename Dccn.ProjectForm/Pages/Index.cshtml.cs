@@ -77,7 +77,7 @@ namespace Dccn.ProjectForm.Pages
                 ModelState.AddModelError(string.Empty, "A proposal with the same name already exists.");
             }
 
-            if (!await _userManager.QueryGroups().AnyAsync(g => g.HeadId == model.SupervisorId))
+            if (!await _userManager.QueryGroups().Where(g => !g.Hidden).AnyAsync(g => g.HeadId == model.SupervisorId))
             {
                 ModelState.AddModelError(string.Empty, "The supervisor is not valid.");
             }
@@ -147,6 +147,7 @@ namespace Dccn.ProjectForm.Pages
             }
 
             var supervisors = await _userManager.QueryGroups()
+                .Where(g => !g.Hidden)
                 .Where(g => !string.IsNullOrEmpty(g.HeadId)) // Workaround: stored in db as empty strings
                 .Select(g => new SelectListItem($"{g.Head.DisplayName} ({g.Description})", g.Head.Id))
                 .ToListAsync();
@@ -210,11 +211,7 @@ namespace Dccn.ProjectForm.Pages
                     p.SupervisorId,
                     p.CreatedOn,
                     p.LastEditedOn,
-                    p.LastEditedBy,
-                    NotSubmitted = p.Approvals.Count(a => a.Status == ApprovalStatus.NotSubmitted),
-                    Pending = p.Approvals.Count(a => a.Status == ApprovalStatus.ApprovalPending),
-                    Approved = p.Approvals.Count(a => a.Status == ApprovalStatus.Approved),
-                    Rejected = p.Approvals.Count(a => a.Status == ApprovalStatus.Rejected)
+                    p.LastEditedBy
                 })
                 .OrderByDescending(p => p.LastEditedOn)
                 .ToListAsync();
@@ -229,11 +226,7 @@ namespace Dccn.ProjectForm.Pages
                     SupervisorName = (await _userManager.GetUserByIdAsync(p.SupervisorId)).DisplayName,
                     CreatedOn = p.CreatedOn,
                     LastEditedOn = p.LastEditedOn,
-                    LastEditedBy = (await _userManager.GetUserByIdAsync(p.LastEditedBy)).DisplayName,
-                    NotSubmitted = p.NotSubmitted,
-                    Pending = p.Pending,
-                    Approved = p.Approved,
-                    Rejected = p.Rejected
+                    LastEditedBy = (await _userManager.GetUserByIdAsync(p.LastEditedBy)).DisplayName
                 })
                 .ToListAsync();
         }

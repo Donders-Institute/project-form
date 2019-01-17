@@ -49,13 +49,15 @@ namespace Dccn.ProjectForm.Extensions
             switch (status)
             {
                 case ApprovalStatusModel.NotSubmitted:
-                    return "fas fa-pen";
+                    return null;
                 case ApprovalStatusModel.ApprovalPending:
                     return "fas fa-ellipsis-h";
                 case ApprovalStatusModel.Approved:
                     return "fas fa-check";
                 case ApprovalStatusModel.Rejected:
                     return "fas fa-times";
+                case ApprovalStatusModel.NotApplicable:
+                    return null;
                 default:
                     throw new ArgumentOutOfRangeException();
             }

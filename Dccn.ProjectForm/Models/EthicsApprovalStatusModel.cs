@@ -4,10 +4,10 @@ namespace Dccn.ProjectForm.Models
 {
     public enum EthicsApprovalStatusModel
     {
-        [Display(Name = "Approved")]
+        [Display(Name = "Form.Ethics.Approved.Label", Description = "Form.Ethics.Approved.Description")]
         Approved,
 
-        [Display(Name = "Approval pending")]
+        [Display(Name = "Form.Ethics.Pending.Label", Description = "Form.Ethics.Pending.Description")]
         Pending
     }
 }

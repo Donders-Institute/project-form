@@ -18,7 +18,8 @@ using Microsoft.Extensions.DependencyInjection;
 
 namespace Dccn.ProjectForm.Services
 {
-    public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler<TModel> where TModel : ISectionModel, new()
+    public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler<TModel>
+        where TModel : ISectionModel, new()
     {
         private readonly IAuthorityProvider _authorityProvider;
         private readonly IUserManager _userManager;
@@ -43,6 +44,7 @@ namespace Dccn.ProjectForm.Services
         public Type ModelType => _metadata.ModelType;
 
         protected abstract IEnumerable<ApprovalAuthorityRole> ApprovalRoles { get; }
+        protected virtual IEnumerable<ApprovalAuthorityRole> RequiredApprovalRoles => Enumerable.Empty<ApprovalAuthorityRole>();
 
         public ISectionModel GetModel(FormModel form)
         {
@@ -64,6 +66,15 @@ namespace Dccn.ProjectForm.Services
         public bool HasApprovalAuthorityRole(ApprovalAuthorityRole role)
         {
             return ApprovalRoles.Contains(role);
+        }
+
+        public IEnumerable<ApprovalAuthorityRole> NeedsApprovalBy(Proposal proposal)
+        {
+            return proposal.Approvals
+                .Where(a => RequiredApprovalRoles.Contains(a.AuthorityRole))
+                .Where(a => a.Status != ApprovalStatus.Approved && a.Status != ApprovalStatus.NotApplicable)
+                .Select(a => a.AuthorityRole)
+                .ToList();
         }
 
         public Task<bool> ValidateInputAsync(FormModel form)
@@ -197,6 +208,7 @@ namespace Dccn.ProjectForm.Services
         Task StoreAsync(FormModel form, Proposal proposal);
 
         bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole);
+        IEnumerable<ApprovalAuthorityRole> NeedsApprovalBy(Proposal proposal);
     }
 
     public static class FormSectionHandlerExtensions

@@ -1,1 +1,11 @@
-﻿@model Models.SubmissionSectionModel
+﻿@using Dccn.ProjectForm.Extensions
+@model Models.SubmissionSectionModel
+
+<ul class="list-group mb-3">
+    @foreach (var approvalInfo in Model.NeedsApprovalBy)
+    {
+        <li class="list-group-item">
+            <a asp-fragment="@(approvalInfo.SectionId)">@Html.DisplayFor(_ => approvalInfo.SectionName)</a>
+        </li>
+    }
+</ul>

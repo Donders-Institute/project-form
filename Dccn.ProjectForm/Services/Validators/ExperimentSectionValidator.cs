@@ -14,13 +14,13 @@ namespace Dccn.ProjectForm.Services.Validators
             RuleFor(s => s.StorageQuota).IsInEnum();
             When(s => s.StorageQuota == StorageQuotaModel.Standard, () =>
             {
-                RuleFor(s => s.CustomQuotaAmount).Null();
-                RuleFor(s => s.CustomQuotaMotivation).Null();
+                RuleFor(s => s.CustomStorageQuota).Null();
+                RuleFor(s => s.CustomStorageQuotaMotivation).Null();
             });
             When(s => s.StorageQuota == StorageQuotaModel.Custom, () =>
             {
-                RuleFor(s => s.CustomQuotaAmount).GreaterThanOrEqualTo(0);
-                RuleFor(s => s.CustomQuotaMotivation);
+                RuleFor(s => s.CustomStorageQuota).GreaterThanOrEqualTo(0);
+                RuleFor(s => s.CustomStorageQuotaMotivation);
             });
 
             RuleForEach(s => s.Labs)
@@ -28,6 +28,7 @@ namespace Dccn.ProjectForm.Services.Validators
                 .SetValidator(new LabValidator(serviceProvider));
 
             RuleForEach(s => s.Experimenters)
+                .OverrideIndexer((section, experimenters, experimenter, index) => $"[{experimenter.Id}]")
                 .NotNull()
                 .SetValidator(s => new ExperimenterValidator(serviceProvider, s.Experimenters));
 
@@ -39,8 +40,8 @@ namespace Dccn.ProjectForm.Services.Validators
 
                 When(s => s.StorageQuota == StorageQuotaModel.Custom, () =>
                 {
-                    RuleFor(s => s.CustomQuotaAmount).NotNull();
-                    RuleFor(s => s.CustomQuotaMotivation)
+                    RuleFor(s => s.CustomStorageQuota).NotNull();
+                    RuleFor(s => s.CustomStorageQuotaMotivation)
                         .NotNull()
                         .NotEmpty();
                 });

@@ -1,0 +1,321 @@
+[Form.General]
+Title = "General"
+
+    [Form.General.PpmTitle]
+    Label = "Title"
+    Description	= """
+        The title of your project proposal.
+
+        A descriptive one line summary, which clearly identifies the project for the lifespan of the project.
+        """
+
+    [Form.General.OwnerName]
+    Label = "Project owner"
+    Description = """
+        The name of the applicant.
+
+        This is generally the key person who is going to work on the project.
+        """
+
+    [Form.General.SupervisorName]
+    Label =	"Principal investigator"
+    Description	= """
+        The name of the <abbr title="Principal Investigator">PI</abbr> or responsible supervisor of the project owner.
+        """
+
+
+
+[Form.Funding]
+Title = "Funding"
+
+    [Form.Funding.ContactEmail]
+    Label = "Email address"
+    Description	= """
+        The e-mail address of the funding related contact person.
+
+        Please check the validity of this e-mail address.
+        """
+
+    [Form.Funding.ContactName]
+    Label =	"Name"
+    Description	= """
+        The name of the person to contact about funding related questions.
+
+        Often this may be the name of the sponsor contact person or the PI.
+        """
+
+    [Form.Funding.FinancialCode]
+    Label =	"Financial code"
+    Description	= """
+        The financial code for the financial administration.
+
+        Your sponsor contact person of the financial administration should have provided this code for you.
+        """
+
+
+
+[Form.Ethics]
+Title =	"Ethical approval"
+Description = "Each PPM requires ethical approval, for standard research pick ‘Approved’ and assign a blanket approval."
+
+    [Form.Ethics.Approved]
+    Label = "Approved"
+    Description = "For standard research pick ‘Approved’ and assign an approval from this standard list."
+
+        [Form.Ethics.Approved.ApprovalCode]
+        Label = "Ethics committee approval number"
+
+    [Form.Ethics.Pending]
+    Label = "Pending"
+    Description = """
+        For non-standard research pick ‘Pending’ and fill in the correspondence number of your ethical
+        approval request.
+        """
+
+        [Form.Ethics.Pending.CorrespondenceNumber]
+        Label = "Correspondence number"
+
+
+
+[Form.Experiment]
+Title = "Experiment"
+Description = """
+    In this section list the different experiment modalities and number of subjects and sessions to be facilitated for
+    in this PPM.
+    """
+
+    [Form.Experiment.StartDate]
+    Label = "Start date"
+    Description = """
+        Starting date of data acquisition.
+
+        In case the will be no data acquired pick a starting date to approximate data of the PPM presentation.
+        """
+
+    [Form.Experiment.EndDate]
+    Label = "End date"
+    Description = """
+        Ending date of data acquisition.
+
+        In case the will be no data acquired pick an end date equal to the start date.
+        """
+
+    [Form.Experiment.Labs]
+    Label = "Labs"
+    Description = """
+            Use of the lab modalities. Press <i class="fas fa-plus-square mx-1"></i> to add an extra modality to your
+            experiment. Lab modalities may be added multiple times in case the same modality is used in different
+            experiment contexts.
+            """
+
+        [Form.Experiment.Labs.ExtraSubjectCount]
+        Label = "Extra subjects"
+        Description = """
+            Number of optional additional subjects to include in this study/experiment. There may be different valid
+            reasons, why you may need extra subjects in order to include a sufficient number of useful ‘Subjects’ in
+            your study. Note: Your total number of participants = Subjects + Extra Subjects, for example 40 Subjects +
+            8 Extra Subjects will give use 48 participants in the calendar booking picklist.
+            """
+
+        [Form.Experiment.Labs.Modality]
+        Label = "Modality"
+        Description = "Type of lab modality."
+
+        [Form.Experiment.Labs.SessionCount]
+        Label = "Sessions"
+        Description = """
+            Sessions defines how many times each (extra) subject need to show up for the experiment. This may be once
+            (Sessions = 1) or multiple times (for example Sessions = 3).
+            """
+
+        [Form.Experiment.Labs.SessionDurationMinutes]
+        Label = "Duration"
+        Description	= """
+            Duration is the estimated time in minutes it will take to do the experiment once for a single participant.
+            For example 90 minutes. Please include overhead time as far as this blocks parallel use of the lab
+            modality. Preparation time, which can be done while the lab modality is still used for the previous
+            subject should not be included in the duration.
+            """
+
+        [Form.Experiment.Labs.SubjectCount]
+        Label =	"Subjects"
+        Description = """
+            Number of participants (subjects or patients) planned to show-up and really participate in this
+            study/experiment.
+            """
+
+        [Form.Experiment.Labs.TotalDuration]
+        Label = "Total duration"
+        Description = "The total duration of lab usage for this modality."
+
+    [Form.Experiment.StorageQuota]
+    Standard = "Use standard storage quota"
+    Custom = "Use overruling storage quota"
+
+    [Form.Experiment.CustomQuotaAmount]
+    Label = "Overruling storage quota"
+    Description	= "The amount of storage in gigabytes."
+
+    [Form.Experiment.CustomStorageQuotaMotivation]
+    Label = "Motivation"
+    Description	= "Please explain why you need a custom amount of storage."
+
+
+
+[Form.Data]
+Title =	"Data management"
+Description = """
+     Data management refers to PPM related research data and applicable access permissions to Project Storage for
+     Work-In-Progress storage and the Donders Repository for long term preservation and Open Access sharing.
+
+     Click <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=datastorage-archiving-sharing">here</a>
+     for more information.
+     """
+
+    [Form.Data.ProjectStorage]
+    Label =	"Project storage access roles"
+    Description = """
+        The data-access role defines collaborator's permission and responsibility in managing project data. The
+        project owner and the PI will be initial managers by default. The applicant should also specify their data
+        access role.
+
+        Click <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=projectstorage">here</a>
+        for more information.
+        """
+
+    Manager = "Manager"
+    Contributor = "Contributor"
+    Viewer = "Viewer"
+
+    [Form.Data.Preservation]
+    Label = "Data Preservation and Open Access data publication"
+    Description = """
+        Data Preservation refers to PPM related collections and applicable access permissions to the Donders
+        Repository for long term preservation and Open Access sharing.
+
+        Click
+        <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=datastorage-archiving-sharing">here</a>
+        and
+        <a target="_blank" href="https://www.ru.nl/donders/research/data/">here</a>
+        for more information.
+        """
+
+        [Form.Data.Preservation.DondersRepository]
+        Label = "Preserve data at the Donders Repository"
+        Description = """
+            Preserve data at the Donders Repository by default unless there is a formal written agreement between your
+            supervisor/sponsor and the DCCN allowing you to preserve and publish your research data outside of the
+            Donders Repository.
+            """
+
+        [Form.Data.Preservation.External]
+        Label = "Preserve data at an external location"
+        Description = """
+            When during your research at the DCCN, but sponsored or under contract of other institutions
+            (e.g. DCN, DCMN, DCC, MPI) you may have to preserve and publish your research data outside of the
+            Donders Repository.
+
+            Please specify the external repository to preserve your research data in case your data will be archived
+            outside the DCCN domain of the Donders Repository (e.g. DCN, DCMN, DCC, MPI or other).
+            """
+
+            [Form.Data.Preservation.External.Location]
+            Label = "Name of external repository and location"
+            Description = "The name of the approved external data repository, location and institute name."
+
+            [Form.Data.Preservation.External.Reference]
+            Label = "Reference"
+            Description = "The external project number or reference number at the external repository."
+
+            [Form.Data.Preservation.External.PrincipalInvestigator]
+            Label = "Principle Investigator"
+            Description = "The name (and e-mail address) of the external Principle Investigator or supervisor."
+
+[Form.Privacy]
+Title = "Subject privacy"
+Description = """
+    In the context of GDPR (Dutch AVG) you need to specify what personal data you have to handle in
+    this project.
+    """
+
+    [Form.Privacy.Types]
+    Label = "Types of personal data"
+    Description = """
+        List all types of applicable personal data or specify other types of (special) personal data you need
+        for this project.
+        """
+
+    [Form.Privacy.Motivation]
+    Label = "Motivation"
+    Description = "List (multiple) standard or other reasons why personal data will be processed in this project."
+
+    [Form.Privacy.Storage]
+    Label = "Storage location"
+    Description = """
+        List (multiple) standard or other storage locations, where you will store personal data in
+        encrypted/protected files.
+        """
+
+    [Form.Privacy.Access]
+    Label = "Data access"
+    Description = """
+        List all collaborators in the project who can access (read, write or modify) files, which contain personal
+        information. You may tick <kbd>Managers</kbd> or <kbd>Contributors</kbd> as a quick way to include all appointed
+        managers and contributors implicitly.
+        """
+
+    [Form.Privacy.Security]
+    Label = "Security measures"
+    Description = """
+        List what standard or other security measures you will take to project files containing personal data.
+        """
+
+    [Form.Privacy.Disposal]
+    Label = "Data disposal term"
+    Description = """
+        Specify the frequently applied or other time span until you will dispose personal data after you have acquired
+        the data.
+        """
+
+[Form.Payment]
+Title = "Subject payment"
+Description = """
+    Your participants will be credited from a reserved fund. You should specify the required budget reservation for
+    paying your subjects. In case payments exceed its specified maximum budget, you will be contacted by the
+    administration.
+    """
+
+    [Form.Payment.Subjects]
+    Label = "Subjects"
+    Description = """
+        The <em>total</em> number of participants you will have to pay.
+
+        Note: This total number may differ from ‘Subjects’ as specified in the Experiment section!
+        """
+
+    [Form.Payment.AverageCost]
+    Label = "Average cost"
+    Description = """
+        The average total cost that will be paid to each subject for participating in your study.
+
+        Please take into account that subjects may show-up in multiple sessions and different lab modalities.
+        """
+
+    [Form.Payment.PredictedCosts]
+    Label = "Predicted costs"
+    Description = "The calculated sum of <code>Subjects * Average cost</code>."
+
+    [Form.Payment.MaximumBudget]
+    Label = "Maximum budget"
+    Description = """
+        Maximum total budget fund.
+
+        In case payments exceed its specified maximum budget, you will be contacted by the administration.
+        """
+
+[Form.Submission]
+Title = "Submission"
+Description = """
+    !!PLACEHOLDER!! After you have filled in the other sections, you can submit your form for final approval by the
+    director.
+    """

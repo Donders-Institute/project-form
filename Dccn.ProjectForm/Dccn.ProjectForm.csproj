@@ -1,18 +1,20 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk.Web">
   <PropertyGroup>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp2.2</TargetFramework>
     <UserSecretsId>e3383948-e7ec-44df-aba7-ef5ac40ee097</UserSecretsId>
     <StartupObject></StartupObject>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="FluentValidation" Version="8.0.101" />
-    <PackageReference Include="FluentValidation.AspNetCore" Version="8.0.101" />
+    <PackageReference Include="FluentValidation" Version="8.1.2" />
+    <PackageReference Include="FluentValidation.AspNetCore" Version="8.1.2" />
     <PackageReference Include="Microsoft.AspNetCore.App" />
 
     <PackageReference Include="Handlebars.Net" Version="1.9.5" />
+
+    <PackageReference Include="Nett" Version="0.10.0" />
     <PackageReference Include="Novell.Directory.Ldap.NETStandard" Version="2.3.8" />
-    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.2" />
+    <PackageReference Include="Pomelo.EntityFrameworkCore.MySql" Version="2.1.4" />
 
     <PackageReference Include="BuildBundlerMinifier" Version="2.8.391" PrivateAssets="all" />
     <PackageReference Include="JetBrains.Annotations" Version="2018.2.1" PrivateAssets="all" />
@@ -20,5 +22,6 @@
   </ItemGroup>
   <ItemGroup>
     <None Update="Email\Templates\**" CopyToOutputDirectory="PreserveNewest" />
+    <None Update="Messages.toml" CopyToOutputDirectory="PreserveNewest" />
   </ItemGroup>
 </Project>

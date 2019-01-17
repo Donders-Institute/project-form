@@ -1,4 +1,6 @@
-﻿@model Models.PaymentSectionModel
+﻿@using Microsoft.Extensions.Localization
+@model Models.PaymentSectionModel
+@inject IStringLocalizer Localizer;
 
 <div class="form-row">
     <div class="col-md form-group">
@@ -10,6 +12,7 @@
                 </div>
             </div>
             <input asp-for="SubjectCount" id="cost-subjects" class="form-control" data-submit-on="change">
+            <small asp-description-for="SubjectCount"></small>
         </div>
     </div>
     <div class="col-md form-group">
@@ -21,10 +24,11 @@
                 </div>
             </div>
             <input asp-for="AverageSubjectCost" id="cost-average" class="form-control" data-submit-on="change">
+            <small asp-description-for="AverageSubjectCost"></small>
         </div>
     </div>
     <div class="col-md form-group">
-        <label>Predicted costs</label>
+        <label>@Localizer["Form.Payment.PredictedCosts.Label"]</label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
@@ -32,6 +36,7 @@
                 </div>
             </div>
             <input id="cost-predicted" class="form-control" disabled>
+            <small class="form-text text-muted">@Html.Raw(Localizer["Form.Payment.PredictedCosts.Description"])</small>
         </div>
     </div>
     <div class="col-md form-group">
@@ -43,6 +48,7 @@
                 </div>
             </div>
             <input asp-for="MaxTotalCost" class="form-control" data-submit-on="change">
+            <small asp-description-for="MaxTotalCost"></small>
         </div>
     </div>
 </div>

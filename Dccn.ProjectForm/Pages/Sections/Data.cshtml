@@ -8,11 +8,7 @@
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">@Html.DisplayNameFor(m => m.StorageAccessRules)</h5>
-        <h6 class="card-subtitle text-muted mb-3">
-            The data-access role defines collaborator's permission and responsibility in
-            managing project data. The PI will be one of the managers. The applicant should also specify his/her data access role.
-            Click <a href="https://intranet.donders.ru.nl/index.php?id=4733" target="_blank">here</a> for more information.
-        </h6>
+        <h6 class="card-subtitle text-muted mb-3">@Html.DescriptionFor(m => m.StorageAccessRules)</h6>
         <div class="card">
             <div class="card-header py-2">
                 <div class="row">
@@ -34,10 +30,10 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No access roles assigned</span>
                 </div>
-                @foreach (var (index, rule) in Model.StorageAccessRules.Select((rule, index) => (index, rule)))
+                @foreach (var rule in Model.StorageAccessRules)
                 {
                     <div class="d-none access-item"
-                         data-index="@index"
+                         data-index="@rule.Id"
                          data-id="@rule.Id"
                          data-name="@rule.Name"
                          data-role="@rule.Role"
@@ -53,12 +49,7 @@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">@Html.DisplayNameFor(m => m.Preservation)</h5>
-        <h6 class="card-subtitle text-muted mb-3">
-            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-            dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-        </h6>
+        <h6 class="card-subtitle text-muted mb-3">@Html.DescriptionFor(m => m.Preservation)</h6>
         <div class="accordion" id="preservation-options">
             <div class="card">
                 <div class="card-header">
@@ -70,18 +61,13 @@
                                value="@DataPreservationModel.Repository"
                                data-target="#preservation-repository-panel"
                                data-submit-on="change">
-                        <label class="custom-control-label" for="preservation-repository">Preserve data at the Donders Repository</label>
+                        <label class="custom-control-label" for="preservation-repository">@Html.DisplayName(DataPreservationModel.Repository)</label>
                     </div>
                 </div>
                 <fieldset class="collapse" id="preservation-repository-panel" data-parent="#preservation-options">
                     <div class="card-body">
-                        <h5 class="card-title">Donders Repository access roles</h5>
-                        <h6 class="card-subtitle text-muted mb-3">
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit, sed do eiusmod tempor incididunt ut labore et dolore magna aliqua.
-                            Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat. Duis aute irure
-                            dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat nulla pariatur. Excepteur sint occaecat cupidatat non
-                            proident, sunt in culpa qui officia deserunt mollit anim id est laborum.
-                        </h6>
+                        <h6 class="card-subtitle text-muted mb-3">@Html.Description(DataPreservationModel.Repository)</h6>
+
                         <p class="card-text">
                             The project owner (<b>@Html.DisplayFor(m => m.OwnerName)</b>) and the PI (<b>@Html.DisplayFor(m => m.SupervisorName)</b>)
                             will receive the <i>manager</i> role in the Donders Repository.
@@ -108,16 +94,13 @@
                                value="@DataPreservationModel.External"
                                data-target="#preservation-external-panel"
                                data-submit-on="change">
-                        <label class="custom-control-label" for="preservation-external">Preserve data at an external location</label>
+                        <label class="custom-control-label" for="preservation-external">@Html.DisplayName(DataPreservationModel.External)</label>
                     </div>
                 </div>
                 <fieldset class="collapse" id="preservation-external-panel" data-parent="#preservation-options">
                     <div class="card-body">
-                        <h5 class="card-title">@Html.DisplayNameFor(m => m.ExternalPreservation)</h5>
-                        <h6 class="card-subtitle text-muted mb-3">
-                            Please specify the external location for the data archive if the data will be archived outside the DCCN domain of
-                            the Donders Repository (e.g. DCN, DCMN, DCC, MPI or other).
-                        </h6>
+                        <h6 class="card-subtitle text-muted mb-3">@Html.Description(DataPreservationModel.External)</h6>
+
                         <div class="form-group">
                             <label asp-for="ExternalPreservation.Location"></label>
                             <input asp-for="ExternalPreservation.Location" class="form-control" data-submit-on="change"/>
@@ -149,11 +132,11 @@
          data-can-edit="{{:canEdit}}"
          data-can-remove="{{:canRemove}}">
 
-        <input name="@Html.Name("AccessRules.Index")" type="hidden" value="{{:index}}">
-        <input name="@Html.Name("AccessRules[{{:index}}].User.Id")" type="hidden" value="{{:id}}">
+        <input name="@Html.Name(nameof(Model.StorageAccessRules) + ".Index")" type="hidden" value="{{:index}}">
+        <input name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Id")" type="hidden" value="{{:id}}">
 
-        <div class="row">
-            <div class="col my-auto">
+        <div class="row align-items-center">
+            <div class="col">
                 {{>name}}
                 <span class="badge badge-info">{{:id}}</span>
             </div>
@@ -163,19 +146,17 @@
                 {
                     @:{{if role === @Html.Raw(HttpUtility.JavaScriptStringEncode(role.ToString(), true))}}
                     <label class="btn btn-outline-secondary active">
-                        <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
-                               value="@role" data-submit-on="change" checked> @role.GetDisplayName()
-                        </label>
-                        @:{{else}}
-                        <label class="btn btn-outline-secondary">
-                            <input type="radio" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off"
-                                   value="@role" data-submit-on="change"> @role.GetDisplayName()
-                            </label>
-                            @:{{/if}}
-                        }
+                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Role")" autocomplete="off"
+                               value="@role" data-submit-on="change" checked> @Html.DisplayName(role)
+                    </label>
+                    @:{{else}}
+                    <label class="btn btn-outline-secondary">
+                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Role")" autocomplete="off"
+                               value="@role" data-submit-on="change"> @Html.DisplayName(role)
+                    </label>
+                    @:{{/if}}
+                }
             </div>
-
-            @* <input type="hidden" name="@Html.Name("AccessRules[{{:index}}].Role")" autocomplete="off" value="{{:role}}"> *@
 
             <div class="col-auto">
                 <button type="button" class="btn btn-sm btn-outline-secondary remove-access" data-submit-on="click">

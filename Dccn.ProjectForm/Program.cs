@@ -9,12 +9,13 @@ using Microsoft.Extensions.Logging;
 
 namespace Dccn.ProjectForm
 {
-    public static class Program
+    [UsedImplicitly]
+    public class Program
     {
         public static void Main(string[] args)
         {
             var host = CreateWebHostBuilder(args).Build();
-            var logger = host.Services.GetRequiredService<ILogger<Startup>>();
+            var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
             try
             {
