@@ -5,6 +5,7 @@
 *.min.css
 *.min.js
 docker-compose.*.yml
+secrets.json
 
 .vs/
 .vscode/
