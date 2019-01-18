@@ -5,24 +5,32 @@
     ViewData["Title"] = "Log in";
 }
 
-<div class="row justify-content-center align-items-center h-100">
-    <form class="form-login col" method="post">
-        <img class="img-fluid mb-4" src="~/images/donders-full.svg" alt="Donders logo">
+<div class="row justify-content-md-center align-items-center">
+    <div class="col-md"></div>
+    <div class="col-md">
+        <div class="row justify-content-center">
+            <div class="col-12">
+                <form class="form-login" method="post">
+                    <img class="img-fluid mb-4" src="~/images/donders-full.svg" alt="Donders logo">
 
-        <h1 class="display-4 text-center">Please log in</h1>
-        <small>Enter your DCCN credentials.</small>
+                    <h1 class="display-4 text-center">Please log in</h1>
+                    <small>Enter your DCCN credentials:</small>
 
-        <label asp-for="UserName" class="sr-only"></label>
-        <input asp-for="UserName" class="form-control form-username py-4" placeholder="@Html.DisplayNameFor(m => m.UserName)" autofocus>
+                    <label asp-for="UserName" class="sr-only"></label>
+                    <input asp-for="UserName" class="form-control form-username py-4" placeholder="@Html.DisplayNameFor(m => m.UserName)" autofocus style="height: 80px">
 
-        <label asp-for="Password" class="sr-only"></label>
-        <input asp-for="Password" class="form-control form-password py-4" placeholder="@Html.DisplayNameFor(m => m.Password)">
+                    <label asp-for="Password" class="sr-only"></label>
+                    <input asp-for="Password" class="form-control form-password py-4" placeholder="@Html.DisplayNameFor(m => m.Password)" style="height: 80px">
 
-        <div class="custom-control custom-checkbox mb-3">
-            <input asp-for="RememberMe" class="custom-control-input">
-            <label asp-for="RememberMe" class="custom-control-label"></label>
+                    <div class="custom-control custom-checkbox mb-3">
+                        <input asp-for="RememberMe" class="custom-control-input">
+                        <label asp-for="RememberMe" class="custom-control-label"></label>
+                    </div>
+
+                    <button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
+                </form>
+            </div>
         </div>
-
-        <button class="btn btn-lg btn-primary btn-block" type="submit">Log in</button>
-    </form>
+    </div>
+    <div class="col-md"></div>
 </div>
