@@ -36,138 +36,136 @@
         </div>
     </div>
     <div class="col">
-        <div class="card">
-            <div id="form-view" class="card-body" data-spy="scroll" data-target="#section-list" data-offset="18">
-                @foreach (var section in Model.Sections)
-                {
-                    <form asp-route-sectionId="@(section.Id)" id="@Html.Id(section.Id)" class="form-section" method="post">
-                        <div class="card mb-3" >
-                            <div class="card-header d-flex justify-content-between section-header">
-                                <h1 class="display-4">@Html.DisplayName(section.Id)</h1>
-                            </div>
-                            <fieldset class="card-body" disabled="@(!section.CanEdit)">
+        <div id="form-view" data-spy="scroll" data-target="#section-list" data-offset="18">
+            @foreach (var section in Model.Sections)
+            {
+                <form asp-route-sectionId="@(section.Id)" id="@Html.Id(section.Id)" class="form-section" method="post">
+                    <div class="card mb-3" >
+                        <div class="card-header d-flex justify-content-between section-header">
+                            <h1 class="display-4">@Html.DisplayName(section.Id)</h1>
+                        </div>
+                        <fieldset class="card-body" disabled="@(!section.CanEdit)">
+                            @{
+                                var description = Html.Description(section.Id);
+                            }
+                            @if (description != null)
+                            {
+                                <h6 class="card-subtitle text-muted mb-3">@description</h6>
+                            }
+                            @await Html.FormSectionAsync(section)
+                        </fieldset>
+                        <div class="card-footer">
+                            <div class="form-group">
                                 @{
-                                    var description = Html.Description(section.Id);
-                                }
-                                @if (description != null)
-                                {
-                                    <h6 class="card-subtitle text-muted mb-3">@description</h6>
-                                }
-                                @await Html.FormSectionAsync(section)
-                            </fieldset>
-                            <div class="card-footer">
-                                <div class="form-group">
-                                    @{
-                                        var comments = section.Id + "." + nameof(ISectionModel.Comments);
-                                        var attributes = new RouteValueDictionary
-                                        {
-                                            {"class", "form-control form-control-sm"},
-                                            {"placeholder", "Leave a comment here if something in this section requires extra explanation."},
-                                            {"data-submit-on", "change"}
-                                        };
+                                    var comments = section.Id + "." + nameof(ISectionModel.Comments);
+                                    var attributes = new RouteValueDictionary
+                                    {
+                                        {"class", "form-control form-control-sm"},
+                                        {"placeholder", "Leave a comment here if something in this section requires extra explanation."},
+                                        {"data-submit-on", "change"}
+                                    };
 
-                                        if (!section.CanEdit)
-                                        {
-                                            attributes["disabled"] = "disabled";
-                                        }
+                                    if (!section.CanEdit)
+                                    {
+                                        attributes["disabled"] = "disabled";
                                     }
-                                    @Html.Label(comments)
-                                    @Html.TextArea(comments, section.Comments, 3, 0, attributes)
-                                </div>
-                                <div class="card">
-                                    <div class="card-body bg-light">
-                                        @if (!section.Approvals.All(a => a.IsAutoApproved))
-                                        {
-                                            <h5 class="card-title">Approval status</h5>
-                                            <ul class="list-group mb-3">
-                                                @foreach (var approvalInfo in section.Approvals)
-                                                {
-                                                    var status = approvalInfo.Status;
-
-                                                    <li class="list-group-item">
-                                                        <div class="row align-content-center">
-                                                            <div class="col">
-                                                                <a href="mailto:@(approvalInfo.AuthorityEmail)">@Html.DisplayFor(_ => approvalInfo.AuthorityName)</a>
-                                                            </div>
-                                                            <div class="col">
-                                                                @Html.DisplayName(approvalInfo.AuthorityRole)
-                                                            </div>
-                                                            <div class="col-auto">
-                                                                <span class="badge badge-pill badge-@status.GetColor()">
-                                                                    Status: @Html.DisplayName(status)
-                                                                </span>
-                                                            </div>
-                                                        </div>
-                                                    </li>
-                                                }
-                                            </ul>
-                                        }
-                                        <div class="btn-group float-right" role="group">
-                                            @if (section.CanSubmit)
+                                }
+                                @Html.Label(comments)
+                                @Html.TextArea(comments, section.Comments, 3, 0, attributes)
+                            </div>
+                            <div class="card">
+                                <div class="card-body bg-light">
+                                    @if (!section.Approvals.All(a => a.IsAutoApproved))
+                                    {
+                                        <h5 class="card-title">Approval status</h5>
+                                        <ul class="list-group mb-3">
+                                            @foreach (var approvalInfo in section.Approvals)
                                             {
-                                                if (section.Approvals.All(a => a.IsAutoApproved))
-                                                {
-                                                    <button asp-page-handler="Submit" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-primary" type="submit">
-                                                        Submit
-                                                    </button>
-                                                }
-                                                else
-                                                {
-                                                    <button class="btn btn-primary" type="button" data-toggle="modal" data-target=".confirm-submit-dialog[data-section='@(section.Id)']">
-                                                        Submit for approval
-                                                    </button>
+                                                var status = approvalInfo.Status;
 
-                                                    <div class="confirm-submit-dialog modal fade" tabindex="-1" role="dialog" data-section="@(section.Id)">
-                                                        <div class="modal-dialog modal-dialog-centered" role="document">
-                                                            <div class="modal-content">
-                                                                <div class="modal-header">
-                                                                    <h5 class="modal-title">Submit for approval</h5>
-                                                                    <button type="button" class="close" data-dismiss="modal">
-                                                                        <span aria-hidden="true">&times;</span>
-                                                                    </button>
-                                                                </div>
-                                                                <div class="modal-body">
-                                                                    Are you sure you want to submit the section <emph>@Html.DisplayName(section.Id)</emph> for approval?
-                                                                </div>
-                                                                <div class="modal-footer">
-                                                                    <button asp-page-handler="Submit" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)"
-                                                                            class="btn btn-primary float-right" type="submit">Submit</button>
-                                                                    <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
-                                                                </div>
+                                                <li class="list-group-item">
+                                                    <div class="row align-content-center">
+                                                        <div class="col">
+                                                            <a href="mailto:@(approvalInfo.AuthorityEmail)">@Html.DisplayFor(_ => approvalInfo.AuthorityName)</a>
+                                                        </div>
+                                                        <div class="col">
+                                                            @Html.DisplayName(approvalInfo.AuthorityRole)
+                                                        </div>
+                                                        <div class="col-auto">
+                                                            <span class="badge badge-pill badge-@status.GetColor()">
+                                                                Status: @Html.DisplayName(status)
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                </li>
+                                            }
+                                        </ul>
+                                    }
+                                    <div class="btn-group float-right" role="group">
+                                        @if (section.CanSubmit)
+                                        {
+                                            if (section.Approvals.All(a => a.IsAutoApproved))
+                                            {
+                                                <button asp-page-handler="Submit" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-primary" type="submit">
+                                                    Submit
+                                                </button>
+                                            }
+                                            else
+                                            {
+                                                <button class="btn btn-primary" type="button" data-toggle="modal" data-target=".confirm-submit-dialog[data-section='@(section.Id)']">
+                                                    Submit for approval
+                                                </button>
+
+                                                <div class="confirm-submit-dialog modal fade" tabindex="-1" role="dialog" data-section="@(section.Id)">
+                                                    <div class="modal-dialog modal-dialog-centered" role="document">
+                                                        <div class="modal-content">
+                                                            <div class="modal-header">
+                                                                <h5 class="modal-title">Submit for approval</h5>
+                                                                <button type="button" class="close" data-dismiss="modal">
+                                                                    <span aria-hidden="true">&times;</span>
+                                                                </button>
+                                                            </div>
+                                                            <div class="modal-body">
+                                                                Are you sure you want to submit the section <emph>@Html.DisplayName(section.Id)</emph> for approval?
+                                                            </div>
+                                                            <div class="modal-footer">
+                                                                <button asp-page-handler="Submit" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)"
+                                                                        class="btn btn-primary float-right" type="submit">Submit</button>
+                                                                <button class="btn btn-secondary" data-dismiss="modal">Cancel</button>
                                                             </div>
                                                         </div>
                                                     </div>
-                                                }
+                                                </div>
                                             }
-                                            @if (section.CanRetract)
-                                            {
-                                                <button asp-page-handler="Retract" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-secondary" type="submit">
-                                                    Retract
-                                                </button>
-                                            }
-                                            @if (section.CanReject)
-                                            {
-                                                <button asp-page-handler="Reject" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-danger" type="submit">
-                                                    <i class="far fa-thumbs-down"></i>
-                                                    Reject
-                                                </button>
-                                            }
-                                            @if (section.CanApprove)
-                                            {
-                                                <button asp-page-handler="Approve" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-success" type="submit">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    Approve
-                                                </button>
-                                            }
-                                        </div>
+                                        }
+                                        @if (section.CanRetract)
+                                        {
+                                            <button asp-page-handler="Retract" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-secondary" type="submit">
+                                                Retract
+                                            </button>
+                                        }
+                                        @if (section.CanReject)
+                                        {
+                                            <button asp-page-handler="Reject" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-danger" type="submit">
+                                                <i class="far fa-thumbs-down"></i>
+                                                Reject
+                                            </button>
+                                        }
+                                        @if (section.CanApprove)
+                                        {
+                                            <button asp-page-handler="Approve" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-success" type="submit">
+                                                <i class="far fa-thumbs-up"></i>
+                                                Approve
+                                            </button>
+                                        }
                                     </div>
                                 </div>
                             </div>
                         </div>
-                        <input asp-for="Timestamp" class="timestamp" type="hidden">
-                    </form>
-                }
-            </div>
+                    </div>
+                    <input asp-for="Timestamp" class="timestamp" type="hidden">
+                </form>
+            }
         </div>
     </div>
 </div>
