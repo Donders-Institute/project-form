@@ -1,30 +1,24 @@
 :root {
-    --navbar-padding: 54px;
     --donders-dark-red: #8E0000;
     --donders-ru-red: #BE311A;
     --donders-bright-red: #FF0000;
 }
 
 html {
+    overflow-y: hidden; 
     font-size: 14px;
 }
 
 html,
 body,
 #content {
-    height: 100%;
-}
+    margin-top: 80px;
+    height: 100%; 
+ }
 
-#content {
-    padding-top: var(--navbar-padding);
-}
-
-/* Donders logo */
-.donders-brand {
-    display: inline-block;
-    font-size: 2em;
-    width: .875em;
-    vertical-align: -.250em;
+.navbar{
+    margin-bottom: 0 !important;
+    border: 0 !important;
 }
 
 /* Login */
@@ -51,6 +45,7 @@ body,
     border-top-left-radius: 0;
     border-top-right-radius: 0;
 }
+
 /* ***** */
 
 .algolia-autocomplete {
@@ -86,8 +81,6 @@ body,
     font-weight: bold;
     font-style: normal;
 }
-
-
 
 .section-header {
     background: linear-gradient(to bottom, #8e0000 0, #8e0000 70%, #be311a 70%, #be311a 92%, #ff0000 92%, #ff0000 100%);
@@ -134,5 +127,5 @@ div.validation-message[x-out-of-boundaries] {
 #form-view {
     position: relative;
     overflow: auto;
-    height: calc(100vh - var(--navbar-padding) - 2rem);
+    height: calc(100vh - 80px - 80px);
 }

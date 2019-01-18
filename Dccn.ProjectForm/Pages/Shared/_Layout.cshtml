@@ -30,13 +30,14 @@
 <div id="content" class="invisible">
     <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
         <div class="container">
-            <a asp-page="/Index" class="navbar-brand">
-                <svg xmlns="http://www.w3.org/2000/svg" class="donders-brand mr-1" viewBox="0 0 512 512" role="img">
-                    <path fill="currentColor" d="M511,255.5a255,255,0,0,1-96.19,199.74L356.47,314.53,449.63,89.4A254.48,254.48,0,0,1,511,255.5ZM320.07,391a125.73,125.73,0,1,1,0-153.27L400,44.78A254.3,254.3,0,0,0,255.5,0C114.39,0,0,114.39,0,255.5S114.39,511,255.5,511a254.58,254.58,0,0,0,105-22.5ZM196.18,256.32a62.89,62.89,0,0,0,48.13,116.2l0,0a62.89,62.89,0,0,0-48.17-116.18Z"></path>
-                </svg>
-                <span class="text-muted">DCCN</span>
-                Project Proposal
-            </a>
+           <ul class="navbar-nav mr-auto">
+                <li class="nav-item">
+                    <a class="nav-link" href="https://portal.dccn.nl">DCCN</a>
+                </li>
+                <li class="nav-item active">
+                    <a class="nav-link" asp-page="/Index">Project Proposal</a></a>
+                </li>
+            </ul>
 
             <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse">
                 <span class="navbar-toggler-icon"></span>
@@ -54,7 +55,7 @@
         </div>
     </nav>
 
-    <div class="container p-3 h-100">
+    <div class="container">
         @RenderBody()
     </div>
 </div>
