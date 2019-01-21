@@ -9,10 +9,13 @@ html {
     font-size: 14px;
 }
 
+body {
+    margin-top: 0px;
+}
+
 html,
 body,
 #content {
-    margin-top: 80px;
     height: 100%;
 }
 
@@ -122,6 +125,14 @@ div.validation-message[x-out-of-boundaries] {
     -moz-border-radius-topright: 5px;
     border-top-left-radius: 5px;
     border-top-right-radius: 5px;
+}
+
+#login {
+    margin-top: 80px;
+}
+
+#proposal-list {
+    margin-top: 80px;
 }
 
 #section-list {
