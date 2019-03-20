@@ -6,7 +6,7 @@ namespace Dccn.ProjectForm.Data
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
     public class Lab
     {
-        public int Id { get; private set; }
+        public int Id { get; set; }
 
         public int ProposalId { get; private set; }
 

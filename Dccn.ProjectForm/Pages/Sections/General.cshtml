@@ -1,10 +1,16 @@
 ﻿@model Models.GeneralSectionModel
-
 @* Title *@
 <div class="form-group">
     <label asp-for="Title"></label>
     <input asp-for="Title" class="form-control" data-submit-on="change">
     <small asp-description-for="Title"></small>
+</div>
+
+@* Project Id *@
+<div class="form-group">
+    <label asp-for="ProjectId"></label>
+    <input asp-for="ProjectId" class="form-control" disabled>
+    <small asp-description-for="ProjectId"></small>
 </div>
 
 @* Owner *@

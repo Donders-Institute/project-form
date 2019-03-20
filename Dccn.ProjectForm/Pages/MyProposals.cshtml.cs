@@ -4,7 +4,6 @@ using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Utils;
 using JetBrains.Annotations;
@@ -19,7 +18,7 @@ namespace Dccn.ProjectForm.Pages
     {
         private readonly IAuthorizationService _authorizationService;
 
-        public MyProposalsModel(IAuthorizationService authorizationService, ProposalsDbContext proposalsDbContext, IUserManager userManager) : base(proposalsDbContext, userManager)
+        public MyProposalsModel(IAuthorizationService authorizationService, ProposalDbContext proposalDbContext, IUserManager userManager) : base(proposalDbContext, userManager)
         {
             _authorizationService = authorizationService;
         }
@@ -35,7 +34,7 @@ namespace Dccn.ProjectForm.Pages
         [UsedImplicitly]
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var proposal = await ProposalsDbContext.Proposals.FindAsync(id);
+            var proposal = await ProposalDbContext.Proposals.FindAsync(id);
             if (proposal == null)
             {
                 return NotFound();
@@ -46,8 +45,8 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            ProposalsDbContext.Remove(proposal);
-            await ProposalsDbContext.SaveChangesAsync();
+            ProposalDbContext.Remove(proposal);
+            await ProposalDbContext.SaveChangesAsync();
 
             return RedirectToPage();
         }
@@ -56,7 +55,7 @@ namespace Dccn.ProjectForm.Pages
         public async Task<IActionResult> OnPostCreateAsync([FromForm(Name = nameof(NewProposal))] NewProposalModel model)
         {
             var ownerId = UserManager.GetUserId(User);
-            if (await ProposalsDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == model.Title))
+            if (await ProposalDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == model.Title))
             {
                 ModelState.AddModelError(string.Empty, "A proposal with the same name already exists.");
             }
@@ -111,8 +110,8 @@ namespace Dccn.ProjectForm.Pages
                 });
             }
 
-            ProposalsDbContext.Proposals.Add(proposal);
-            await ProposalsDbContext.SaveChangesAsync();
+            ProposalDbContext.Proposals.Add(proposal);
+            await ProposalDbContext.SaveChangesAsync();
 
             return RedirectToPage("Form", new {proposalId = proposal.Id});
         }

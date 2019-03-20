@@ -9,6 +9,14 @@ Title = "General"
         A descriptive one line summary, which clearly identifies the project for the lifespan of the project.
         """
 
+	[Form.General.ProjectId]
+	Label = "Project number"
+	Description = """
+		The unique number for this project.
+
+		This number is assigned when the project proposal has been fully approved and added to the Project Database.
+		"""
+
     [Form.General.OwnerName]
     Label = "Project owner"
     Description = """
@@ -49,7 +57,7 @@ Title = "Funding"
     Description	= """
         The financial code for the financial administration.
 
-        Your sponsor contact person of the financial administration should have provided this code for you.
+        This code will be filled in by the financial department.
         """
 
 
@@ -62,8 +70,9 @@ Description = "Each PPM requires ethical approval, for standard research pick â€
     Label = "Approved"
     Description = "For standard research pick â€˜Approvedâ€™ and assign an approval from this standard list."
 
-        [Form.Ethics.Approved.ApprovalCode]
+        [Form.Ethics.Approved.Code]
         Label = "Ethics committee approval number"
+		Description = "Specify the assigned CMO/ECSW dossier number."
 
     [Form.Ethics.Pending]
     Label = "Pending"
@@ -74,6 +83,7 @@ Description = "Each PPM requires ethical approval, for standard research pick â€
 
         [Form.Ethics.Pending.CorrespondenceNumber]
         Label = "Correspondence number"
+		Description = "!!!Put explanation here."
 
 
 
@@ -124,15 +134,14 @@ Description = """
         [Form.Experiment.Labs.SessionCount]
         Label = "Sessions"
         Description = """
-            Sessions defines how many times each (extra) subject need to show up for the experiment. This may be once
-            (Sessions = 1) or multiple times (for example Sessions = 3).
+            Specifies how many times each (extra) subject needs to show up for the experiment.
             """
 
         [Form.Experiment.Labs.SessionDurationMinutes]
         Label = "Duration"
         Description	= """
             Duration is the estimated time in minutes it will take to do the experiment once for a single participant.
-            For example 90 minutes. Please include overhead time as far as this blocks parallel use of the lab
+            Please include overhead time as far as this blocks parallel use of the lab
             modality. Preparation time, which can be done while the lab modality is still used for the previous
             subject should not be included in the duration.
             """
@@ -231,6 +240,8 @@ Description = """
             Label = "Principle Investigator"
             Description = "The name (and e-mail address) of the external Principle Investigator or supervisor."
 
+
+
 [Form.Privacy]
 Title = "Subject privacy"
 Description = """
@@ -267,14 +278,15 @@ Description = """
     [Form.Privacy.Security]
     Label = "Security measures"
     Description = """
-        List what standard or other security measures you will take to project files containing personal data.
+        List what security measures you will take to protect files containing personal data.
         """
 
     [Form.Privacy.Disposal]
     Label = "Data disposal term"
     Description = """
-        Specify the frequently applied or other time span until you will dispose personal data after you have acquired
-        the data.
+        Specify when the personal data will be deleted.
+
+		In case you select "Other", please also give a short motivation.
         """
 
 [Form.Payment]

@@ -9,30 +9,36 @@ namespace Dccn.ProjectForm.Configuration
     {
         public const string SectionName = "Form";
 
-        public IDictionary<string, LabModality> Labs { get; set; }
-        public IDictionary<ApprovalAuthorityRole, string> Authorities { get; set; }
+        public IDictionary<string, string> EthicalCodes { get; set; }
+        public LabOptions Labs { get; set; }
+        public IDictionary<ApprovalAuthorityRole, ICollection<string>> Authorities { get; set; }
+        public ICollection<string> Administration { get; set; }
+        public ICollection<string> Admins { get; set; }
         public PrivacyOptions Privacy { get; set; }
 
+        [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
+        public class LabOptions
+        {
+            public IDictionary<string, string> Modalities { get; set; }
+            public int MinimumStorageQuota { get; set; }
+        }
+
+        [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
         public class LabModality
         {
             public string DisplayName { get; set; }
             public bool IsMri { get; set; }
-            public StorageAmount Storage { get; set; }
+            public int? SessionStorageQuota { get; set; }
         }
 
-        public class StorageAmount
-        {
-            public decimal? Fixed { get; set; }
-            public decimal? Session { get; set; }
-        }
-
+        [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
         public class PrivacyOptions
         {
             public IDictionary<string, string> DataTypes { get; set; }
             public IDictionary<string, string> Motivations { get; set; }
             public IDictionary<string, string> StorageLocations { get; set; }
             public IDictionary<string, string> DataAccessors { get; set; }
-            public IDictionary<string, string> SecurityMeasures { get; set; }
+            public IDictionary<string, string> DataDisposalTerms { get; set; }
         }
     }
 }

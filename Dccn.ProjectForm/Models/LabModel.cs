@@ -4,7 +4,7 @@ namespace Dccn.ProjectForm.Models
 {
     public class LabModel
     {
-        public int? Id { get; set; }
+        public int Id { get; set; }
 
         [Display(Name = "Form.Experiment.Labs.Modality.Label", Description = "Form.Experiment.Labs.Modality.Description")]
         public ModalityModel Modality { get; set; }

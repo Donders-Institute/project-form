@@ -9,7 +9,7 @@ namespace Dccn.ProjectForm.Models
     public class DataSectionModel : SectionModelBase
     {
         [Display(Name = "Form.Data.ProjectStorage.Label", Description = "Form.Data.ProjectStorage.Description")]
-        public IEnumerable<StorageAccessRuleModel> StorageAccessRules { get; set; } = Enumerable.Empty<StorageAccessRuleModel>();
+        public IList<StorageAccessRuleModel> StorageAccessRules { get; set; } = new List<StorageAccessRuleModel>();
 
         [Display(Name = "Form.Data.Preservation.Label", Description = "Form.Data.Preservation.Description")]
         public DataPreservationModel Preservation { get; set; }

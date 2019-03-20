@@ -1,6 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
+﻿using System.IO;
 using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
@@ -11,6 +9,7 @@ using Dccn.ProjectForm.Email.Models;
 using HandlebarsDotNet;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
+using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 
@@ -19,16 +18,14 @@ namespace Dccn.ProjectForm.Services
     public class EmailService : IEmailService
     {
         private readonly ITemplateRenderService _renderService;
-        private readonly IHostingEnvironment _environment;
         private readonly IUserManager _userManager;
         private readonly SmtpClient _client;
         private readonly MailAddress _sender;
-        private readonly bool _overrideRecipient;
+        private readonly EmailOptions.OverrideRecipientOptions _overrideRecipient;
 
-        public EmailService(ITemplateRenderService renderService, IHostingEnvironment environment, IUserManager userManager, IOptionsSnapshot<EmailOptions> optionsAccessor)
+        public EmailService(ITemplateRenderService renderService, IUserManager userManager, IOptionsSnapshot<EmailOptions> optionsAccessor)
         {
             _renderService = renderService;
-            _environment = environment;
             _userManager = userManager;
 
             var options = optionsAccessor.Value;
@@ -40,50 +37,54 @@ namespace Dccn.ProjectForm.Services
             }
 
             _sender = new MailAddress(options.Sender.Address, options.Sender.DisplayName);
-            _overrideRecipient = options.OverrideRecipient;
+            _overrideRecipient = options.OverrideRecipient ?? new EmailOptions.OverrideRecipientOptions { Enabled = false };
         }
 
-        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email)
+        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, params MailAddress[] recipients)
         {
-            if (_overrideRecipient)
+            if (_overrideRecipient.Enabled)
             {
-                if (user == null)
+                string displayName, emailAddress;
+
+                if (_overrideRecipient.Fixed == null)
                 {
-                    return;
+                    if (user == null)
+                    {
+                        return;
+                    }
+
+                    displayName = _userManager.GetUserName(user);
+                    emailAddress = _userManager.GetEmailAddress(user);
+                }
+                else
+                {
+                    displayName = _overrideRecipient.Fixed.DisplayName;
+                    emailAddress = _overrideRecipient.Fixed.Address;
                 }
 
-                var userName = _userManager.GetUserName(user);
-                var userEmail = _userManager.GetEmailAddress(user);
-
-                email.OverrideRecipient(new MailAddress(userEmail, userName));
+                recipients = new [] {new MailAddress(emailAddress, displayName)};
             }
 
-            await SendEmailNoOverrideAsync(email);
+            await SendEmailNoOverrideAsync(email, recipients);
         }
 
-        public async Task SendEmailNoOverrideAsync(IEmailModel email)
+        public async Task SendEmailNoOverrideAsync(IEmailModel email, params MailAddress[] recipients)
         {
             var templatePath = Path.ChangeExtension(email.TemplateName, "hbs");
-            var model = new
-            {
-                Environment = new
-                {
-                    Name = _environment.EnvironmentName,
 
-                    Development = _environment.IsDevelopment(),
-                    Staging = _environment.IsStaging(),
-                    Production = _environment.IsProduction()
-                },
-                Email = email
-            };
-
-            var body = await _renderService.RenderAsync(templatePath, model);
-            var message = new MailMessage(_sender, email.Recipient)
+            var body = await _renderService.RenderAsync(templatePath, email);
+            var message = new MailMessage
             {
+                From = _sender,
                 Subject = email.Subject,
                 Body = body,
-                IsBodyHtml = false
+                IsBodyHtml = email.IsHtml
             };
+
+            foreach (var recipient in recipients)
+            {
+                message.To.Add(recipient);
+            }
 
             await _client.SendMailAsync(message);
         }
@@ -91,8 +92,8 @@ namespace Dccn.ProjectForm.Services
 
     public interface IEmailService
     {
-        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email);
-        Task SendEmailNoOverrideAsync(IEmailModel email);
+        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, params MailAddress[] recipients);
+        Task SendEmailNoOverrideAsync(IEmailModel email, params MailAddress[] recipients);
     }
 
     public static class EmailServiceExtensions
@@ -107,26 +108,9 @@ namespace Dccn.ProjectForm.Services
                     var environment = provider.GetRequiredService<IHostingEnvironment>();
                     var handlebars = Handlebars.Create(new HandlebarsConfiguration
                     {
-                        FileSystem = new TemplateFileSystem(environment, templatePath),
-                        Helpers =
-                        {
-                            {
-                                "includeStyle", (output, context, arguments) =>
-                                {
-                                    if (!(arguments.ElementAtOrDefault(0) is string path))
-                                    {
-                                        throw new ArgumentException("includeStyle(path): argument missing or of incorrect type.", nameof(path));
-                                    }
-
-                                    var physicalPath = environment.WebRootFileProvider.GetFileInfo(path).PhysicalPath;
-                                    output.WriteLine(@"<style type=""text/css"">");
-                                    output.WriteLine(File.ReadAllText(physicalPath));
-                                    output.WriteLine("</style>");
-                                }
-                            }
-                        }
+                        FileSystem = new TemplateFileSystem(environment, templatePath)
                     });
-                    return new TemplateRenderService(handlebars);
+                    return new TemplateRenderService(handlebars, provider.GetRequiredService<IMemoryCache>());
                 });
         }
     }

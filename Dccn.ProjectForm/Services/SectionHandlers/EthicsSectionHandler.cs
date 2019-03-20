@@ -1,16 +1,22 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
+using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Models;
+using Microsoft.Extensions.Options;
 
 namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class EthicsSectionHandler : FormSectionHandlerBase<EthicsSectionModel>
     {
-        public EthicsSectionHandler(IServiceProvider serviceProvider)
+        private readonly FormOptions _formOptions;
+
+        public EthicsSectionHandler(IServiceProvider serviceProvider, IOptionsSnapshot<FormOptions> formOptions)
             : base(serviceProvider, m => m.Ethics)
         {
+            _formOptions = formOptions.Value;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []{ApprovalAuthorityRole.Ethics};
@@ -20,25 +26,22 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             if (proposal.EcApproved)
             {
                 model.Status = EthicsApprovalStatusModel.Approved;
-                switch (proposal.EcCode)
-                {
-                    case "CMO2014/288":
-                        model.ApprovalCode = EthicsApprovalOptionModel.Blanket;
-                        break;
-                    case "CMO2012/012":
-                        model.ApprovalCode = EthicsApprovalOptionModel.Children;
-                        break;
-                    default:
-                        model.ApprovalCode = EthicsApprovalOptionModel.Other;
-                        model.CustomCode = proposal.EcCode;
-                        break;
-                }
+                model.Code = proposal.EcCode;
             }
             else
             {
                 model.Status = EthicsApprovalStatusModel.Pending;
                 model.CorrespondenceNumber = proposal.EcReference;
             }
+
+            model.Codes = _formOptions.EthicalCodes;
+//                .Select(entry => new EthicsApprovalOptionModel
+//                {
+//                    Name = entry.Key,
+//                    Code = entry.Value
+//                })
+//                .OrderBy(option => option.Name)
+//                .ToList();
 
             return base.LoadAsync(model, proposal);
         }
@@ -49,20 +52,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             {
                 case EthicsApprovalStatusModel.Approved:
                     proposal.EcApproved = true;
-                    switch (model.ApprovalCode)
-                    {
-                        case EthicsApprovalOptionModel.Blanket:
-                            proposal.EcCode = "CMO2014/288";
-                            break;
-                        case EthicsApprovalOptionModel.Children:
-                            proposal.EcCode = "CMO2012/012";
-                            break;
-                        case EthicsApprovalOptionModel.Other:
-                            proposal.EcCode = model.CustomCode;
-                            break;
-                        default:
-                            throw new ArgumentOutOfRangeException();
-                    }
+                    proposal.EcCode = model.Code;
                     proposal.EcReference = null;
                     break;
                 case EthicsApprovalStatusModel.Pending:

@@ -9,9 +9,9 @@ namespace Dccn.ProjectForm.Services.Validators
     {
         public LabValidator(IServiceProvider serviceProvider)
         {
-            var modalityProvider = serviceProvider.GetRequiredService<IModalityProvider>();
+            var modalityProvider = serviceProvider.GetRequiredService<ILabProvider>();
 
-            RuleFor(l => l.Modality.Id).NotEmpty().Must(id => modalityProvider.Exists(id));
+            RuleFor(l => l.Modality.Id).NotEmpty().Must(id => modalityProvider.ModalityExists(id));
 
             RuleFor(l => l.SubjectCount).GreaterThanOrEqualTo(0);
             RuleFor(l => l.ExtraSubjectCount).GreaterThanOrEqualTo(0);

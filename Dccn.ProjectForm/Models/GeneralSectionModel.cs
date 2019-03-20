@@ -16,5 +16,10 @@ namespace Dccn.ProjectForm.Models
         [BindNever]
         [Display(Name = "Form.General.SupervisorName.Label", Description = "Form.General.SupervisorName.Description")]
         public string SupervisorName { get; set; }
+
+        [BindNever]
+        [Display(Name = "Form.General.ProjectId.Label", Description = "Form.General.ProjectId.Description")]
+        [DisplayFormat(NullDisplayText = "<not exported>")]
+        public string ProjectId { get; set; }
     }
 }

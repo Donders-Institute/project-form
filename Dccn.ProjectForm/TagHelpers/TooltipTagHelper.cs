@@ -40,7 +40,6 @@ namespace Dccn.ProjectForm.TagHelpers
             output.TagName = "span";
             output.Attributes.SetAttribute("data-title", text);
             output.Attributes.SetAttribute("data-toggle", "tooltip");
-            output.Attributes.SetAttribute("data-html", "true");
 
             var tooltip = new TagBuilder("i");
             tooltip.AddCssClass("text-info");

@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
@@ -28,5 +29,8 @@ namespace Dccn.ProjectForm.Models
 
         [Display(Name = "Form.Experiment.Experimenters.Label")]
         public IList<ExperimenterModel> Experimenters { get; set; } = new List<ExperimenterModel>();
+
+        [BindNever]
+        public int MinimumStorageQuota { get; set; }
     }
 }

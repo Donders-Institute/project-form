@@ -4,7 +4,7 @@
 @using Microsoft.Extensions.Localization
 @using Models
 @using Services
-@inject IModalityProvider ModalityProvider
+@inject ILabProvider LabProvider
 @inject IStringLocalizer Localizer
 
 @* Start/end date *@
@@ -75,15 +75,18 @@
                             </button>
                             <div class="dropdown-menu">
                                 <h6 class="dropdown-header">Add a modality</h6>
-                                @foreach (var modality in ModalityProvider.Values)
+                                @foreach (var modality in LabProvider.Labs.Values)
                                 {
                                     <button class="dropdown-item add-lab-item"
                                             type="button"
                                             data-modality="@modality.Id"
-                                            data-storage-fixed="@modality.FixedStorage"
-                                            data-storage-session="@modality.SessionStorage"
-                                            data-submit-on="click"
-                                            data-url="@Url.Page(null, "AddLab", new { modality = modality.Id })">
+                                            @{
+                                                if (modality.SessionStorageQuota is int storage)
+                                                {
+                                                    <text>data-storage="@storage"</text>
+                                                }
+                                            }
+                                            formaction="@Url.Page(null, "AddLab", new {modality = modality.Id})">
                                         @modality.DisplayName
                                     </button>
                                 }
@@ -92,7 +95,7 @@
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush lab-items">
+            <div class="list-group list-group-flush lab-items" data-storage-minimum="@Model.MinimumStorageQuota">
                 <div class="list-group-item list-group-placeholder py-2">
                     <div class="form-row align-items-center">
                         <div class="col">
@@ -102,20 +105,6 @@
                         </div>
                     </div>
                 </div>
-                @foreach (var lab in Model.Labs)
-                {
-                    <div class="d-none lab-item"
-                         data-index="@lab.Id"
-                         data-id="@lab.Id"
-                         data-modality="@lab.Modality.Id"
-                         data-subjects="@lab.SubjectCount"
-                         data-extra="@lab.ExtraSubjectCount"
-                         data-sessions="@lab.SessionCount"
-                         data-duration="@lab.SessionDurationMinutes"
-                         data-storage-fixed="@lab.Modality.FixedStorage"
-                         data-storage-session="@lab.Modality.SessionStorage">
-                    </div>
-                }
             </div>
         </div>
     </div>
@@ -222,75 +211,63 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No experimenters assigned</span>
                 </div>
-                @foreach (var experimenter in Model.Experimenters)
-                {
-                    <div class="d-none experimenter-item"
-                         data-index="@experimenter.Id"
-                         data-id="@experimenter.Id"
-                         data-name="@experimenter.Name">
-                    </div>
-                }
             </div>
         </div>
     </div>
 </div>
 
 <script id="lab-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2 lab-item-expanded"
-         data-index="{{:index}}"
-         data-storage-fixed="{{:storageFixed}}"
-         data-storage-session="{{:storageSession}}">
+    <div class="list-group-item list-group-item-action py-2 lab-item" data-storage="{{:storage}}">
 
-        <input type="hidden" name="@Html.Name("Labs.Index")" value="{{:index}}">
-        <input type="hidden" name="@Html.Name("Labs[{{:index}}].Modality.Id")" value="{{:modality}}">
+        <input type="hidden" name="@Html.Name("Labs.Index")" value="{{:id}}">
+        <input type="hidden" name="@Html.Name("Labs[{{:id}}].Id")" value="{{:id}}">
+        <input type="hidden" name="@Html.Name("Labs[{{:id}}].Modality.Id")" value="{{:modality}}">
 
         <div class="form-row align-items-center">
             <div class="col-lg">
                 <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
-                    @foreach (var modality in ModalityProvider.Values)
+                    @foreach (var modality in LabProvider.Labs.Values)
                     {
-                        @:{{if modality === @Html.Raw(HttpUtility.JavaScriptStringEncode(modality.Id, true))}}
-                        @modality.DisplayName
-                        @:{{/if}}
+                        @:{{if modality === @Html.Raw(HttpUtility.JavaScriptStringEncode(modality.Id, true))}}@modality.DisplayName{{/if}}
                     }
                 </label>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SubjectCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-subjects" name="@Html.Name("Labs[{{:index}}].SubjectCount")"
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-subjects" name="@Html.Name("Labs[{{:id}}].SubjectCount")"
                            value="{{:subjects}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:index}}].ExtraSubjectCount")"
+                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:id}}].ExtraSubjectCount")"
                            value="{{:extra}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-sessions" name="@Html.Name("Labs[{{:index}}].SessionCount")"
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-sessions" name="@Html.Name("Labs[{{:id}}].SessionCount")"
                            value="{{:sessions}}" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-duration" name="@Html.Name("Labs[{{:index}}].SessionDurationMinutes")"
+                    <input class="col-6 col-lg form-control form-control-sm lab-item-duration" name="@Html.Name("Labs[{{:id}}].SessionDurationMinutes")"
                            value="{{:duration}}" placeholder="minutes" data-submit-on="change">
                 </div>
             </div>
             <div class="col-lg">
                 <div class="form-row">
                     <label class="col col-form-label d-lg-none lab-item-total-duration">Total duration</label>
-                    <span class="col-6 col-lg form-control-plaintext form-control-sm"></span>
+                    <span class="col-6 col-lg form-control-plaintext form-control-sm lab-item-total-duration"></span>
                 </div>
             </div>
             <div class="col-lg-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary float-right float-lg-none remove-lab-item" data-submit-on="click">
+                <button type="button" class="btn btn-sm btn-outline-secondary float-right float-lg-none remove-lab-item" formaction="@Url.Page(null, "RemoveLab", new { labId = "__ID__" }).Replace("__ID__", "{{:id}}")">
                     <i class="fas fa-minus-square"></i><span class="d-lg-none"> Remove</span>
                 </button>
             </div>
@@ -299,13 +276,10 @@
 </script>
 
 <script id="experimenter-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2 experimenter-item-expanded"
-         data-index="{{:index}}"
-         data-id="{{:id}}"
-         data-name="{{>name}}">
+    <div class="list-group-item list-group-item-action py-2 experimenter-item-expanded" data-id="{{:id}}">
 
-        <input type="hidden" name="@Html.Name("Experimenters.Index")" value="{{:index}}">
-        <input type="hidden" name="@Html.Name("Experimenters[{{:index}}].Id")" value="{{:id}}">
+        <input type="hidden" name="@Html.Name("Experimenters.Index")" value="{{:id}}">
+        <input type="hidden" name="@Html.Name("Experimenters[{{:id}}].Id")" value="{{:id}}">
 
         <div class="row align-items-center">
             <div class="col">
@@ -320,4 +294,29 @@
             </div>
         </div>
     </div>
+</script>
+
+<script id="labs" type="application/json">
+@(
+    Json.Serialize(Model.Labs.Select(lab => new
+    {
+        lab.Id,
+        Modality = lab.Modality.Id,
+        Subjects = lab.SubjectCount,
+        Extra = lab.ExtraSubjectCount,
+        Sessions = lab.SessionCount,
+        Duration = lab.SessionDurationMinutes,
+        Storage = lab.Modality.SessionStorageQuota
+    }))
+)
+</script>
+
+<script id="experimenters" type="application/json">
+@(
+    Json.Serialize(Model.Experimenters.Select(experimenter => new
+    {
+        experimenter.Id,
+        experimenter.Name
+    }))
+)
 </script>

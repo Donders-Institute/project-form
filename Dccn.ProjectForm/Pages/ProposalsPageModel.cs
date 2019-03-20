@@ -13,20 +13,20 @@ namespace Dccn.ProjectForm.Pages
 {
     public class ProposalsPageModel : PageModel
     {
-        protected ProposalsPageModel(ProposalsDbContext proposalsDbContext, IUserManager userManager)
+        protected ProposalsPageModel(ProposalDbContext proposalDbContext, IUserManager userManager)
         {
-            ProposalsDbContext = proposalsDbContext;
+            ProposalDbContext = proposalDbContext;
             UserManager = userManager;
         }
 
         public ICollection<ProposalModel> Proposals { get; private set; }
 
-        protected ProposalsDbContext ProposalsDbContext { get; }
+        protected ProposalDbContext ProposalDbContext { get; }
         protected IUserManager UserManager { get; }
 
         protected async Task LoadProposalsAsync(Func<IQueryable<Proposal>, IQueryable<Proposal>> query)
         {
-            var queryResult = await query(ProposalsDbContext.Proposals)
+            var queryResult = await query(ProposalDbContext.Proposals)
                 .Select(p => new
                 {
                     p.Id,

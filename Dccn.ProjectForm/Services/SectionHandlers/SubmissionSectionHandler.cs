@@ -2,9 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Microsoft.Extensions.DependencyInjection;
 
@@ -12,15 +10,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 {
     public class SubmissionSectionHandler : FormSectionHandlerBase<SubmissionSectionModel>
     {
-        private readonly IUserManager _userManager;
-        private readonly IAuthorityProvider _authorityProvider;
         private readonly IServiceProvider _serviceProvider;
 
-        public SubmissionSectionHandler(IServiceProvider serviceProvider, IUserManager userManager, IAuthorityProvider authorityProvider) : base(serviceProvider, m => m.Submission)
+        public SubmissionSectionHandler(IServiceProvider serviceProvider) : base(serviceProvider, m => m.Submission)
         {
             _serviceProvider = serviceProvider;
-            _userManager = userManager;
-            _authorityProvider = authorityProvider;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new [] {ApprovalAuthorityRole.Director};
@@ -28,7 +22,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         protected override IEnumerable<ApprovalAuthorityRole> RequiredApprovalRoles => new []
         {
             ApprovalAuthorityRole.Supervisor,
-            ApprovalAuthorityRole.Funding,
+            // ApprovalAuthorityRole.Funding, TODO: is this right?
             ApprovalAuthorityRole.Ethics,
             ApprovalAuthorityRole.LabMri,
             ApprovalAuthorityRole.LabOther,

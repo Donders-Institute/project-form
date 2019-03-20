@@ -22,24 +22,26 @@ namespace Dccn.ProjectForm.Pages
         private readonly IAuthorizationService _authorizationService;
         private readonly IAuthorityProvider _authorityProvider;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
-        private readonly ProposalsDbContext _proposalsDbContext;
+        private readonly ProposalDbContext _proposalDbContext;
         private readonly IUserManager _userManager;
 
-        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers, ProposalsDbContext proposalsDbContext, IUserManager userManager)
+        public IndexModel(IAuthorizationService authorizationService, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers, ProposalDbContext proposalDbContext, IUserManager userManager)
         {
             _authorizationService = authorizationService;
             _authorityProvider = authorityProvider;
             _sectionHandlers = sectionHandlers;
-            _proposalsDbContext = proposalsDbContext;
+            _proposalDbContext = proposalDbContext;
             _userManager = userManager;
         }
 
         public NewProposalModel NewProposal { get; set; }
 
         public bool IsSupervisor { get; private set; }
+        public bool IsAdministration { get; private set; }
         public bool IsApprovalAuthority { get; private set; }
         public ICollection<ProposalModel> MyProposals { get; private set; }
         public ICollection<ProposalModel> SupervisedProposals { get; private set; }
+        public ICollection<ProposalModel> FinishedProposals { get; private set; }
         public ICollection<ApprovalModel> Approvals { get; private set; }
 
         [UsedImplicitly]
@@ -51,7 +53,7 @@ namespace Dccn.ProjectForm.Pages
         [UsedImplicitly]
         public async Task<IActionResult> OnPostDeleteAsync(int id)
         {
-            var proposal = await _proposalsDbContext.Proposals.FindAsync(id);
+            var proposal = await _proposalDbContext.Proposals.FindAsync(id);
             if (proposal == null)
             {
                 return NotFound();
@@ -62,8 +64,8 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            _proposalsDbContext.Remove(proposal);
-            await _proposalsDbContext.SaveChangesAsync();
+            _proposalDbContext.Remove(proposal);
+            await _proposalDbContext.SaveChangesAsync();
 
             return RedirectToPage();
         }
@@ -72,7 +74,7 @@ namespace Dccn.ProjectForm.Pages
         public async Task<IActionResult> OnPostCreateAsync([FromForm(Name = nameof(NewProposal))] NewProposalModel model)
         {
             var ownerId = _userManager.GetUserId(User);
-            if (await _proposalsDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == model.Title))
+            if (await _proposalDbContext.Proposals.Where(p => p.OwnerId == ownerId).AnyAsync(p => p.Title == model.Title))
             {
                 ModelState.AddModelError(string.Empty, "A proposal with the same name already exists.");
             }
@@ -127,8 +129,8 @@ namespace Dccn.ProjectForm.Pages
                 });
             }
 
-            _proposalsDbContext.Proposals.Add(proposal);
-            await _proposalsDbContext.SaveChangesAsync();
+            _proposalDbContext.Proposals.Add(proposal);
+            await _proposalDbContext.SaveChangesAsync();
 
             return RedirectToPage("Form", new {proposalId = proposal.Id});
         }
@@ -138,12 +140,20 @@ namespace Dccn.ProjectForm.Pages
             var user = await _userManager.GetUserAsync(User, true);
             var userId = _userManager.GetUserId(User);
 
-            MyProposals = await LoadProposalsAsync(_proposalsDbContext.Proposals.Where(p => p.OwnerId == userId));
+            MyProposals = await LoadProposalsAsync(_proposalDbContext.Proposals.Where(p => p.OwnerId == userId));
 
-            IsSupervisor = user.IsHead;
+            IsAdministration = _userManager.IsInRole(User, Role.Administration);
+            if (IsAdministration)
+            {
+                FinishedProposals = await LoadProposalsAsync(_proposalDbContext.Proposals.Where(p =>
+                    p.ProjectId == null && p.Approvals.All(a =>
+                        a.Status == ApprovalStatus.Approved || a.Status == ApprovalStatus.NotApplicable)));
+            }
+
+            IsSupervisor = _userManager.IsInRole(User, Role.Supervisor);
             if (IsSupervisor)
             {
-                SupervisedProposals = await LoadProposalsAsync(_proposalsDbContext.Proposals.Where(p => p.SupervisorId == userId));
+                SupervisedProposals = await LoadProposalsAsync(_proposalDbContext.Proposals.Where(p => p.SupervisorId == userId));
             }
 
             var supervisors = await _userManager.QueryGroups()
@@ -153,16 +163,11 @@ namespace Dccn.ProjectForm.Pages
                 .ToListAsync();
 
             var authorityRoles = _authorityProvider.GetAuthorityRoles(userId).ToList();
-            if (IsSupervisor)
-            {
-                authorityRoles.Add(ApprovalAuthorityRole.Supervisor);
-            }
-
-            IsApprovalAuthority = authorityRoles.Any();
+            IsApprovalAuthority = authorityRoles.Any() || IsSupervisor;
             if (IsApprovalAuthority)
             {
-                var approvalsQueryResult = await _proposalsDbContext.Approvals
-                    .Where(a => authorityRoles.Contains(a.AuthorityRole))
+                var approvalsQueryResult = await _proposalDbContext.Approvals
+                    .Where(a => authorityRoles.Contains(a.AuthorityRole) || a.AuthorityRole == ApprovalAuthorityRole.Supervisor && a.Proposal.SupervisorId == userId)
                     .Where(a => a.Status == ApprovalStatus.ApprovalPending || a.Status == ApprovalStatus.Rejected || a.Status == ApprovalStatus.Approved)
                     .Select(a => new
                     {

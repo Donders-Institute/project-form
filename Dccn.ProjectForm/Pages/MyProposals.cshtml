@@ -19,7 +19,32 @@
                     </button>
                 </div>
             </div>
-            <ul class="list-group list-group-flush">
+            <div class="card-body">
+                <table class="table table-striped table-bordered">
+                    <thead>
+                    <tr>
+                        <th>@Html.DisplayNameFor(m => m.Proposals.First().Title)</th>
+                        <th>@Html.DisplayNameFor(m => m.Proposals.First().ProjectId)</th>
+                        <th>@Html.DisplayNameFor(m => m.Proposals.First().CreatedOn)</th>
+                        <th>@Html.DisplayNameFor(m => m.Proposals.First().LastEditedOn)</th>
+                        <th>@Html.DisplayNameFor(m => m.Proposals.First().LastEditedBy)</th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    @foreach (var proposal in Model.Proposals)
+                    {
+                        <tr>
+                            <td>@Html.DisplayFor(_ => proposal.Title)</td>
+                            <td>@Html.DisplayFor(_ => proposal.ProjectId)</td>
+                            <td>@Html.DisplayFor(_ => proposal.CreatedOn)</td>
+                            <td>@Html.DisplayFor(_ => proposal.LastEditedOn)</td>
+                            <td>@Html.DisplayFor(_ => proposal.LastEditedBy)</td>
+                        </tr>
+                    }
+                    </tbody>
+                </table>
+            </div>
+                @*<ul class="list-group list-group-flush">
                 <li class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No proposals</span>
                 </li>
@@ -60,7 +85,7 @@
                         </div>
                     </li>
                 }
-            </ul>
+            </ul>*@
         </div>
     </div>
 </div>
@@ -127,11 +152,22 @@
     </div>
 </div>
 
+@section Styles {
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/datatables/datatables.css">
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/lib/datatables/datatables.min.css">
+    </environment>
+}
+
 @section Scripts {
     <environment include="Development">
+        <script src="~/lib/datatables/datatables.js"></script>
         <script src="~/js/index.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
+        <script src="~/lib/datatables/datatables.min.js"></script>
         <script src="~/js/index.min.js"></script>
     </environment>
 }

@@ -5,6 +5,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
+using Dccn.ProjectForm.Data.ProjectDb;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
@@ -79,13 +80,19 @@ namespace Dccn.ProjectForm.Services
 
         public Task<bool> ValidateInputAsync(FormModel form)
         {
-            return ValidateAsync(form, false);
+            return ValidateAsync(form);
         }
 
-        public async Task<bool> ValidateProposalAsync(FormModel form, Proposal proposal)
+        public async Task<bool> ValidateSubmissionAsync(FormModel form, Proposal proposal)
         {
             await LoadAsync(form, proposal);
-            return await ValidateAsync(form, true);
+            return await ValidateAsync(form, "default,Submit");
+        }
+
+        public async Task<bool> ValidateApprovalAsync(FormModel form, Proposal proposal)
+        {
+            await LoadAsync(form, proposal);
+            return await ValidateAsync(form, "default,Submit,Approve");
         }
 
         public virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
@@ -118,31 +125,28 @@ namespace Dccn.ProjectForm.Services
 
             model.Approvals = await proposal.Approvals
                 .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
-                .Select(async a =>
+                .Select(async approval =>
                 {
-                    var authority = await _authorityProvider.GetAuthorityAsync(proposal, a.AuthorityRole);
-                    if (authority == null)
+                    var authorities = await _authorityProvider.GetAuthoritiesAsync(proposal, approval.AuthorityRole);
+                    ProjectDbUser authority;
+                    if (approval.Status == ApprovalStatus.Approved || approval.Status == ApprovalStatus.Rejected)
                     {
-                        return new SectionApprovalModel
-                        {
-                            IsAutoApproved = true,
-                            Status = (ApprovalStatusModel) a.Status
-                        };
+                        // Show authority who approved the section at the time as opposed to current approval role
+                        authority = await _userManager.GetUserByIdAsync(approval.ValidatedBy);
                     }
-
-                    // Show authority who approved the section at the time as opposed to current approval role
-                    if (a.Status == ApprovalStatus.Approved || a.Status == ApprovalStatus.Rejected)
+                    else
                     {
-                        authority = await _userManager.GetUserByIdAsync(a.ValidatedBy);
+                        // Pick first from the list (if any)
+                        authority = authorities.FirstOrDefault();
                     }
 
                     return new SectionApprovalModel
                     {
-                        IsAutoApproved = false,
-                        AuthorityRole = (ApprovalAuthorityRoleModel) a.AuthorityRole,
-                        AuthorityName = authority.DisplayName,
-                        AuthorityEmail = authority.Email,
-                        Status = (ApprovalStatusModel) a.Status
+                        RawApproval = approval,
+                        AuthorityRole = (ApprovalAuthorityRoleModel) approval.AuthorityRole,
+                        AuthorityName = authority?.DisplayName,
+                        AuthorityEmail = authority?.Email,
+                        Status = (ApprovalStatusModel) approval.Status
                     };
                 })
                 .ToListAsync();
@@ -174,14 +178,14 @@ namespace Dccn.ProjectForm.Services
             return Task.CompletedTask;
         }
 
-        private async Task<bool> ValidateAsync(FormModel form, bool full)
+        private async Task<bool> ValidateAsync(FormModel form, string ruleSet = null)
         {
             if (_validator == null)
             {
                 return true;
             }
 
-            var result = await _validator.ValidateAsync(_compiledExpr(form), ruleSet: full ? "default,Submit" : null);
+            var result = await _validator.ValidateAsync(_compiledExpr(form), ruleSet: ruleSet);
             result.AddToModelState(form.ModelState, Id);
             return result.IsValid;
         }
@@ -203,7 +207,8 @@ namespace Dccn.ProjectForm.Services
         bool HasApprovalAuthorityRole(ApprovalAuthorityRole role);
 
         Task<bool> ValidateInputAsync(FormModel form);
-        Task<bool> ValidateProposalAsync(FormModel form, Proposal proposal);
+        Task<bool> ValidateSubmissionAsync(FormModel form, Proposal proposal);
+        Task<bool> ValidateApprovalAsync(FormModel form, Proposal proposal);
         Task LoadAsync(FormModel form, Proposal proposal);
         Task StoreAsync(FormModel form, Proposal proposal);
 

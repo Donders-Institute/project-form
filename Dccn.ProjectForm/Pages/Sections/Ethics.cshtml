@@ -21,26 +21,21 @@
             <div class="card-body">
                 <h6 class="card-subtitle text-muted mb-3">@Html.Description(EthicsApprovalStatusModel.Approved)</h6>
                 <div class="form-group">
-                    <label asp-for="ApprovalCode"></label>
+                    <label asp-for="Code"></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <select asp-for="ApprovalCode" class="custom-select ethics-approval" data-submit-on="change">
-                                @foreach (var option in EnumUtils.GetValues<EthicsApprovalOptionModel>())
+                            <select id="ethics-approval" class="custom-select" data-submit-on="change">
+                                @foreach (var (label, value) in Model.Codes)
                                 {
-                                    <!option value="@option" selected="@(Model.ApprovalCode == option)"
-                                             @{
-                                                 var description = Html.Description(option);
-                                                 if (description != null)
-                                                 {
-                                                     <text>data-description="@description"</text>
-                                                 }
-                                             }>@Html.DisplayName(option)</!option>
+                                    <!option selected="@(Model.Code == value)" data-value="@value">@label</!option>
                                 }
+                                <!option selected="@(Model.Codes.Values.All(value => Model.Code != value))">Other</!option>
                             </select>
                         </div>
-                        <input asp-for="CustomCode" class="form-control ethics-custom" placeholder="Enter study-specific approval CMO number" data-submit-on="change">
+                        <input asp-for="Code" id="ethics-approval-custom" class="form-control" placeholder="Enter study-specific approval CMO number"
+                               readonly="@(Model.Codes.Values.Any(value => Model.Code == value))" data-submit-on="change">
                     </div>
-                    <small asp-description-for="ApprovalCode"></small>
+                    <small asp-description-for="Code"></small>
                 </div>
             </div>
         </fieldset>

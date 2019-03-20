@@ -10,7 +10,7 @@ namespace Dccn.ProjectForm.Pages
     [Authorize(Roles = nameof(Role.Supervisor))]
     public class SupervisedProposalsModel : ProposalsPageModel
     {
-        public SupervisedProposalsModel(ProposalsDbContext proposalsDbContext, IUserManager userManager) : base(proposalsDbContext, userManager)
+        public SupervisedProposalsModel(ProposalDbContext proposalDbContext, IUserManager userManager) : base(proposalDbContext, userManager)
         {
         }
 

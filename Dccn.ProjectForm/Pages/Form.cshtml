@@ -10,30 +10,46 @@
 
 <div class="row">
     <div class="col-auto d-none d-lg-block">
-        <div id="section-list" class="list-group">
-            @foreach (var section in Model.Sections)
-            {
-                <a class="list-group-item list-group-item-action" href="#@Html.Id(section.Id)">
-                    @Html.DisplayName(section.Id)
-                    <span class="ml-3 float-right">
-                        @{
-                            var status = section.Approvals.Select(a => a.Status).OrderBy(ApprovalStatusExtensions.GetRanking).First();
-                            var icons = status.GetIconClasses();
-                        }
-                        <span class="badge badge-pill badge-@status.GetColor()" style="width: 2.5em">
-                            @if (icons != null)
-                            {
-                                <i class="@icons"></i>
-                            }
-                            else
-                            {
-                                @:&nbsp;
-                            }
-                        </span>
-                    </span>
-                </a>
-            }
+        <div class="row mb-3">
+            <div class="col">
+                <div id="section-list" class="list-group">
+                    @foreach (var section in Model.Sections)
+                    {
+                        <a class="list-group-item list-group-item-action" href="#@Html.Id(section.Id)">
+                            @Html.DisplayName(section.Id)
+                            <span class="ml-3 float-right">
+                                @{
+                                    var status = section.Approvals.Select(a => a.Status).OrderBy(ApprovalStatusExtensions.GetRanking).First();
+                                    var icons = status.GetIconClasses();
+                                }
+                                <span class="badge badge-pill badge-@status.GetColor()" style="width: 2.5em">
+                                    @if (icons != null)
+                                    {
+                                        <i class="@icons"></i>
+                                    }
+                                    else
+                                    {
+                                        @:&nbsp;
+                                    }
+                                </span>
+                            </span>
+                        </a>
+                    }
+                </div>
+            </div>
         </div>
+        @if (Model.Export != null)
+        {
+            <div class="row">
+                <div class="col">
+                    <div class="form-group">
+                        <button class="btn btn-primary w-100" type="button" data-toggle="modal" data-target="#confirm-export-dialog">
+                            Export
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
     </div>
     <div class="col">
         <div class="card">
@@ -76,8 +92,10 @@
                                 </div>
                                 <div class="card">
                                     <div class="card-body bg-light">
-                                        @if (!section.Approvals.All(a => a.IsAutoApproved))
+                                        @if (section.Approvals.Any(a => !a.IsAutoApproved))
                                         {
+                                            var showApprovalButtons = section.Approvals.Any(approvalInfo => approvalInfo.CanApprove || approvalInfo.CanReject) && section.Approvals.All(approvalInfo => !approvalInfo.IsSelfApproved);
+
                                             <h5 class="card-title">Approval status</h5>
                                             <ul class="list-group mb-3">
                                                 @foreach (var approvalInfo in section.Approvals)
@@ -85,11 +103,11 @@
                                                     var status = approvalInfo.Status;
 
                                                     <li class="list-group-item">
-                                                        <div class="row align-content-center">
-                                                            <div class="col">
+                                                        <div class="row justify-content-between">
+                                                            <div class="col-auto">
                                                                 <a href="mailto:@(approvalInfo.AuthorityEmail)">@Html.DisplayFor(_ => approvalInfo.AuthorityName)</a>
                                                             </div>
-                                                            <div class="col">
+                                                            <div class="col-auto">
                                                                 @Html.DisplayName(approvalInfo.AuthorityRole)
                                                             </div>
                                                             <div class="col-auto">
@@ -97,6 +115,19 @@
                                                                     Status: @Html.DisplayName(status)
                                                                 </span>
                                                             </div>
+                                                            @if (showApprovalButtons)
+                                                            {
+                                                                <div class="col-auto">
+                                                                    <div class="btn-group btn-group-sm">
+                                                                        <button asp-page-handler="Reject" asp-route-role="@(approvalInfo.AuthorityRole)" asp-fragment="@(section.Id)" class="btn btn-danger" type="submit" disabled="@(!approvalInfo.CanReject || approvalInfo.IsSelfApproved)">
+                                                                            <i class="far fa-thumbs-down"></i>
+                                                                        </button>
+                                                                        <button asp-page-handler="Approve" asp-route-role="@(approvalInfo.AuthorityRole)" asp-fragment="@(section.Id)" class="btn btn-success" type="submit" disabled="@(!approvalInfo.CanApprove || approvalInfo.IsSelfApproved)">
+                                                                            <i class="far fa-thumbs-up"></i>
+                                                                        </button>
+                                                                    </div>
+                                                                </div>
+                                                            }
                                                         </div>
                                                     </li>
                                                 }
@@ -105,7 +136,7 @@
                                         <div class="btn-group float-right" role="group">
                                             @if (section.CanSubmit)
                                             {
-                                                if (section.Approvals.All(a => a.IsAutoApproved))
+                                                if (section.Approvals.All(a => a.IsSelfApproved || a.IsAutoApproved))
                                                 {
                                                     <button asp-page-handler="Submit" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-primary" type="submit">
                                                         Submit
@@ -145,20 +176,6 @@
                                                     Retract
                                                 </button>
                                             }
-                                            @if (section.CanReject)
-                                            {
-                                                <button asp-page-handler="Reject" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-danger" type="submit">
-                                                    <i class="far fa-thumbs-down"></i>
-                                                    Reject
-                                                </button>
-                                            }
-                                            @if (section.CanApprove)
-                                            {
-                                                <button asp-page-handler="Approve" asp-route-sectionId="@(section.Id)" asp-fragment="@(section.Id)" class="btn btn-success" type="submit">
-                                                    <i class="far fa-thumbs-up"></i>
-                                                    Approve
-                                                </button>
-                                            }
                                         </div>
                                     </div>
                                 </div>
@@ -171,6 +188,38 @@
         </div>
     </div>
 </div>
+
+@if (Model.Export != null)
+{
+    <form asp-page-handler="Export">
+        <div id="confirm-export-dialog" class="modal fade" tabindex="-1" role="dialog">
+            <div class="modal-dialog modal-dialog-centered" role="document">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Export to Projects Database</h5>
+                        <button type="button" class="close" data-dismiss="modal">
+                            <span aria-hidden="true">&times;</span>
+                        </button>
+                    </div>
+                    <div class="modal-body">
+                        <p class="card-text">Do you want to export the project to the Projects Database?</p>
+
+                        <div class="form-group">
+                            <label asp-for="Export.SourceId"></label>
+                            <input asp-for="Export.SourceId" class="form-control">
+                            <small asp-description-for="Export.SourceId"></small>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                        <button class="btn btn-primary" type="submit">Export</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <input asp-for="Timestamp" class="timestamp" type="hidden">
+    </form>
+}
 
 @section Scripts {
     <environment include="Development">

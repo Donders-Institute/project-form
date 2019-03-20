@@ -30,17 +30,6 @@
                 <div class="list-group-item list-group-placeholder">
                     <span class="text-muted font-italic">No access roles assigned</span>
                 </div>
-                @foreach (var rule in Model.StorageAccessRules)
-                {
-                    <div class="d-none access-item"
-                         data-index="@rule.Id"
-                         data-id="@rule.Id"
-                         data-name="@rule.Name"
-                         data-role="@rule.Role"
-                         data-can-edit="@rule.CanEdit"
-                         data-can-remove="@rule.CanRemove">
-                    </div>
-                }
             </div>
         </div>
     </div>
@@ -124,16 +113,10 @@
 </div>
 
 <script id="access-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2 access-item-expanded"
-         data-index="{{:index}}"
-         data-id="{{:id}}"
-         data-name="{{>name}}"
-         data-role="{{:role}}"
-         data-can-edit="{{:canEdit}}"
-         data-can-remove="{{:canRemove}}">
+    <div class="list-group-item list-group-item-action py-2 access-item-expanded" data-id="{{:id}}">
 
-        <input name="@Html.Name(nameof(Model.StorageAccessRules) + ".Index")" type="hidden" value="{{:index}}">
-        <input name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Id")" type="hidden" value="{{:id}}">
+        <input name="@Html.Name(nameof(Model.StorageAccessRules) + ".Index")" type="hidden" value="{{:id}}">
+        <input name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:id}}].Id")" type="hidden" value="{{:id}}">
 
         <div class="row align-items-center">
             <div class="col">
@@ -146,12 +129,12 @@
                 {
                     @:{{if role === @Html.Raw(HttpUtility.JavaScriptStringEncode(role.ToString(), true))}}
                     <label class="btn btn-outline-secondary active">
-                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Role")" autocomplete="off"
+                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:id}}].Role")" autocomplete="off"
                                value="@role" data-submit-on="change" checked> @Html.DisplayName(role)
                     </label>
                     @:{{else}}
                     <label class="btn btn-outline-secondary">
-                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:index}}].Role")" autocomplete="off"
+                        <input type="radio" name="@Html.Name(nameof(Model.StorageAccessRules) + "[{{:id}}].Role")" autocomplete="off"
                                value="@role" data-submit-on="change"> @Html.DisplayName(role)
                     </label>
                     @:{{/if}}
@@ -165,4 +148,15 @@
             </div>
         </div>
     </div>
+</script>
+
+<script id="access-rules" type="application/json">
+@(
+    Json.Serialize(Model.StorageAccessRules.Select(rule => new
+    {
+        rule.Id,
+        rule.Name,
+        Role = rule.Role.GetName()
+    }))
+)
 </script>

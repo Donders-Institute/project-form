@@ -20,8 +20,7 @@
         DataManager,
         Privacy,
         Payment,
-        Director,
-        Administration
+        Director
     }
 
     public enum ApprovalStatus

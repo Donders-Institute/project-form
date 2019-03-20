@@ -1,9 +1,9 @@
 ﻿namespace Dccn.ProjectForm.Email.Models
 {
-    public class ExceptionReportModel : EmailModelBase
+    public class ExceptionReport : EmailModelBase
     {
-        public override string TemplateName => "ExceptionReport";
         public override string Subject => "Exception report " + RequestId;
+
         public string RequestId { get; set; }
         public string RequestUrl { get; set; }
         public string RequestMethod { get; set; }

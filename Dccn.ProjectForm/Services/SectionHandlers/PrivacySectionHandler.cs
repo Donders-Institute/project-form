@@ -30,11 +30,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             (model.Motivations, model.CustomMotivations) = GetKeywordModels(proposal.PrivacyMotivations, _options.Motivations);
             (model.StorageLocations, model.CustomStorageLocations) = GetKeywordModels(proposal.PrivacyStorageLocations, _options.StorageLocations);
             (model.DataAccessors, model.CustomDataAccessors) = GetKeywordModels(proposal.PrivacyDataAccessors, _options.DataAccessors);
-            (model.SecurityMeasures, model.CustomSecurityMeasures) = GetKeywordModels(proposal.PrivacySecurityMeasures, _options.SecurityMeasures);
 
-            model.DataDisposalTermDays = proposal.PrivacyDataDisposalTerm.HasValue
-                ? (int) proposal.PrivacyDataDisposalTerm.Value.TotalDays
-                : (int?) null;
+            model.SecurityMeasures = proposal.PrivacySecurityMeasures;
+
+            model.DataDisposalTerm = proposal.PrivacyDataDisposalTerm;
+            model.DataDisposalTerms = _options.DataDisposalTerms;
 
             return base.LoadAsync(model, proposal);
         }
@@ -45,11 +45,14 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             proposal.PrivacyMotivations = GetKeywords(model.Motivations, model.CustomMotivations);
             proposal.PrivacyStorageLocations = GetKeywords(model.StorageLocations, model.CustomStorageLocations);
             proposal.PrivacyDataAccessors = GetKeywords(model.DataAccessors, model.CustomDataAccessors);
-            proposal.PrivacySecurityMeasures = GetKeywords(model.SecurityMeasures, model.CustomSecurityMeasures);
 
-            proposal.PrivacyDataDisposalTerm = model.DataDisposalTermDays.HasValue
-                ? TimeSpan.FromDays(model.DataDisposalTermDays.Value)
-                : (TimeSpan?) null;
+            proposal.PrivacySecurityMeasures = model.SecurityMeasures;
+
+            proposal.PrivacyDataDisposalTerm = model.DataDisposalTerm;
+
+//            proposal.PrivacyDataDisposalTerm = model.DataDisposalTermDays.HasValue
+//                ? TimeSpan.FromDays(model.DataDisposalTermDays.Value)
+//                : (TimeSpan?) null;
 
             return base.StoreAsync(model, proposal);
         }

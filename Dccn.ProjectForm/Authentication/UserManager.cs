@@ -4,16 +4,16 @@ using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Data.ProjectDb;
 using Microsoft.EntityFrameworkCore;
 
 namespace Dccn.ProjectForm.Authentication
 {
     public class UserManager : IUserManager
     {
-        private readonly ProjectsDbContext _dbContext;
+        private readonly ProjectDbContext _dbContext;
 
-        public UserManager(ProjectsDbContext dbContext)
+        public UserManager(ProjectDbContext dbContext)
         {
             _dbContext = dbContext;
         }
@@ -58,12 +58,12 @@ namespace Dccn.ProjectForm.Authentication
             return principal.IsInRole(Enum.GetName(typeof(Role), role));
         }
 
-        public Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal)
+        public Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal)
         {
             return GetPrimaryGroupByIdAsync(GetPrimaryGroupId(principal));
         }
 
-        public Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId)
+        public Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId)
         {
             return _dbContext.Groups.FindAsync(groupId);
         }
@@ -73,17 +73,17 @@ namespace Dccn.ProjectForm.Authentication
             return _dbContext.Groups.AnyAsync(g => g.Id == groupId);
         }
 
-        public IQueryable<ProjectsGroup> QueryGroups()
+        public IQueryable<ProjectDbGroup> QueryGroups()
         {
             return _dbContext.Groups;
         }
 
-        public Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup)
+        public Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup)
         {
             return GetUserByIdAsync(GetUserId(principal), includeGroup);
         }
 
-        public async Task<ProjectsUser> GetUserByIdAsync(string userId, bool includeGroup)
+        public async Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup)
         {
             var user = await _dbContext.Users.FindAsync(userId);
             if (user == null)
@@ -104,7 +104,7 @@ namespace Dccn.ProjectForm.Authentication
             return _dbContext.Users.AnyAsync(u => u.Id == userId);
         }
 
-        public IQueryable<ProjectsUser> QueryUsers()
+        public IQueryable<ProjectDbUser> QueryUsers()
         {
             return _dbContext.Users;
         }
@@ -121,14 +121,14 @@ namespace Dccn.ProjectForm.Authentication
         IEnumerable<ApprovalAuthorityRole> GetApprovalRoles(ClaimsPrincipal principal);
         bool IsInApprovalRole(ClaimsPrincipal principal, ApprovalAuthorityRole role);
 
-        Task<ProjectsGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
-        Task<ProjectsGroup> GetPrimaryGroupByIdAsync(string groupId);
+        Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
+        Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId);
         Task<bool> GroupExistsAsync(string groupId);
-        IQueryable<ProjectsGroup> QueryGroups();
+        IQueryable<ProjectDbGroup> QueryGroups();
 
-        Task<ProjectsUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false);
-        Task<ProjectsUser> GetUserByIdAsync(string userId, bool includeGroup = false);
+        Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false);
+        Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup = false);
         Task<bool> UserExistsAsync(string userId);
-        IQueryable<ProjectsUser> QueryUsers();
+        IQueryable<ProjectDbUser> QueryUsers();
     }
 }

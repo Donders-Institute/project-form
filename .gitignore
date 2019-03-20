@@ -15,3 +15,5 @@ obj/
 /Dccn.ProjectForm/wwwroot/lib/**
 !/Dccn.ProjectForm/wwwroot/lib/fontawesome/
 !/Dccn.ProjectForm/wwwroot/lib/fontawesome/**
+!/Dccn.ProjectForm/wwwroot/lib/datatables/
+!/Dccn.ProjectForm/wwwroot/lib/datatables/**

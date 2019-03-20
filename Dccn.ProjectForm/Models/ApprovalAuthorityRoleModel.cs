@@ -29,9 +29,6 @@ namespace Dccn.ProjectForm.Models
         Payment,
 
         [Display(Name = "Director")]
-        Director,
-
-        [Display(Name = "Administration")]
-        Administration
+        Director
     }
 }

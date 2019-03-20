@@ -7,11 +7,11 @@ using Newtonsoft.Json;
 namespace Dccn.ProjectForm.Data
 {
     [UsedImplicitly(ImplicitUseTargetFlags.WithMembers)]
-    public class ProposalsDbContext : DbContext
+    public class ProposalDbContext : DbContext
     {
         private const int UserIdMaxLength = 10;
 
-        public ProposalsDbContext(DbContextOptions<ProposalsDbContext> options) : base(options)
+        public ProposalDbContext(DbContextOptions<ProposalDbContext> options) : base(options)
         {
         }
 
@@ -45,7 +45,7 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.PrivacyMotivations).IsRequired().HasConversion(jsonConverter);
                 b.Property(e => e.PrivacyStorageLocations).IsRequired().HasConversion(jsonConverter);
                 b.Property(e => e.PrivacyDataAccessors).IsRequired().HasConversion(jsonConverter);
-                b.Property(e => e.PrivacySecurityMeasures).IsRequired().HasConversion(jsonConverter);
+                b.Property(e => e.PrivacySecurityMeasures);
 
                 b.HasMany(e => e.Approvals).WithOne(e => e.Proposal).HasForeignKey(e => e.ProposalId);
                 b.HasMany(e => e.Labs).WithOne().HasForeignKey(e => e.ProposalId);
@@ -55,6 +55,7 @@ namespace Dccn.ProjectForm.Data
 
                 b.HasIndex(e => e.OwnerId);
                 b.HasIndex(e => e.SupervisorId);
+                b.HasIndex(e => e.ProjectId).IsUnique();
             });
 
             builder.Entity<Approval>(b =>

@@ -36,7 +36,6 @@ namespace Dccn.ProjectForm.TagHelpers
                 wrapper.AddCssClass("ml-1");
                 wrapper.Attributes.Add("data-title", description);
                 wrapper.Attributes.Add("data-toggle", "tooltip");
-                wrapper.Attributes.Add("data-html", "true");
 
                 var tooltip = new TagBuilder("i");
                 tooltip.AddCssClass("text-info");

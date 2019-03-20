@@ -21,7 +21,7 @@ namespace Dccn.ProjectForm.Authorization
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, OperationAuthorizationRequirement requirement, Proposal proposal)
         {
-            if (_userManager.IsInRole(context.User, Role.Administrator))
+            if (_userManager.IsInRole(context.User, Role.Admin))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
@@ -30,14 +30,36 @@ namespace Dccn.ProjectForm.Authorization
             var userId = _userManager.GetUserId(context.User);
             if (requirement == FormOperation.View)
             {
-                if (userId == proposal.OwnerId || proposal.Approvals.Any(approval => _authorityProvider.GetAuthorityId(proposal, approval.AuthorityRole) == userId))
+                if (userId == proposal.OwnerId || proposal.Approvals.Any(approval => _authorityProvider.GetAuthorityIds(proposal, approval.AuthorityRole).Contains(userId)) || _userManager.IsInRole(context.User, Role.Administration))
                 {
                     context.Succeed(requirement);
                 }
             }
             else if (requirement == FormOperation.Delete)
             {
-                if (userId == proposal.OwnerId)
+                if (proposal.ProjectId != null)
+                {
+                    return Task.CompletedTask;
+                }
+
+                if (userId == proposal.OwnerId || _authorityProvider.GetAdministrationIds(proposal).Contains(userId))
+                {
+                    context.Succeed(requirement);
+                }
+            }
+            else if (requirement == FormOperation.Export)
+            {
+                if (proposal.ProjectId != null)
+                {
+                    return Task.CompletedTask;
+                }
+
+                if (!proposal.Approvals.All(approval => approval.Status == ApprovalStatus.Approved || approval.Status == ApprovalStatus.NotApplicable))
+                {
+                    return Task.CompletedTask;
+                }
+
+                if (_userManager.IsInRole(context.User, Role.Administration))
                 {
                     context.Succeed(requirement);
                 }
@@ -55,5 +77,6 @@ namespace Dccn.ProjectForm.Authorization
 
         public static readonly FormOperation View = new FormOperation {Name = nameof(View)};
         public static readonly FormOperation Delete = new FormOperation {Name = nameof(Delete)};
+        public static readonly FormOperation Export = new FormOperation {Name = nameof(Export)};
     }
 }

@@ -1,32 +1,29 @@
-﻿using System;
-using System.Collections.Concurrent;
-using System.Collections.Generic;
-using System.Threading.Tasks;
+﻿using System.Threading.Tasks;
 using HandlebarsDotNet;
+using Microsoft.Extensions.Caching.Memory;
 
 namespace Dccn.ProjectForm.Services
 {
     public class TemplateRenderService : ITemplateRenderService
     {
         private readonly IHandlebars _handlebars;
-        private readonly IDictionary<string, Func<object, string>> _templateCache;
+        private readonly IMemoryCache _templateCache;
 
-        public TemplateRenderService(IHandlebars handlebars)
+        public TemplateRenderService(IHandlebars handlebars, IMemoryCache templateCache)
         {
             _handlebars = handlebars;
-            _templateCache = new ConcurrentDictionary<string, Func<object, string>>();
+            _templateCache = templateCache;
         }
 
         public Task<string> RenderAsync<TModel>(string templatePath, TModel model)
         {
-            if (!_templateCache.TryGetValue(templatePath, out var template))
-            {
-                // TODO: Should we queue this on a separate thread?
-                template = _handlebars.CompileView(templatePath);
-            }
+            return Task.FromResult(Render(templatePath, model));
+        }
 
-            // TODO: And this?
-            return Task.FromResult(template(model));
+        private string Render<TModel>(string templatePath, TModel model)
+        {
+            var template = _templateCache.GetOrCreate(templatePath, _ => _handlebars.CompileView(templatePath));
+            return template(model).Trim();
         }
     }
 

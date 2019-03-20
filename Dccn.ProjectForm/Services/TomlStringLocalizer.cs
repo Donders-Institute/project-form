@@ -2,8 +2,6 @@
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
-using System.Reflection;
-using Dccn.ProjectForm.Annotations;
 using Dccn.ProjectForm.Extensions;
 using JetBrains.Annotations;
 using Microsoft.AspNetCore.Hosting;
@@ -18,9 +16,9 @@ namespace Dccn.ProjectForm.Services
         public TomlStringLocalizer(IStringLocalizerFactory factory, IHostingEnvironment environment) : base(factory, environment)
         {
         }
-
-        protected override IEnumerable<string> Prefix { get; } =
-            typeof(T).GetCustomAttribute<TextAttribute>()?.Key.Split('.') ?? Enumerable.Empty<string>();
+//
+//        protected override IEnumerable<string> Prefix { get; } =
+//            typeof(T).GetCustomAttribute<TextAttribute>()?.Key.Split('.') ?? Enumerable.Empty<string>();
     }
 
     public class TomlStringLocalizer : IStringLocalizer
@@ -66,7 +64,7 @@ namespace Dccn.ProjectForm.Services
             {
                 var value = FindString(name);
                 return value == null
-                    ? new LocalizedString(name, _environment.IsDevelopment() ? $"MISSING: ${name}" : name, true)
+                    ? new LocalizedString(name, name, true) // _environment.IsDevelopment() ? $"MISSING: {name}" : name, true)
                     : new LocalizedString(name, value);
             }
         }
@@ -77,7 +75,7 @@ namespace Dccn.ProjectForm.Services
             {
                 var value = FindString(name);
                 return value == null
-                    ? new LocalizedString(name, _environment.IsDevelopment() ? $"MISSING: ${name}" : name, true)
+                    ? new LocalizedString(name, name, true) //_environment.IsDevelopment() ? $"MISSING: {name}" : name, true)
                     : new LocalizedString(name, string.Format(value, arguments));
             }
         }

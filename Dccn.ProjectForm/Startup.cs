@@ -1,18 +1,22 @@
 using System;
+using System.Globalization;
 using System.Net.Mail;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Data.ProjectDb;
 using Dccn.ProjectForm.Services;
+using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
@@ -32,17 +36,19 @@ namespace Dccn.ProjectForm
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ProjectsDbContext>(options =>
+            services.AddDbContext<ProjectDbContext>(options =>
             {
-                options.UseMySql(_configuration.GetConnectionString("ProjectsDatabase"));
+                options.UseMySql(_configuration.GetConnectionString("ProjectDb"));
                 options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
 
-            services.AddDbContext<ProposalsDbContext>(options =>
+            services.AddDbContext<ProposalDbContext>(options =>
             {
-                options.UseSqlServer(_configuration.GetConnectionString("ProposalsDatabase"));
+                options.UseSqlServer(_configuration.GetConnectionString("ProposalDb"));
                 options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
             });
+
+            services.AddMemoryCache();
 
             services
                 .AddAuthentication(SignInManager.AuthenticationScheme)
@@ -69,10 +75,15 @@ namespace Dccn.ProjectForm
                     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                     options.Filters.Add(new AuthorizeFilter(policy));
                 })
+//                .AddViewOptions(options =>
+//                {
+//                    options.HtmlHelperOptions.ClientValidationEnabled = false;
+//                    options.ClientModelValidatorProviders.Clear();
+//                });
                 .AddFluentValidation(options =>
                 {
+                    options.RunDefaultMvcValidationAfterFluentValidationExecutes = true;
                     options.LocalizationEnabled = true;
-                    // options.RunDefaultMvcValidationAfterFluentValidationExecutes = false;
                 });
 
             services
@@ -86,7 +97,9 @@ namespace Dccn.ProjectForm
                 .AddTransient<ISignInManager, SignInManager>()
                 .AddScoped<IAuthorizationHandler, FormAuthorizationHandler>()
                 .AddScoped<IAuthorizationHandler, FormSectionAuthorizationHandler>()
-                .AddTransient<IModalityProvider, ModalityProvider>()
+                .AddScoped<IAuthorizationHandler, ApprovalAuthorizationHandler>()
+                .AddSingleton<ILabProvider, LabProvider>()
+                .AddTransient<IProjectDbExporter, ProjectDbExporter>()
                 .AddTransient<IAuthorityProvider, AuthorityProvider>()
                 .AddSingleton<IStringLocalizerFactory, TomlStringLocalizerFactory>(s => new TomlStringLocalizerFactory(s, "Messages.toml"))
                 .AddTransient(typeof(IStringLocalizer<>), typeof(TomlStringLocalizer<>))
@@ -118,8 +131,9 @@ namespace Dccn.ProjectForm
 
             app.UseRequestLocalization(options =>
             {
-                options.AddSupportedCultures("nl-NL", "en-US");
-                options.AddSupportedUICultures("en-US");
+                options.SupportedCultures = new [] { new CultureInfo("en") };
+                options.SupportedUICultures = new [] { new CultureInfo("en") };
+                options.DefaultRequestCulture = new RequestCulture("en");
             });
 
             app.UseStaticFiles();

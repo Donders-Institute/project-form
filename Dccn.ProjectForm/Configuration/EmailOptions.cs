@@ -11,6 +11,12 @@
         public string Password { get; set; }
 
         public EmailAddress Sender { get; set; }
-        public bool OverrideRecipient { get; set; }
+        public OverrideRecipientOptions OverrideRecipient { get; set; }
+
+        public class OverrideRecipientOptions
+        {
+            public bool Enabled { get; set; }
+            public EmailAddress Fixed { get; set; }
+        }
     }
 }

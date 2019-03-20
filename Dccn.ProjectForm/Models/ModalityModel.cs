@@ -13,9 +13,6 @@ namespace Dccn.ProjectForm.Models
         public bool IsMri { get; set; }
 
         [BindNever]
-        public decimal FixedStorage { get; set; }
-
-        [BindNever]
-        public decimal SessionStorage { get; set; }
+        public int SessionStorageQuota { get; set; }
     }
 }

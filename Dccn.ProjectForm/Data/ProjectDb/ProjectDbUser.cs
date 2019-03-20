@@ -1,14 +1,14 @@
 ﻿using System.Text;
 using JetBrains.Annotations;
 
-namespace Dccn.ProjectForm.Data.Projects
+namespace Dccn.ProjectForm.Data.ProjectDb
 {
     [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
-    public class ProjectsUser
+    public class ProjectDbUser
     {
         public string Id { get; private set; }
 
-        public ProjectsGroup Group { get; private set; }
+        public ProjectDbGroup Group { get; private set; }
         public string GroupId { get; private set; }
 
         public string FirstName { get; private set; }

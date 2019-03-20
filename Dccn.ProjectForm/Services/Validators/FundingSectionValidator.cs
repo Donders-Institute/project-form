@@ -13,6 +13,10 @@ namespace Dccn.ProjectForm.Services.Validators
             {
                 RuleFor(s => s.ContactName).NotEmpty();
                 RuleFor(s => s.ContactEmail).NotEmpty();
+            });
+
+            RuleSet("Approve", () =>
+            {
                 RuleFor(s => s.FinancialCode).NotEmpty();
             });
         }

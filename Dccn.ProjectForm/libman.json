@@ -3,11 +3,11 @@
   "defaultProvider": "cdnjs",
   "libraries": [
     {
-      "library": "twitter-bootstrap@4.2.1",
+      "library": "twitter-bootstrap@4.3.1",
       "destination": "wwwroot/lib/twitter-bootstrap/"
     },
     {
-      "library": "autocomplete.js@0.35.0",
+      "library": "autocomplete.js@0.36.0",
       "destination": "wwwroot/lib/autocomplete.js/"
     },
     {
@@ -15,7 +15,7 @@
       "destination": "wwwroot/lib/jquery/"
     },
     {
-      "library": "jsrender@1.0.1",
+      "library": "jsrender@1.0.2",
       "destination": "wwwroot/lib/jsrender/"
     },
     {
@@ -23,11 +23,11 @@
       "destination": "wwwroot/lib/jquery.inputmask/"
     },
     {
-      "library": "moment.js@2.23.0",
+      "library": "moment.js@2.24.0",
       "destination": "wwwroot/lib/moment.js/"
     },
     {
-      "library": "popper.js@1.14.6",
+      "library": "popper.js@1.14.7",
       "destination": "wwwroot/lib/popper.js/"
     },
     {
@@ -37,10 +37,6 @@
     {
       "library": "jquery-validation-unobtrusive@3.2.11",
       "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
-    },
-    {
-      "library": "foundation-emails@2.2.1",
-      "destination": "wwwroot/lib/foundation-emails/"
     }
   ]
 }

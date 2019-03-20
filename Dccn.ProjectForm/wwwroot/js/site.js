@@ -13,6 +13,8 @@ var Validation = (function() {
     }
 
     function placeError($error, $element) {
+        clearError($element);
+
         $error.insertAfter($element);
 
         $element.data("popper", new Popper($element, $error, {
@@ -21,7 +23,10 @@ var Validation = (function() {
         }));
 
         var observer = new MutationObserver(function() {
-            $element.data("popper").scheduleUpdate();
+            var popper = $element.data("popper");
+            if (popper) {
+                popper.scheduleUpdate();
+            }
         });
 
         observer.observe($error.get(0), {
@@ -32,10 +37,17 @@ var Validation = (function() {
     }
 
     function clearError($element) {
-        $element.data("observer").disconnect();
-        $element.removeData("observer");
-        $element.data("popper").destroy();
-        $element.removeData("popper");
+        var observer = $element.data("observer");
+        if (observer) {
+            observer.disconnect();
+            $element.removeData("observer");
+        }
+
+        var popper = $element.data("popper");
+        if (popper) {
+            popper.destroy();
+            $element.removeData("popper");
+        }
     }
 
     var validationOptions =  {
@@ -86,9 +98,8 @@ var Validation = (function() {
             });
 
             Object.keys(errors).forEach(function(name) {
-                var $inputs = $("[name='" + name + "']");
                 if (errors[name].length > 0) {
-                    $inputs.each(function() {
+                    $("[name='" + name + "']").each(function() {
                         Validation.setError($(this), errors[name][0]);
                     });
                 }
@@ -111,12 +122,39 @@ var Validation = (function() {
     };
 })();
 
-jQuery(function($) {
+var Initializers = function() {
+    var initializers = [];
+
+    return {
+        register: function(f) {
+            initializers.push(f);
+        },
+        run: function() {
+            $(function() {
+                initializers.forEach(function(f) {
+                    f();
+                });
+            });
+        }
+    };
+}();
+
+Initializers.register(function() {
+    if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv:11/))) {
+        $("#ie-warning").removeClass("d-none");
+        $("#content").addClass("d-none");
+        return;
+    }
+
     $("#ajax-error-reload").click(function() {
         window.location.reload();
     });
 
     $(document).ajaxError(function(_event, xhr) {
+        if (xhr.status === 0 && xhr.readyState === 0) {
+            return;
+        }
+
         var $modal = $("#ajax-error-modal");
 
         var title = "Unknown error", message = null, status = null;
@@ -134,7 +172,12 @@ jQuery(function($) {
                     message = "Your session has expired. Try reloading the page and logging back in.";
                 } else if (xhr.status === 409) {
                     title = "Concurrent change";
-                    message = "The form was changed from another location. Try reloading the page.";
+                    var info = xhr.responseJSON;
+                    if (info) {
+                        message = "The form was changed by " + info.lastEditedBy + " on " + info.lastEditedOn + ". Try reloading the page.";
+                    } else {
+                        message = "The form was changed from another location. Try reloading the page.";
+                    }
                 } else {
                     title = "Client error";
                     message = "Server responded with an error. Try reloading the page.";
@@ -175,6 +218,9 @@ jQuery(function($) {
     });
 
     Validation.updateErrors(JSON.parse($("#validation-errors").html()));
-    $('[data-toggle="tooltip"]').tooltip();
+    $('[data-toggle="tooltip"]').tooltip({
+        html: true
+    });
+
     $("#content").removeClass("invisible");
 });

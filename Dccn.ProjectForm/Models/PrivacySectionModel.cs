@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
@@ -25,11 +24,13 @@ namespace Dccn.ProjectForm.Models
         public string CustomDataAccessors { get; set; }
 
         [Display(Name = "Form.Privacy.Security.Label", Description = "Form.Privacy.Security.Description")]
-        public IDictionary<string, PrivacyKeywordModel> SecurityMeasures { get; set; } = new Dictionary<string, PrivacyKeywordModel>();
-        public string CustomSecurityMeasures { get; set; }
+        public string SecurityMeasures { get; set; }
 
         [Display(Name = "Form.Privacy.Disposal.Label", Description = "Form.Privacy.Disposal.Description")]
-        public int? DataDisposalTermDays { get; set; }
+        public string DataDisposalTerm { get; set; }
+
+        [BindNever]
+        public IDictionary<string, string> DataDisposalTerms { get; set; }
     }
 
     public class PrivacyKeywordModel

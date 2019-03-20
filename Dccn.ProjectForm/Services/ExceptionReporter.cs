@@ -34,17 +34,15 @@ namespace Dccn.ProjectForm.Services
             {
                 try
                 {
-                    await emailService.SendEmailNoOverrideAsync(new ExceptionReportModel
+                    await emailService.SendEmailNoOverrideAsync(new ExceptionReport
                     {
-                        Recipient = _recipient,
-
                         RequestId = Activity.Current?.Id ?? httpContext.TraceIdentifier,
                         RequestMethod = httpContext.Request.Method,
                         RequestUrl = httpContext.Request.GetDisplayUrl(),
                         UserId = userManager.GetUserId(httpContext.User),
                         ErrorMessage = e.Message,
                         StackTrace = e.StackTrace
-                    });
+                    }, _recipient);
                 }
                 catch (Exception e2)
                 {

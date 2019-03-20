@@ -2,8 +2,7 @@
 using System.Security.Claims;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
-using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Data.ProjectDb;
 using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Services;
 using JetBrains.Annotations;
@@ -26,13 +25,15 @@ namespace Dccn.ProjectForm.Authentication
         private readonly IHostingEnvironment _environment;
         private readonly IAuthorityProvider _authorityProvider;
         private readonly LdapOptions _ldapOptions;
+        private readonly FormOptions _formOptions;
         private readonly ILogger _logger;
 
-        public SignInManager(IHostingEnvironment environment, IAuthorityProvider authorityProvider, IOptionsSnapshot<LdapOptions> ldapOptions, ILogger<SignInManager> logger, IUserManager userManager)
+        public SignInManager(IHostingEnvironment environment, IAuthorityProvider authorityProvider, IOptionsSnapshot<LdapOptions> ldapOptions, IOptionsSnapshot<FormOptions> formOptions, ILogger<SignInManager> logger, IUserManager userManager)
         {
             _environment = environment;
             _authorityProvider = authorityProvider;
             _ldapOptions = ldapOptions.Value;
+            _formOptions = formOptions.Value;
             _logger = logger;
             UserManager = userManager;
         }
@@ -66,6 +67,16 @@ namespace Dccn.ProjectForm.Authentication
                 identity.AddClaim(new Claim(ClaimTypes.Role, Role.Supervisor.GetName()));
             }
 
+            if (_formOptions.Administration.Contains(user.Id))
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, Role.Administration.GetName()));
+            }
+
+//            if (_formOptions.Admins.Contains(user.Id))
+//            {
+//                identity.AddClaim(new Claim(ClaimTypes.Role, Role.Admin.GetName()));
+//            }
+
             var authProperties = new AuthenticationProperties
             {
                 IsPersistent = isPersistent
@@ -86,7 +97,7 @@ namespace Dccn.ProjectForm.Authentication
             return user.Identity.IsAuthenticated && user.Identity.AuthenticationType == AuthenticationScheme;
         }
 
-        private bool CheckPasswordSignIn(ProjectsUser user, string password)
+        private bool CheckPasswordSignIn(ProjectDbUser user, string password)
         {
             if (_environment.IsDevelopment())
             {

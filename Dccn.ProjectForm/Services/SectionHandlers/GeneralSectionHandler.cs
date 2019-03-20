@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
@@ -28,6 +27,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             model.OwnerName = owner.DisplayName;
             model.SupervisorName = supervisor.DisplayName;
             model.Title = proposal.Title;
+
+            model.ProjectId = proposal.ProjectId;
 
             await base.LoadAsync(model, proposal);
         }

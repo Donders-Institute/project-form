@@ -14,6 +14,8 @@ namespace Dccn.ProjectForm.Data
         public DateTime CreatedOn { get; private set; }
         public DateTime LastEditedOn { get; set; }
         public string LastEditedBy { get; set; }
+//        public DateTime ExportedOn { get; set; }
+//        public string ExportedBy { get; set; }
 
         public string OwnerId { get; set; }
 
@@ -63,8 +65,8 @@ namespace Dccn.ProjectForm.Data
         public ICollection<string> PrivacyMotivations { get; set; } = new Collection<string>();
         public ICollection<string> PrivacyStorageLocations { get; set; } = new Collection<string>();
         public ICollection<string> PrivacyDataAccessors { get; set; } = new Collection<string>();
-        public ICollection<string> PrivacySecurityMeasures { get; set; } = new Collection<string>();
-        public TimeSpan? PrivacyDataDisposalTerm { get; set; }
+        public string PrivacySecurityMeasures { get; set; }
+        public string PrivacyDataDisposalTerm { get; set; }
         #endregion
 
         #region Payment

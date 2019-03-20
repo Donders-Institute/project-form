@@ -4,48 +4,61 @@ using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Data.ProjectDb;
+using Dccn.ProjectForm.Extensions;
 using Microsoft.Extensions.Options;
 
 namespace Dccn.ProjectForm.Services
 {
     public class AuthorityProvider : IAuthorityProvider
     {
-        private readonly IDictionary<ApprovalAuthorityRole, string> _authorities;
+        private readonly FormOptions _formOptions;
         private readonly IUserManager _userManager;
 
         public AuthorityProvider(IOptionsSnapshot<FormOptions> options, IUserManager userManager)
         {
-            _authorities = options.Value.Authorities;
+            _formOptions = options.Value;
             _userManager = userManager;
         }
 
-        public string GetAuthorityId(Proposal proposal, ApprovalAuthorityRole role)
+        public IEnumerable<string> GetAuthorityIds(Proposal proposal, ApprovalAuthorityRole role)
         {
             if (role == ApprovalAuthorityRole.Supervisor)
             {
-                return proposal.SupervisorId;
+                return proposal.SupervisorId.Yield();
             }
 
-            return _authorities.TryGetValue(role, out var authorityId) ? authorityId : null;
+            return _formOptions.Authorities.TryGetValue(role, out var authorityId) ? authorityId : Enumerable.Empty<string>();
         }
 
         public IEnumerable<ApprovalAuthorityRole> GetAuthorityRoles(string authorityId)
         {
-            return _authorities.Where(entry => entry.Value == authorityId).Select(entry => entry.Key);
+            return _formOptions.Authorities.Where(entry => entry.Value.Contains(authorityId)).Select(entry => entry.Key);
         }
 
-        public Task<ProjectsUser> GetAuthorityAsync(Proposal proposal, ApprovalAuthorityRole role)
+        public async Task<ICollection<ProjectDbUser>> GetAuthoritiesAsync(Proposal proposal, ApprovalAuthorityRole role)
         {
-            var id = GetAuthorityId(proposal, role);
-            return _userManager.GetUserByIdAsync(id);
+            var ids = GetAuthorityIds(proposal, role);
+            return await ids.Select(id => _userManager.GetUserByIdAsync(id)).ToListAsync();
+        }
+
+        public IEnumerable<string> GetAdministrationIds(Proposal proposal)
+        {
+            return _formOptions.Admins;
+        }
+
+        public async Task<ICollection<ProjectDbUser>> GetAdministrationAsync(Proposal proposal)
+        {
+            return await _formOptions.Admins.Select(id => _userManager.GetUserByIdAsync(id)).ToListAsync();
         }
     }
 
     public interface IAuthorityProvider
     {
-        string GetAuthorityId(Proposal proposal, ApprovalAuthorityRole role);
+        IEnumerable<string> GetAuthorityIds(Proposal proposal, ApprovalAuthorityRole role);
         IEnumerable<ApprovalAuthorityRole> GetAuthorityRoles(string authorityId);
-        Task<ProjectsUser> GetAuthorityAsync(Proposal proposal, ApprovalAuthorityRole role);
+        Task<ICollection<ProjectDbUser>> GetAuthoritiesAsync(Proposal proposal, ApprovalAuthorityRole role);
+        IEnumerable<string> GetAdministrationIds(Proposal proposal);
+        Task<ICollection<ProjectDbUser>> GetAdministrationAsync(Proposal proposal);
     }
 }

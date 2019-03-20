@@ -24,6 +24,7 @@ namespace Dccn.ProjectForm.Services.Validators
             });
 
             RuleForEach(s => s.Labs)
+                .OverrideIndexer((section, labs, lab, index) => $"[{lab.Id}]")
                 .NotNull()
                 .SetValidator(new LabValidator(serviceProvider));
 

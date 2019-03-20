@@ -26,7 +26,7 @@ namespace Dccn.ProjectForm.Models
         public string LastEditedBy { get; set; }
 
         [Display(Name = "Project ID")]
-        [DisplayFormat(NullDisplayText = "<not set>")]
+        //[DisplayFormat(NullDisplayText = "<not set>")]
         public string ProjectId { get; set; }
     }
 }

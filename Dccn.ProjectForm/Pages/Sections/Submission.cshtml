@@ -1,11 +1,24 @@
-﻿@using Dccn.ProjectForm.Extensions
-@model Models.SubmissionSectionModel
+﻿@model Models.SubmissionSectionModel
 
-<ul class="list-group mb-3">
-    @foreach (var approvalInfo in Model.NeedsApprovalBy)
+@{
+    var required = Model.NeedsApprovalBy.OrderBy(approval => approval.SectionName).ToList();
+    if (required.Any())
     {
-        <li class="list-group-item">
-            <a asp-fragment="@(approvalInfo.SectionId)">@Html.DisplayFor(_ => approvalInfo.SectionName)</a>
-        </li>
+        var last = required.Last();
+        <p>
+            Before you can submit the proposal for final approval by the director, you will first need to get approval for the following form sections:
+
+            @foreach (var approval in required.SkipLast(1))
+            {
+                <a asp-fragment="@(approval.SectionId)">@Html.DisplayFor(_ => approval.SectionName)</a>@:,
+            }
+            <a asp-fragment="@(last.SectionId)">@Html.DisplayFor(_ => last.SectionName)</a>.
+        </p>
     }
-</ul>
+    else
+    {
+        <p>
+            All other sections have been approved and your proposal can be submitted for final approval by the director.
+        </p>
+    }
+}

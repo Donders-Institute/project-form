@@ -4,7 +4,7 @@ using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
-using Dccn.ProjectForm.Data.Projects;
+using Dccn.ProjectForm.Data.ProjectDb;
 using Dccn.ProjectForm.DataTransferObjects;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;

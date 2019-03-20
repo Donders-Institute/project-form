@@ -12,13 +12,13 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
     public class ExperimentSectionHandler : FormSectionHandlerBase<ExperimentSectionModel>
     {
         private readonly IUserManager _userManager;
-        private readonly IModalityProvider _modalityProvider;
+        private readonly ILabProvider _labProvider;
 
-        public ExperimentSectionHandler(IServiceProvider serviceProvider, IUserManager userManager, IModalityProvider modalityProvider)
+        public ExperimentSectionHandler(IServiceProvider serviceProvider, IUserManager userManager, ILabProvider labProvider)
             : base(serviceProvider, m => m.Experiment)
         {
             _userManager = userManager;
-            _modalityProvider = modalityProvider;
+            _labProvider = labProvider;
         }
 
         protected override IEnumerable<ApprovalAuthorityRole> ApprovalRoles => new []
@@ -28,8 +28,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
         public override bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
-            var hasAnyMri = proposal.Labs.Any(l => _modalityProvider[l.Modality].IsMri);
-            var hasAnyNonMri = proposal.Labs.Any(l => !_modalityProvider[l.Modality].IsMri);
+            var hasAnyMri = proposal.Labs.Any(l => _labProvider.Labs[l.Modality].IsMri);
+            var hasAnyNonMri = proposal.Labs.Any(l => !_labProvider.Labs[l.Modality].IsMri);
             switch (authorityRole)
             {
                 case ApprovalAuthorityRole.LabMri:
@@ -50,7 +50,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 .Select(lab => new LabModel
                 {
                     Id = lab.Id,
-                    Modality = _modalityProvider[lab.Modality],
+                    Modality = _labProvider.Labs[lab.Modality],
                     SubjectCount = lab.SubjectCount,
                     ExtraSubjectCount = lab.ExtraSubjectCount,
                     SessionCount = lab.SessionCount,
@@ -69,6 +69,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                 model.StorageQuota = StorageQuotaModel.Standard;
             }
 
+            model.MinimumStorageQuota = _labProvider.MinimumStorageQuota;
+
             model.Experimenters = await proposal.Experimenters
                 .Select(async experimenter => new ExperimenterModel
                 {
@@ -85,18 +87,22 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
 
-            proposal.Labs = model.Labs
-                .Select(lab => new Lab
+            foreach (var labModel in model.Labs)
+            {
+                var lab = proposal.Labs.SingleOrDefault(l => l.Id == labModel.Id);
+                if (lab == null)
                 {
-                    // FIXME: causes DELETE + INSERT instead of UPDATE
-                    // Id = lab.Id.GetValueOrDefault(),
-                    Modality = lab.Modality.Id,
-                    SubjectCount = lab.SubjectCount,
-                    ExtraSubjectCount = lab.ExtraSubjectCount,
-                    SessionCount = lab.SessionCount,
-                    SessionDuration = lab.SessionDurationMinutes.HasValue ? TimeSpan.FromMinutes(lab.SessionDurationMinutes.Value) : (TimeSpan?) null
-                })
-                .ToList();
+                    continue;
+                }
+
+                lab.Modality = labModel.Modality.Id;
+                lab.SubjectCount = labModel.SubjectCount;
+                lab.ExtraSubjectCount = labModel.ExtraSubjectCount;
+                lab.SessionCount = labModel.SessionCount;
+                lab.SessionDuration = labModel.SessionDurationMinutes.HasValue
+                    ? TimeSpan.FromMinutes(labModel.SessionDurationMinutes.Value)
+                    : (TimeSpan?) null;
+            }
 
             if (model.StorageQuota == StorageQuotaModel.Standard)
             {
