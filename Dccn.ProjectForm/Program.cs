@@ -23,7 +23,7 @@ namespace Dccn.ProjectForm
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
             await Task.WhenAll(
-                InitDbContextAsync(host.Services, logger),
+                MigrateDbContextAsync(host.Services, logger),
                 InitLabsProviderAsync(host.Services, logger));
 
             ValidatorOptions.DisplayNameResolver = (type, member, expression) =>
@@ -45,24 +45,19 @@ namespace Dccn.ProjectForm
                 .UseStartup<Startup>();
         }
 
-        private static async Task InitDbContextAsync(IServiceProvider services, ILogger logger)
+        private static async Task MigrateDbContextAsync(IServiceProvider services, ILogger logger)
         {
             try
             {
                 using (var scope = services.CreateScope())
                 {
                     var context = scope.ServiceProvider.GetRequiredService<ProposalDbContext>();
-                    if (await context.Database.EnsureCreatedAsync())
-                    {
-                        await context.Database.ExecuteSqlCommandAsync(@"ALTER DATABASE CURRENT SET TRUSTWORTHY ON");
-                        await context.Database.ExecuteSqlCommandAsync(@"ALTER DATABASE CURRENT SET ENABLE_BROKER");
-                        logger.LogInformation("Initialized the database.");
-                    }
+                    await context.Database.MigrateAsync();
                 }
             }
             catch (Exception e)
             {
-                logger.LogCritical(e, "There was an error initializing the database.");
+                logger.LogCritical(e, "There was an error migrating the database.");
                 throw;
             }
         }
