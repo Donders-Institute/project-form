@@ -22,28 +22,27 @@ namespace Dccn.ProjectForm.Data.ProjectDb
 
         public CheckinStatus Status { get; private set; }
 
-        public string DisplayName
-        {
-            get
-            {
-                if (string.IsNullOrEmpty(FirstName) || string.IsNullOrEmpty(LastName))
-                {
-                    return $"<{Id}>";
-                }
-
-                var builder = new StringBuilder();
-                builder.Append(FirstName);
-                if (!string.IsNullOrEmpty(MiddleName))
-                {
-                    builder.Append(' ').Append(MiddleName);
-                }
-                builder.Append(' ').Append(LastName);
-
-                return builder.ToString();
-            }
-        }
+        public string DisplayName => GetDisplayName(Id, FirstName, MiddleName, LastName);
 
         public bool IsHead => Group.HeadId == Id;
+
+        public static string GetDisplayName(string id, string firstName, string middleName, string lastName)
+        {
+            if (string.IsNullOrEmpty(firstName) || string.IsNullOrEmpty(lastName))
+            {
+                return $"<{id}>";
+            }
+
+            var builder = new StringBuilder();
+            builder.Append(firstName);
+            if (!string.IsNullOrEmpty(middleName))
+            {
+                builder.Append(' ').Append(middleName);
+            }
+            builder.Append(' ').Append(lastName);
+
+            return builder.ToString();
+        }
     }
 
     public enum CheckinStatus

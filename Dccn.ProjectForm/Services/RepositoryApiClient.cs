@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Net.Http.Headers;
@@ -10,6 +11,7 @@ using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.DataTransferObjects;
 using JetBrains.Annotations;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 
 namespace Dccn.ProjectForm.Services
@@ -18,13 +20,15 @@ namespace Dccn.ProjectForm.Services
     public class RepositoryApiClient : IRepositoryApiClient
     {
         private readonly HttpClient _client;
+        private readonly ILogger _logger;
 
-        public RepositoryApiClient(HttpClient client)
+        public RepositoryApiClient(HttpClient client, ILogger<RepositoryApiClient> logger)
         {
             _client = client;
+            _logger = logger;
         }
 
-        public async Task<RepositoryUserDto> FindUserByEmailAddressAsync(string email)
+        public async Task<IEnumerable<RepositoryUserDto>> FindUsersByEmailAddressAsync(string email)
         {
             var uri = $"users/query?email={HttpUtility.UrlEncode(email)}&detail";
 
@@ -34,10 +38,11 @@ namespace Dccn.ProjectForm.Services
             var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUserDto[]>>();
             if (!result.Succeeded)
             {
-                throw new ApplicationException($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
+                _logger.LogError($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
+                return Enumerable.Empty<RepositoryUserDto>();
             }
 
-            return result.Data.SingleOrDefault();
+            return result.Data;
         }
 
         private class ApiResult<TData>
@@ -57,7 +62,7 @@ namespace Dccn.ProjectForm.Services
 
     public interface IRepositoryApiClient
     {
-        Task<RepositoryUserDto> FindUserByEmailAddressAsync(string email);
+        Task<IEnumerable<RepositoryUserDto>> FindUsersByEmailAddressAsync(string email);
     }
 
     public static class RespositoryApiClientExtensions

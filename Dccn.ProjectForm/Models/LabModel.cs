@@ -1,13 +1,11 @@
 ﻿using System.ComponentModel.DataAnnotations;
+using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
     public class LabModel
     {
         public int Id { get; set; }
-
-        [Display(Name = "Form.Experiment.Labs.Modality.Label", Description = "Form.Experiment.Labs.Modality.Description")]
-        public ModalityModel Modality { get; set; }
 
         [Display(Name = "Form.Experiment.Labs.SubjectCount.Label", Description = "Form.Experiment.Labs.SubjectCount.Description")]
         public int? SubjectCount { get; set; }
@@ -20,5 +18,9 @@ namespace Dccn.ProjectForm.Models
 
         [Display(Name = "Form.Experiment.Labs.SessionDurationMinutes.Label", Description = "Form.Experiment.Labs.SessionDurationMinutes.Description")]
         public int? SessionDurationMinutes { get; set; }
+
+        [Display(Name = "Form.Experiment.Labs.Modality.Label", Description = "Form.Experiment.Labs.Modality.Description")]
+        [BindNever]
+        public ModalityModel Modality { get; set; }
     }
 }

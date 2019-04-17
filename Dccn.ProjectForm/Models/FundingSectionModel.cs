@@ -2,7 +2,7 @@
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Form.Funding.Title")]
+    [Display(Name = "Form.Funding.Title", Description = "Form.Funding.Description")]
     public class FundingSectionModel : SectionModelBase
     {
         [Display(Name = "Form.Funding.ContactName.Label", Description = "Form.Funding.ContactName.Description")]

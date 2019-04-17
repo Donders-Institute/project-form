@@ -1,109 +1,108 @@
-﻿@using Dccn.ProjectForm.Extensions
-@model Models.PrivacySectionModel
+﻿@model FormModel
 
 <div class="form-group">
-    <label asp-for="DataTypes"></label>
+    <label asp-for="Privacy.DataTypes"></label>
     <div class="form-row">
         <div class="col-auto btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
-            @foreach (var (id, info) in Model.DataTypes)
+            @foreach (var (id, info) in Model.Privacy.DataTypes)
             {
                 <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
-                    <input asp-for="DataTypes[id].Present" autocomplete="off" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
+                    <input asp-for="Privacy.DataTypes[id].Present" autocomplete="off" data-save-on="change">@Html.DisplayFor(_ => info.Name)
                 </label>
             }
         </div>
         <div class="col">
-            <textarea asp-for="CustomDataTypes" class="form-control form-control-sm h-100" style="resize: none"
-                      placeholder="Others, e.g. pictures, video or audio (one per line)" rows="1" data-submit-on="change"></textarea>
+            <textarea asp-for="Privacy.CustomDataTypes" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Others, e.g. pictures, video or audio (one per line)" rows="1" data-save-on="change"></textarea>
         </div>
     </div>
-    <small asp-description-for="DataTypes"></small>
+    <small asp-description-for="Privacy.DataTypes"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="Motivations"></label>
+    <label asp-for="Privacy.Motivations"></label>
     <div class="form-row">
         <div class="col-auto btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
-            @foreach (var (id, info) in Model.Motivations)
+            @foreach (var (id, info) in Model.Privacy.Motivations)
             {
                 <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
-                    <input name="@Html.NameFor(m => m.Motivations[id].Present)" type="checkbox" autocomplete="off"
+                    <input name="@Html.NameFor(m => m.Privacy.Motivations[id].Present)" type="checkbox" autocomplete="off"
                            @{if (info.Present) { <text> checked</text> }}
-                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
+                           value="@true" data-save-on="change">@Html.DisplayFor(_ => info.Name)
                     </label>
                 }
         </div>
         <div class="col">
-            <textarea asp-for="CustomMotivations" class="form-control form-control-sm h-100" style="resize: none"
-                      placeholder="Others (one per line)" rows="1" data-submit-on="change"></textarea>
+            <textarea asp-for="Privacy.CustomMotivations" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Others (one per line)" rows="1" data-save-on="change"></textarea>
         </div>
     </div>
-    <small asp-description-for="Motivations"></small>
+    <small asp-description-for="Privacy.Motivations"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="StorageLocations"></label>
+    <label asp-for="Privacy.StorageLocations"></label>
     <div class="form-row">
         <div class="col-auto btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
-            @foreach (var (id, info) in Model.StorageLocations)
+            @foreach (var (id, info) in Model.Privacy.StorageLocations)
             {
                 <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
-                    <input name="@Html.NameFor(m => m.StorageLocations[id].Present)" type="checkbox" autocomplete="off"
+                    <input name="@Html.NameFor(m => m.Privacy.StorageLocations[id].Present)" type="checkbox" autocomplete="off"
                            @{if (info.Present) { <text> checked</text> }}
-                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
+                           value="@true" data-save-on="change">@Html.DisplayFor(_ => info.Name)
                     </label>
                 }
         </div>
         <div class="col">
-            <textarea asp-for="CustomStorageLocations" class="form-control form-control-sm h-100" style="resize: none"
-                      placeholder="Other location, e.g. at DCC or MPI (one per line)" rows="1" data-submit-on="change"></textarea>
+            <textarea asp-for="Privacy.CustomStorageLocations" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Other location, e.g. at DCC or MPI (one per line)" rows="1" data-save-on="change"></textarea>
         </div>
     </div>
-    <small asp-description-for="StorageLocations"></small>
+    <small asp-description-for="Privacy.StorageLocations"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="DataAccessors"></label>
+    <label asp-for="Privacy.DataAccessors"></label>
     <div class="form-row">
         <div class="col-auto btn-group-vertical btn-group-sm btn-group-toggle" data-toggle="buttons">
-            @foreach (var (id, info) in Model.DataAccessors)
+            @foreach (var (id, info) in Model.Privacy.DataAccessors)
             {
                 <label class="btn btn-outline-secondary @(info.Present ? "active" : string.Empty)">
-                    <input name="@Html.NameFor(m => m.DataAccessors[id].Present)" type="checkbox" autocomplete="off"
+                    <input name="@Html.NameFor(m => m.Privacy.DataAccessors[id].Present)" type="checkbox" autocomplete="off"
                            @{if (info.Present) { <text> checked</text> }}
-                           value="@true" data-submit-on="change">@Html.DisplayFor(_ => info.Name)
+                           value="@true" data-save-on="change">@Html.DisplayFor(_ => info.Name)
                     </label>
                 }
         </div>
         <div class="col">
-            <textarea asp-for="CustomDataAccessors" class="form-control form-control-sm h-100" style="resize: none"
-                      placeholder="Others (one per line)" rows="1" data-submit-on="change"></textarea>
+            <textarea asp-for="Privacy.CustomDataAccessors" class="form-control form-control-sm h-100" style="resize: none"
+                      placeholder="Others (one per line)" rows="1" data-save-on="change"></textarea>
         </div>
     </div>
-    <small asp-description-for="DataAccessors"></small>
+    <small asp-description-for="Privacy.DataAccessors"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="SecurityMeasures"></label>
-    <textarea asp-for="SecurityMeasures" class="form-control h-100" style="resize: none" placeholder="Please specify, e.g. password protected Excel file" rows="1" data-submit-on="change"></textarea>
-    <small asp-description-for="SecurityMeasures"></small>
+    <label asp-for="Privacy.SecurityMeasures"></label>
+    <textarea asp-for="Privacy.SecurityMeasures" class="form-control h-100" style="resize: none" placeholder="Please specify, e.g. password protected Excel file" rows="1" data-save-on="change"></textarea>
+    <small asp-description-for="Privacy.SecurityMeasures"></small>
 </div>
 
 <div class="form-group">
-    <label asp-for="DataDisposalTerm"></label>
+    <label asp-for="Privacy.DataDisposalTerm"></label>
     <div class="input-group">
         <div class="input-group-prepend">
-            <select id="privacy-data-disposal-term" class="custom-select h-100" data-submit-on="change">
-                @foreach (var (label, value) in Model.DataDisposalTerms)
+            <select id="privacy-data-disposal-term" class="custom-select h-100" data-save-on="change">
+                @foreach (var (label, value) in Model.Privacy.DataDisposalTerms)
                 {
-                    <!option selected="@(Model.DataDisposalTerm == value)" data-value="@value">@label</!option>
+                    <!option selected="@(Model.Privacy.DataDisposalTerm == value)" data-value="@value">@label</!option>
                 }
-                <!option selected="@(Model.DataDisposalTerms.Values.All(value => Model.DataDisposalTerm != value))">Other</!option>
+                <!option selected="@(Model.Privacy.DataDisposalTerms.Values.All(value => Model.Privacy.DataDisposalTerm != value))">Other</!option>
             </select>
         </div>
-        <textarea asp-for="DataDisposalTerm" id="privacy-data-disposal-term-custom" class="form-control"
+        <textarea asp-for="Privacy.DataDisposalTerm" id="privacy-data-disposal-term-custom" class="form-control"
                placeholder="Enter a custom data disposal term (include motivation)" rows="1"
-               readonly="@(Model.DataDisposalTerms.Values.Any(value => Model.DataDisposalTerm == value))" data-submit-on="change"></textarea>
+               readonly="@(Model.Privacy.DataDisposalTerms.Values.Any(value => Model.Privacy.DataDisposalTerm == value))" data-save-on="change"></textarea>
     </div>
-    <small asp-description-for="DataDisposalTerm"></small>
+    <small asp-description-for="Privacy.DataDisposalTerm"></small>
 </div>

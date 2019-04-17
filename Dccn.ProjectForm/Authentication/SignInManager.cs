@@ -28,8 +28,14 @@ namespace Dccn.ProjectForm.Authentication
         private readonly FormOptions _formOptions;
         private readonly ILogger _logger;
 
-        public SignInManager(IHostingEnvironment environment, IAuthorityProvider authorityProvider, IOptionsSnapshot<LdapOptions> ldapOptions, IOptionsSnapshot<FormOptions> formOptions, ILogger<SignInManager> logger, IUserManager userManager)
-        {
+        public SignInManager(
+            IHostingEnvironment environment,
+            IAuthorityProvider authorityProvider,
+            IOptionsSnapshot<LdapOptions> ldapOptions,
+            IOptionsSnapshot<FormOptions> formOptions,
+            ILogger<SignInManager> logger,
+            IUserManager userManager
+        ) {
             _environment = environment;
             _authorityProvider = authorityProvider;
             _ldapOptions = ldapOptions.Value;
@@ -60,7 +66,13 @@ namespace Dccn.ProjectForm.Authentication
             identity.AddClaim(new Claim(ClaimTypes.UserName, user.DisplayName));
             identity.AddClaim(new Claim(ClaimTypes.EmailAddress, user.Email));
             identity.AddClaim(new Claim(ClaimTypes.Group, user.GroupId));
-            identity.AddClaims(_authorityProvider.GetAuthorityRoles(user.Id).Select(r => new Claim(ClaimTypes.ApprovalRole, r.GetName())));
+
+            var authorityRoles = _authorityProvider.GetAuthorityRoles(user.Id).ToList();
+            if (authorityRoles.Any() || user.IsHead)
+            {
+                identity.AddClaim(new Claim(ClaimTypes.Role, Role.Authority.GetName()));
+                identity.AddClaims(authorityRoles.Select(role => new Claim(ClaimTypes.ApprovalRole, role.GetName())));
+            }
 
             if (user.IsHead)
             {
@@ -71,11 +83,6 @@ namespace Dccn.ProjectForm.Authentication
             {
                 identity.AddClaim(new Claim(ClaimTypes.Role, Role.Administration.GetName()));
             }
-
-//            if (_formOptions.Admins.Contains(user.Id))
-//            {
-//                identity.AddClaim(new Claim(ClaimTypes.Role, Role.Admin.GetName()));
-//            }
 
             var authProperties = new AuthenticationProperties
             {

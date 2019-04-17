@@ -32,5 +32,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            x.FundingContactName == y.FundingContactName
+            && x.FundingContactEmail == y.FundingContactEmail
+            && x.FinancialCode == y.FinancialCode
+            && base.SectionEquals(x, y);
     }
 }

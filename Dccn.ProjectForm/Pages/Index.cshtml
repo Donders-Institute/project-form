@@ -1,228 +1,170 @@
 ﻿@page
+@using System.Web
+@using Dccn.ProjectForm.Extensions
+@using Dccn.ProjectForm.Models
+@using Dccn.ProjectForm.Utils
 @model IndexModel
+
 @{
     ViewData["Title"] = "Proposals";
 }
 
-@if (Model.IsAdministration)
-{
-    <div class="card mb-3">
-        <div class="card-header">
-            <h1 class="display-4">Finished proposals</h1>
-        </div>
-        <div class="card-body">
-            <p class="card-text">Manage proposals that are fully approved and ready to be exported.</p>
-            <ul class="list-group">
-                <li class="list-group-item list-group-placeholder">
-                    <span class="text-muted font-italic">No proposals</span>
-                </li>
-                @foreach (var proposal in Model.FinishedProposals)
-                {
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col">
-                                <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
-                                <dl class="row mb-0">
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
+<div class="card mb-3">
+    <nav id="tabs" class="card-header nav nav-tabs nav-fill pb-0"
+         @if (Model.NewProposal.Submitted) { <text>data-active-tab="#create-proposal-tab"</text> }>
 
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.OwnerName)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.OwnerName)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
-                                </dl>
-                            </div>
-
-                            <div class="btn-group col-auto my-auto" role="group">
-                                <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
-                                    <span class="d-none d-sm-inline mr-1">View</span>
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
-
-@if (Model.IsApprovalAuthority)
-{
-    <div class="card mb-3">
-        <div class="card-header">
-            <h1 class="display-4">Approvals</h1>
-        </div>
-        <div class="card-body">
-            <p class="card-text">Project proposals that you have approved or that require your approval.</p>
-            <div class="card">
-                <ul class="list-group list-group-flush">
-                    <li class="list-group-item list-group-placeholder">
-                        <span class="text-muted font-italic">No pending approvals</span>
-                    </li>
-                    @foreach (var approval in Model.Approvals)
-                    {
-                        <li class="list-group-item">
-                            <div class="row">
-                                <div class="col">
-                                    <h2 class="h3 mb-3">@Html.DisplayFor(_ => approval.ProposalTitle)</h2>
-                                    <dl class="row mb-0">
-                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.ProposalOwnerName)</dt>
-                                        <dd class="col-9">@Html.DisplayFor(_ => approval.ProposalOwnerName)</dd>
-
-                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.Role)</dt>
-                                        <dd class="col-9">@Html.DisplayFor(_ => approval.Role)</dd>
-
-                                        <dt class="col-3">@Html.DisplayNameFor(_ => approval.Status)</dt>
-                                        <dd class="col-9">@Html.DisplayFor(_ => approval.Status)</dd>
-                                    </dl>
-                                </div>
-
-                                <div class="btn-group col-auto my-auto" role="group">
-                                    <a asp-page="Form" asp-route-proposalId="@approval.ProposalId" asp-fragment="@approval.SectionId" class="btn btn-sm btn-secondary" role="button">
-                                        <span class="d-none d-sm-inline mr-1">View</span>
-                                        <i class="fas fa-edit"></i>
-                                    </a>
-                                </div>
-                            </div>
-                        </li>
-                    }
-                </ul>
-            </div>
-        </div>
-    </div>
-}
-
-@if (Model.IsSupervisor)
-{
-    <div class="card mb-3">
-        <div class="card-header">
-            <h1 class="display-4">Supervised proposals</h1>
-        </div>
-        <div class="card-body">
-            <p class="card-text">Manage proposals of which you are the supervisor.</p>
-            <ul class="list-group">
-                <li class="list-group-item list-group-placeholder">
-                    <span class="text-muted font-italic">No proposals</span>
-                </li>
-                @foreach (var proposal in Model.SupervisedProposals)
-                {
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col">
-                                <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
-                                <dl class="row mb-0">
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.OwnerName)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.OwnerName)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
-
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
-                                </dl>
-                            </div>
-
-                            <div class="btn-group col-auto my-auto" role="group">
-                                <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
-                                    <span class="d-none d-sm-inline mr-1">View</span>
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                            </div>
-                        </div>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-}
-
-<div class="card">
-    <div class="card-header">
-        <h1 class="display-4">My project proposals</h1>
-    </div>
+        @if (Model.IsApprovalAuthority)
+        {
+            <a id="approvals-tab" class="nav-item nav-link" href="#approvals" data-toggle="tab">Approvals</a>
+        }
+        @if (Model.IsSupervisor)
+        {
+            <a id="supervised-proposals-tab" class="nav-item nav-link" href="#supervised-proposals" data-toggle="tab">Supervised proposals</a>
+        }
+        @if (Model.IsAdministration)
+        {
+            <a id="administration-tab" class="nav-item nav-link" href="#administration" data-toggle="tab">Administration</a>
+        }
+        <a id="my-proposals-tab" class="nav-item nav-link" href="#my-proposals" data-toggle="tab">My proposals</a>
+        <a id="create-proposal-tab" class="nav-item nav-link" href="#create-proposal" data-toggle="tab">
+            <i class="fas fa-plus-square"></i> Create new proposal
+        </a>
+    </nav>
     <div class="card-body">
-        <p class="card-text">Manage proposals of projects for which you are the owner.</p>
-        <div class="card">
-            <div class="card-header">
-                <div class="float-right">
-                    <button type="button" class="btn btn-sm btn-outline-secondary" data-toggle="modal" data-target="#create-proposal-modal">
-                        <span class="d-none d-sm-inline mr-1">Create new proposal</span>
-                        <i class="fas fa-plus-square"></i>
-                    </button>
+        <div class="tab-content">
+            <div id="my-proposals" class="tab-pane">
+                <p>Manage project proposals for which you are the owner.</p>
+
+                <table id="my-proposals-table" class="table table-bordered table-light table-sm w-100"
+                       data-ajax-url="@Url.Page(null, "MyProposals")"
+                       data-can-delete-rows="true"
+                       data-row-type="proposal">
+                    <thead>
+                    <tr>
+                        <th class="title" data-data="title">
+                            @Html.DisplayNameFor(m => m.MyProposals.First().Title)
+                        </th>
+                        <th class="status" data-data="status" data-width="15%">
+                            @Html.DisplayNameFor(m => m.MyProposals.First().Status)
+                        </th>
+                        <th class="controls" data-data="null" data-searchable="false" data-orderable="false" data-width="15%"></th>
+
+                        <th data-data="id" data-visible="false" data-searchable="false"></th>
+                        <th data-data="approvedCount" data-visible="false" data-searchable="false"></th>
+                        <th data-data="totalApprovalCount" data-visible="false" data-searchable="false"></th>
+                        <th data-data="projectId" data-visible="false"></th>
+                    </tr>
+                    </thead>
+                    <tbody>
+                    </tbody>
+                </table>
+            </div>
+            @if (Model.IsSupervisor)
+            {
+                <div id="supervised-proposals" class="tab-pane">
+                    <p>Manage project proposals for which you are the supervisor.</p>
+
+                    <table id="supervised-proposals-table" class="table table-bordered table-light table-sm w-100"
+                           data-ajax-url="@Url.Page(null, "SupervisedProposals")"
+                           data-row-type="proposal">
+                        <thead>
+                        <tr>
+                            <th class="title" data-data="title">
+                                @Html.DisplayNameFor(m => m.SupervisedProposals.First().Title)
+                            </th>
+                            <th class="owner-name" data-data="ownerName" data-width="20%">
+                                @Html.DisplayNameFor(m => m.SupervisedProposals.First().OwnerName)
+                            </th>
+                            <th class="status" data-data="status" data-width="15%">
+                                @Html.DisplayNameFor(m => m.MyProposals.First().Title)
+                            </th>
+                            <th class="controls" data-data="null" data-searchable="false" data-orderable="false" data-width="8%"></th>
+
+                            <th data-data="id" data-visible="false" data-searchable="false"></th>
+                            <th data-data="approvedCount" data-visible="false" data-searchable="false"></th>
+                            <th data-data="totalApprovalCount" data-visible="false" data-searchable="false"></th>
+                            <th data-data="projectId" data-visible="false"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
                 </div>
-            </div>
-            <ul class="list-group list-group-flush">
-                <li class="list-group-item list-group-placeholder">
-                    <span class="text-muted font-italic">No proposals</span>
-                </li>
-                @foreach (var proposal in Model.MyProposals)
-                {
-                    <li class="list-group-item">
-                        <div class="row">
-                            <div class="col">
-                                <h2 class="h3 mb-3">@Html.DisplayFor(_ => proposal.Title)</h2>
-                                <dl class="row mb-0">
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.ProjectId)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.ProjectId)</dd>
+            }
+            @if (Model.IsApprovalAuthority)
+            {
+                <div id="approvals" class="tab-pane">
+                    <p>Project proposals that you have approved or that require your approval.</p>
 
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.SupervisorName)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.SupervisorName)</dd>
+                    <table id="approvals-table" class="table table-bordered table-light table-sm w-100"
+                           data-ajax-url="@Url.Page(null, "Approvals")"
+                           data-group-rows="@(Model.ApprovalAuthorityRoleCount > 1 ? "true" : "false")"
+                           data-status-filter="@ApprovalStatusModel.Pending"
+                           data-row-type="approval">
+                        <thead>
+                        <tr>
+                            <th class="title" data-data="proposalTitle">
+                                @Html.DisplayNameFor(m => m.Approvals.First().ProposalTitle)
+                            </th>
+                            <th class="owner-name" data-data="proposalOwnerName" data-width="20%">
+                                @Html.DisplayNameFor(m => m.Approvals.First().ProposalOwnerName)
+                            </th>
+                            <th class="role" data-data="role" data-with="20%">
+                                @Html.DisplayNameFor(m => m.Approvals.First().Role)
+                            </th>
+                            <th class="status" data-data="status" data-width="15%">
+                                @Html.DisplayNameFor(m => m.Approvals.First().Status)
+                            </th>
+                            <th class="controls" data-data="null" data-searchable="false" data-orderable="false" data-width="8%"></th>
 
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.CreatedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.CreatedOn)</dd>
+                            <th class="role-type" data-data="roleType" data-visible="false"></th>
+                            <th data-data="proposalId" data-visible="false" data-searchable="false"></th>
+                            <th data-data="sectionId" data-visible="false" data-searchable="false"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            @if (Model.IsAdministration)
+            {
+                <div id="administration" class="tab-pane">
+                    <p>Manage all proposals. Proposals that are fully approved can be exported to the Project Database.</p>
 
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedOn)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedOn)</dd>
+                    <table id="administration-proposals-table" class="table table-bordered table-light table-sm w-100"
+                           data-ajax-url="@Url.Page(null, "AllProposals")"
+                           data-can-export-rows="true"
+                           data-status-filter="@ProposalStatusModel.Approved"
+                           data-row-type="proposal">
+                        <thead>
+                        <tr>
+                            <th class="title" data-data="title">
+                                @Html.DisplayNameFor(m => m.AllProposals.First().Title)
+                            </th>
+                            <th class="owner-name" data-data="ownerName" data-width="20%">
+                                @Html.DisplayNameFor(m => m.AllProposals.First().OwnerName)
+                            </th>
+                            <th class="status" data-data="status" data-width="15%">
+                                @Html.DisplayNameFor(m => m.MyProposals.First().Status)
+                            </th>
+                            <th class="controls" data-data="null" data-searchable="false" data-orderable="false" data-width="15%"></th>
 
-                                    <dt class="col-3">@Html.DisplayNameFor(_ => proposal.LastEditedBy)</dt>
-                                    <dd class="col-9">@Html.DisplayFor(_ => proposal.LastEditedBy)</dd>
-                                </dl>
-                            </div>
-
-                            <div class="btn-group col-auto my-auto" role="group">
-                                <a class="btn btn-sm btn-secondary" href="@Url.Page("Form", new {ProposalId = proposal.Id})" role="button">
-                                    <span class="d-none d-sm-inline mr-1">Edit</span>
-                                    <i class="fas fa-edit"></i>
-                                </a>
-                                <button class="btn btn-sm btn-danger" type="button" data-toggle="modal" data-target="#delete-proposal-modal" data-proposal-id="@proposal.Id">
-                                    <span class="d-none d-sm-inline mr-1">Delete</span>
-                                    <i class="fas fa-trash-alt"></i>
-                                </button>
-                            </div>
-                        </div>
-                    </li>
-                }
-            </ul>
-        </div>
-    </div>
-</div>
-
-<div id="create-proposal-modal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">New project proposal</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <form method="post" asp-page-handler="Create">
-                <div class="modal-body">
-                    <p class="card-text">Start a new project proposal.</p>
+                            <th data-data="id" data-visible="false" data-searchable="false"></th>
+                            <th data-data="approvedCount" data-visible="false" data-searchable="false"></th>
+                            <th data-data="totalApprovalCount" data-visible="false" data-searchable="false"></th>
+                            <th data-data="projectId" data-visible="false"></th>
+                            <th data-data="sourceId" data-visible="false" data-searchable="false"></th>
+                        </tr>
+                        </thead>
+                        <tbody>
+                        </tbody>
+                    </table>
+                </div>
+            }
+            <div id="create-proposal" class="tab-pane">
+                <form asp-page-handler="Create">
+                    <p>Start a new project proposal.</p>
 
                     <div class="form-group">
                         <label asp-for="NewProposal.Title"></label>
@@ -241,43 +183,217 @@
                         </div>
                         <small asp-description-for="NewProposal.SupervisorId"></small>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                    <button class="btn btn-primary" type="submit">Create</button>
-                </div>
-            </form>
-        </div>
-    </div>
-</div>
 
-<div id="delete-proposal-modal" class="modal fade" tabindex="-1" role="dialog">
-    <div class="modal-dialog modal-dialog-centered" role="document">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h5 class="modal-title">Delete proposal</h5>
-                <button type="button" class="close" data-dismiss="modal">
-                    <span aria-hidden="true">&times;</span>
-                </button>
-            </div>
-            <div class="modal-body">
-                Are you sure you want to remove this proposal? This change cannot be reverted.
-            </div>
-            <div class="modal-footer">
-                <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
-                <form method="post" data-url="@Url.Page(null, "Delete", new { id = "__ID__" })">
-                    <button class="btn btn-danger" type="submit">Delete</button>
+                    <button class="btn btn-primary" type="submit">Create</button>
                 </form>
             </div>
         </div>
     </div>
 </div>
 
+<form asp-page-handler="Delete">
+    <div id="delete-proposal-dialog" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Delete proposal</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    Are you sure you want to remove this proposal? This action cannot be reverted.
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-danger" type="submit">Delete</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input asp-for="DeleteProposal.ProposalId" id="delete-proposal-id" type="hidden">
+</form>
+
+<form asp-page-handler="Export">
+    <div id="export-proposal-dialog" class="modal fade" tabindex="-1">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Export to Project Database</h5>
+                    <button type="button" class="close" data-dismiss="modal">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                </div>
+                <div class="modal-body">
+                    <p>Do you want to export the project to the Project Database?</p>
+
+                    <div class="form-group">
+                        <label asp-for="ExportProposal.SourceId"></label>
+                        <input asp-for="ExportProposal.SourceId" id="export-proposal-source-id" class="form-control">
+                        <small asp-description-for="ExportProposal.SourceId"></small>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button class="btn btn-secondary" type="button" data-dismiss="modal">Cancel</button>
+                    <button class="btn btn-primary" type="submit">Export</button>
+                </div>
+            </div>
+        </div>
+    </div>
+    <input asp-for="ExportProposal.ProposalId" id="export-proposal-id" type="hidden">
+</form>
+
+<script id="toolbar-template" type="text/x-jsrender">
+    <div class="btn-toolbar justify-content-between">
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Show</span>
+            </div>
+            <select class="filter-count custom-select">
+                <option value="10" selected>10</option>
+                <option value="25">25</option>
+                <option value="50">50</option>
+                <option value="-1">All</option>
+            </select>
+        </div>
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Status filter</span>
+            </div>
+            <select class="filter-status custom-select">
+                {{if ~rowType === "proposal"}}
+                @foreach (var option in EnumUtils.GetValues<ProposalStatusModel>())
+                {
+                    <option value="^@option.GetName()$">
+                        @Html.DisplayName(option)
+                    </option>
+                }
+                {{else}}
+                @foreach (var option in new[] { ApprovalStatusModel.Pending, ApprovalStatusModel.Approved, ApprovalStatusModel.Rejected })
+                {
+                    <option value="^@option$">
+                        @Html.DisplayName(option)
+                    </option>
+                }
+                {{/if}}
+                <option value="">
+                    All
+                </option>
+            </select>
+        </div>
+        {{if ~rowType === "approval"}}
+            <div class="input-group input-group-sm">
+                <div class="input-group-prepend">
+                    <span class="input-group-text">Role type filter</span>
+                </div>
+                <select class="filter-role custom-select">
+                    @foreach (var option in EnumUtils.GetValues<ApprovalRoleTypeModel>())
+                    {
+                        <option value="^@option$">
+                            @Html.DisplayName(option)
+                        </option>
+                    }
+                    <option value="" selected>
+                        All
+                    </option>
+                </select>
+            </div>
+        {{/if}}
+        <div class="input-group input-group-sm">
+            <div class="input-group-prepend">
+                <span class="input-group-text">Search</span>
+            </div>
+            <input class="filter-search form-control" type="text" />
+        </div>
+    </div>
+</script>
+
+<script id="proposal-status-template" type="text/x-jsrender">
+    {{if status === @Html.Raw(HttpUtility.JavaScriptStringEncode(ProposalStatusModel.InProgress.GetName(), true))}}
+        <span class="badge badge-secondary w-100">
+            @Html.DisplayName(ProposalStatusModel.InProgress) ({{:(approvedCount / totalApprovalCount * 100).toFixed()}}%)
+        </span>
+    {{else status === @Html.Raw(HttpUtility.JavaScriptStringEncode(ProposalStatusModel.Approved.GetName(), true))}}
+        <span class="badge badge-info w-100">
+            @Html.DisplayName(ProposalStatusModel.Approved)
+        </span>
+    {{else}}
+        <a class="badge badge-success w-100" target="_blank" href="@Model.ProjectDbBaseUrl{{url:projectId}}">
+            @(Html.DisplayName(ProposalStatusModel.Completed)) <i class="fas fa-external-link-alt"></i>
+        </a>
+    {{/if}}
+</script>
+
+<script id="proposal-controls-template" type="text/x-jsrender">
+    <div class="d-flex btn-group btn-group-sm">
+        <a class="btn btn-outline-primary w-100" href="@Url.Page("Form", new { ProposalId = int.MaxValue }).Replace(int.MaxValue.ToString(), "{{url:id}}")" role="button">
+            <i class="fas fa-folder-open"></i> Open
+        </a>
+        {{if ~canExportRows}}
+            <button class="btn btn-outline-primary w-100{{if status !== @Html.Raw(HttpUtility.JavaScriptStringEncode(ProposalStatusModel.Approved.GetName(), true))}} invisible{{/if}}" type="button"
+                    data-toggle="modal" data-target="#export-proposal-dialog" data-proposal-id="{{attr:id}}" data-source-id="{{attr:sourceId}}">
+                <i class="fas fa-file-export"></i> Export
+            </button>
+        {{/if}}
+        {{if ~canDeleteRows}}
+            <button class="btn btn-outline-danger w-100{{if projectId}} invisible{{/if}}" type="button"
+                    data-toggle="modal" data-target="#delete-proposal-dialog" data-proposal-id="{{attr:id}}">
+                <i class="far fa-trash-alt"></i> Delete
+            </button>
+        {{/if}}
+    </div>
+</script>
+
+<script id="approval-role-template" type="text/x-jsrender">
+    @foreach (var role in EnumUtils.GetValues<ApprovalAuthorityRoleModel>())
+    {
+        <text>
+            {{if role === @Html.Raw(HttpUtility.JavaScriptStringEncode(role.GetName(), true))}}
+                {{if roleType === @Html.Raw(HttpUtility.JavaScriptStringEncode(ApprovalRoleTypeModel.Primary.GetName(), true))}}
+                    <strong>@Html.DisplayName(role)</strong>
+                {{else}}
+                    @Html.DisplayName(role)
+                {{/if}}
+            {{/if}}
+        </text>
+    }
+</script>
+
+<script id="approval-status-template" type="text/x-jsrender">
+    {{if status === @Html.Raw(HttpUtility.JavaScriptStringEncode(ApprovalStatusModel.Pending.GetName(), true))}}
+        <span class="badge badge-info w-100">@Html.DisplayName(ApprovalStatusModel.Pending)</span>
+    {{else status === @Html.Raw(HttpUtility.JavaScriptStringEncode(ApprovalStatusModel.Approved.GetName(), true))}}
+        <span class="badge badge-success w-100">@Html.DisplayName(ApprovalStatusModel.Approved)</span>
+    {{else}}
+        <span class="badge badge-danger w-100">@Html.DisplayName(ApprovalStatusModel.Rejected)</span>
+    {{/if}}
+</script>
+
+<script id="approval-controls-template" type="text/x-jsrender">
+    <div class="d-flex btn-group btn-group-sm">
+        <a class="btn btn-outline-primary w-100"
+           href="@Url.Page("Form", null, new { ProposalId = int.MaxValue }, null, null, "{{url:sectionId}}").Replace(int.MaxValue.ToString(), "{{url:proposalId}}")">
+            <i class="fas fa-folder-open"></i> Open
+        </a>
+    </div>
+</script>
+
+@section Styles {
+    <environment include="Development">
+        <link rel="stylesheet" href="~/lib/datatables/datatables.css">
+    </environment>
+    <environment exclude="Development">
+        <link rel="stylesheet" href="~/lib/datatables/datatables.min.css">
+    </environment>
+}
+
 @section Scripts {
     <environment include="Development">
+        <script src="~/lib/datatables/datatables.js"></script>
         <script src="~/js/index.js" asp-append-version="true"></script>
     </environment>
     <environment exclude="Development">
+        <script src="~/lib/datatables/datatables.min.js"></script>
         <script src="~/js/index.min.js"></script>
     </environment>
 }

@@ -1,34 +1,38 @@
-﻿@using Microsoft.Extensions.Localization
-@model Models.PaymentSectionModel
-@inject IStringLocalizer Localizer;
+﻿@using Dccn.ProjectForm.Models
+@using Dccn.ProjectForm.Services.SectionHandlers
+@using Microsoft.AspNetCore.Mvc.Localization
+@using Microsoft.Extensions.Localization
+@model FormModel
+@inject IStringLocalizer<PaymentSectionModel> StringLocalizer
+@inject IHtmlLocalizer<PaymentSectionModel> HtmlLocalizer
 
 <div class="form-row">
-    <div class="col-md form-group">
-        <label asp-for="SubjectCount"></label>
+    <div class="col form-group">
+        <label asp-for="Payment.SubjectCount"></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <i class="fas fa-hashtag"></i>
                 </div>
             </div>
-            <input asp-for="SubjectCount" id="cost-subjects" class="form-control" data-submit-on="change">
-            <small asp-description-for="SubjectCount"></small>
+            <input asp-for="Payment.SubjectCount" id="cost-subjects" class="form-control" data-save-on="change">
         </div>
+        <small asp-description-for="Payment.SubjectCount"></small>
     </div>
-    <div class="col-md form-group">
-        <label asp-for="AverageSubjectCost"></label>
+    <div class="col form-group">
+        <label asp-for="Payment.AverageSubjectCost"></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <i class="fas fa-euro-sign"></i>
                 </div>
             </div>
-            <input asp-for="AverageSubjectCost" id="cost-average" class="form-control" data-submit-on="change">
-            <small asp-description-for="AverageSubjectCost"></small>
+            <input asp-for="Payment.AverageSubjectCost" id="cost-average" class="form-control" data-save-on="change">
         </div>
+        <small asp-description-for="Payment.AverageSubjectCost"></small>
     </div>
-    <div class="col-md form-group">
-        <label>@Localizer["Form.Payment.PredictedCosts.Label"]</label>
+    <div class="col form-group">
+        <label>@StringLocalizer["Form.Payment.PredictedCosts.Label"]</label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
@@ -36,19 +40,19 @@
                 </div>
             </div>
             <input id="cost-predicted" class="form-control" disabled>
-            <small class="form-text text-muted">@Html.Raw(Localizer["Form.Payment.PredictedCosts.Description"])</small>
         </div>
+        <small class="form-text text-muted">@HtmlLocalizer["Form.Payment.PredictedCosts.Description"]</small>
     </div>
-    <div class="col-md form-group">
-        <label asp-for="MaxTotalCost"></label>
+    <div class="col form-group">
+        <label asp-for="Payment.MaxTotalCost"></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <i class="fas fa-euro-sign"></i>
                 </div>
             </div>
-            <input asp-for="MaxTotalCost" id="cost-max-total" class="form-control" data-submit-on="change">
-            <small asp-description-for="MaxTotalCost"></small>
+            <input asp-for="Payment.MaxTotalCost" id="cost-max-total" class="form-control" data-save-on="change">
         </div>
+        <small asp-description-for="Payment.MaxTotalCost"></small>
     </div>
 </div>

@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Linq;
 using System.Linq.Expressions;
+using Dccn.ProjectForm.Authentication;
 using JetBrains.Annotations;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
@@ -17,6 +19,8 @@ namespace Dccn.ProjectForm.Data.ProjectDb
         public DbSet<ProjectDbGroup> Groups { get; private set; }
         public DbSet<ProjectDbProject> Projects { get; private set; }
         public DbSet<ProjectDbImagingMethod> ImagingMethods { get; private set; }
+
+//        public DbQuery<User> Users { get; private set; }
 
         protected override void OnModelCreating(ModelBuilder builder)
         {
@@ -39,9 +43,9 @@ namespace Dccn.ProjectForm.Data.ProjectDb
                 b.Property(e => e.Status).HasColumnName("status").HasConversion(new CheckinStatusConverter());
 
                 // Not used
-                b.Ignore(e => e.Initials);
-                b.Ignore(e => e.Function);
-                b.Ignore(e => e.InstituteId);
+//                b.Ignore(e => e.Initials);
+//                b.Ignore(e => e.Function);
+//                b.Ignore(e => e.InstituteId);
 
                 b.ToTable("users");
             });
@@ -56,8 +60,8 @@ namespace Dccn.ProjectForm.Data.ProjectDb
                 b.Property(e => e.InstituteId).HasColumnName("institute_id");
 
                 // Not used
-                b.Ignore(e => e.HeadIsPi);
-                b.Ignore(e => e.InstituteId);
+//                b.Ignore(e => e.HeadIsPi);
+//                b.Ignore(e => e.InstituteId);
 
                 b.HasOne(e => e.Head).WithOne();
                 b.HasMany(e => e.Members).WithOne(e => e.Group).HasForeignKey(e => e.GroupId);

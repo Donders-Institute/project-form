@@ -6,8 +6,8 @@ using Dccn.ProjectForm.Authorization;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.ProjectDb;
+using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Services;
-using FluentValidation;
 using FluentValidation.AspNetCore;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Builder;
@@ -16,12 +16,13 @@ using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Localization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Authorization;
-using Microsoft.AspNetCore.Mvc.ModelBinding;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Diagnostics;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
+using Newtonsoft.Json.Converters;
+using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Dccn.ProjectForm
 {
@@ -61,30 +62,38 @@ namespace Dccn.ProjectForm
                     options.Cookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
                 });
 
-            services.AddLocalization(options =>
-            {
-                options.ResourcesPath = "Resources";
-            });
-
             services
                 .AddMvc()
                 .SetCompatibilityVersion(CompatibilityVersion.Version_2_2)
-                .AddDataAnnotationsLocalization()
+                .AddMvcLocalization()
                 .AddMvcOptions(options =>
                 {
                     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                     options.Filters.Add(new AuthorizeFilter(policy));
                 })
-//                .AddViewOptions(options =>
-//                {
-//                    options.HtmlHelperOptions.ClientValidationEnabled = false;
-//                    options.ClientModelValidatorProviders.Clear();
-//                });
+                .AddViewOptions(options =>
+                {
+                    // options.HtmlHelperOptions.ClientValidationEnabled = false;
+                    // options.ClientModelValidatorProviders.Clear();
+                })
+                .AddJsonOptions(options =>
+                {
+                    options.SerializerSettings.Converters.Add(new StringEnumConverter());
+                })
                 .AddFluentValidation(options =>
                 {
-                    options.RunDefaultMvcValidationAfterFluentValidationExecutes = true;
+                    //options.ConfigureClientsideValidation(enabled: false);
                     options.LocalizationEnabled = true;
                 });
+
+            services.AddAuthorization(options =>
+            {
+                options.AddPolicy("RequireAdministrationRole", policy => policy.RequireRole(Role.Administration.GetName()));
+                options.AddPolicy("RequireSupervisorRole", policy => policy.RequireRole(Role.Supervisor.GetName()));
+                options.AddPolicy("RequireAuthorityRole", policy => policy.RequireRole(Role.Authority.GetName()));
+            });
+
+            services.AddSignalR();
 
             services
                 .Configure<LdapOptions>(_configuration.GetSection(LdapOptions.SectionName))
@@ -93,6 +102,7 @@ namespace Dccn.ProjectForm
                 .Configure<RepositoryApiOptions>(_configuration.GetSection(RepositoryApiOptions.SectionName));
 
             services
+                .AddHostedService<ProposalDbChangeListener>()
                 .AddTransient<IUserManager, UserManager>()
                 .AddTransient<ISignInManager, SignInManager>()
                 .AddScoped<IAuthorizationHandler, FormAuthorizationHandler>()
@@ -138,6 +148,11 @@ namespace Dccn.ProjectForm
 
             app.UseStaticFiles();
             app.UseAuthentication();
+
+            app.UseSignalR(options =>
+            {
+                options.MapHub<FormHub>("/ws");
+            });
 
             app.UseMvc();
         }

@@ -1,41 +1,40 @@
-﻿@model EthicsSectionModel
+﻿@model FormModel
 @using Extensions
 @using Models
-@using Utils
 
 <div class="accordion" id="ethics-options">
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="Status"
+                <input asp-for="Ethics.Status"
                        class="custom-control-input radio-panel-input"
                        id="ethics-approved"
                        type="radio"
                        value="@EthicsApprovalStatusModel.Approved"
                        data-target="#ethics-approved-panel"
-                       data-submit-on="change">
+                       data-save-on="change">
                 <label class="custom-control-label" for="ethics-approved">@Html.DisplayName(EthicsApprovalStatusModel.Approved)</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-approved-panel" data-parent="#ethics-options">
             <div class="card-body">
-                <h6 class="card-subtitle text-muted mb-3">@Html.Description(EthicsApprovalStatusModel.Approved)</h6>
+                <p class="card-text">@Html.Description(EthicsApprovalStatusModel.Approved)</p>
                 <div class="form-group">
-                    <label asp-for="Code"></label>
+                    <label asp-for="Ethics.Code"></label>
                     <div class="input-group">
                         <div class="input-group-prepend">
-                            <select id="ethics-approval" class="custom-select" data-submit-on="change">
-                                @foreach (var (label, value) in Model.Codes)
+                            <select id="ethics-approval" class="custom-select" data-save-on="change">
+                                @foreach (var (label, value) in Model.Ethics.Codes)
                                 {
-                                    <!option selected="@(Model.Code == value)" data-value="@value">@label</!option>
+                                    <!option selected="@(Model.Ethics.Code == value)" data-value="@value">@label</!option>
                                 }
-                                <!option selected="@(Model.Codes.Values.All(value => Model.Code != value))">Other</!option>
+                                <!option selected="@(Model.Ethics.Codes.Values.All(value => Model.Ethics.Code != value))">Other</!option>
                             </select>
                         </div>
-                        <input asp-for="Code" id="ethics-approval-custom" class="form-control" placeholder="Enter study-specific approval CMO number"
-                               readonly="@(Model.Codes.Values.Any(value => Model.Code == value))" data-submit-on="change">
+                        <input asp-for="Ethics.Code" id="ethics-approval-custom" class="form-control" placeholder="Enter study-specific approval CMO number"
+                               readonly="@(Model.Ethics.Codes.Values.Any(value => Model.Ethics.Code == value))" data-save-on="change">
                     </div>
-                    <small asp-description-for="Code"></small>
+                    <small asp-description-for="Ethics.Code"></small>
                 </div>
             </div>
         </fieldset>
@@ -43,24 +42,24 @@
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="Status"
+                <input asp-for="Ethics.Status"
                        class="custom-control-input radio-panel-input"
                        id="ethics-not-approved"
                        type="radio"
                        value="@EthicsApprovalStatusModel.Pending"
                        data-target="#ethics-not-approved-panel"
-                       data-submit-on="change">
+                       data-save-on="change">
                 <label class="custom-control-label" for="ethics-not-approved">@Html.DisplayName(EthicsApprovalStatusModel.Pending)</label>
             </div>
         </div>
         <fieldset class="collapse" id="ethics-not-approved-panel" data-parent="#ethics-options">
             <div class="card-body">
-                <h6 class="card-subtitle text-muted mb-3">@Html.Description(EthicsApprovalStatusModel.Approved)</h6>
+                <p class="card-text">@Html.Description(EthicsApprovalStatusModel.Approved)</p>
 
                 <div class="form-group">
-                    <label asp-for="CorrespondenceNumber"></label>
-                    <input asp-for="CorrespondenceNumber" class="form-control" data-submit-on="change">
-                    <small asp-description-for="CorrespondenceNumber"></small>
+                    <label asp-for="Ethics.CorrespondenceNumber"></label>
+                    <input asp-for="Ethics.CorrespondenceNumber" class="form-control" data-save-on="change">
+                    <small asp-description-for="Ethics.CorrespondenceNumber"></small>
                 </div>
 
                 <div class="alert alert-warning" role="alert">

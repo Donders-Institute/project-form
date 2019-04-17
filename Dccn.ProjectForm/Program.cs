@@ -8,6 +8,7 @@ using JetBrains.Annotations;
 using Microsoft.AspNetCore;
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 
@@ -21,21 +22,16 @@ namespace Dccn.ProjectForm
             var host = CreateWebHostBuilder(args).Build();
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
-            await InitDbContextAsync(host.Services, logger);
-            await InitLabsProviderAsync(host.Services, logger);
+            await Task.WhenAll(
+                InitDbContextAsync(host.Services, logger),
+                InitLabsProviderAsync(host.Services, logger));
 
             ValidatorOptions.DisplayNameResolver = (type, member, expression) =>
             {
                 var metadataProvider = host.Services.GetRequiredService<IModelMetadataProvider>();
-
-//                try
-//                {
-                return metadataProvider.GetMetadataForProperty(member.DeclaringType, member.Name).DisplayName;
-//                }
-//                catch
-//                {
-//                    return member.Name;
-//                }
+                return member == null
+                    ? metadataProvider.GetMetadataForType(type).DisplayName
+                    : metadataProvider.GetMetadataForProperty(member.DeclaringType, member.Name).DisplayName;
             };
 
             await host.RunAsync();
@@ -58,6 +54,8 @@ namespace Dccn.ProjectForm
                     var context = scope.ServiceProvider.GetRequiredService<ProposalDbContext>();
                     if (await context.Database.EnsureCreatedAsync())
                     {
+                        await context.Database.ExecuteSqlCommandAsync(@"ALTER DATABASE CURRENT SET TRUSTWORTHY ON");
+                        await context.Database.ExecuteSqlCommandAsync(@"ALTER DATABASE CURRENT SET ENABLE_BROKER");
                         logger.LogInformation("Initialized the database.");
                     }
                 }

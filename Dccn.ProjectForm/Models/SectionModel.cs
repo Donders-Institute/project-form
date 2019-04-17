@@ -3,11 +3,12 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
-    public class SectionModelBase : ISectionModel
+    public abstract class SectionModelBase : ISectionModel
     {
         public string Comments { get; set; }
 
         [BindNever] public string Id { get; set; }
+        [BindNever] public int ProposalId { get; set; }
         [BindNever] public IEnumerable<SectionApprovalModel> Approvals { get; set; }
         [BindNever] public bool CanEdit { get; set; }
         [BindNever] public bool CanSubmit { get; set; }
@@ -16,8 +17,10 @@ namespace Dccn.ProjectForm.Models
 
     public interface ISectionModel
     {
-        string Id { get; set; }
         string Comments { get; set; }
+
+        string Id { get; set; }
+        int ProposalId { get; set; }
         IEnumerable<SectionApprovalModel> Approvals { get; set; }
         bool CanEdit { get; set; }
         bool CanSubmit { get; set; }

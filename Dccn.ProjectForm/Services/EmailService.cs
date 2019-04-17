@@ -40,12 +40,16 @@ namespace Dccn.ProjectForm.Services
             _overrideRecipient = options.OverrideRecipient ?? new EmailOptions.OverrideRecipientOptions { Enabled = false };
         }
 
-        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, params MailAddress[] recipients)
+        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser)
         {
+            MailAddress userAddress = null;
+            if (user != null)
+            {
+                userAddress = new MailAddress(_userManager.GetEmailAddress(user), _userManager.GetUserName(user));
+            }
+
             if (_overrideRecipient.Enabled)
             {
-                string displayName, emailAddress;
-
                 if (_overrideRecipient.Fixed == null)
                 {
                     if (user == null)
@@ -53,37 +57,37 @@ namespace Dccn.ProjectForm.Services
                         return;
                     }
 
-                    displayName = _userManager.GetUserName(user);
-                    emailAddress = _userManager.GetEmailAddress(user);
+                    recipient = userAddress;
                 }
                 else
                 {
-                    displayName = _overrideRecipient.Fixed.DisplayName;
-                    emailAddress = _overrideRecipient.Fixed.Address;
+                    recipient = new MailAddress(_overrideRecipient.Fixed.Address, _overrideRecipient.Fixed.DisplayName);
                 }
-
-                recipients = new [] {new MailAddress(emailAddress, displayName)};
             }
 
-            await SendEmailNoOverrideAsync(email, recipients);
+            await SendEmailAsync(email, recipient, replyToUser && userAddress != null ? userAddress : null);
         }
 
-        public async Task SendEmailNoOverrideAsync(IEmailModel email, params MailAddress[] recipients)
+        public async Task SendEmailNoOverrideAsync(IEmailModel email, MailAddress recipient)
+        {
+            await SendEmailAsync(email, recipient, null);
+        }
+
+        private async Task SendEmailAsync(IEmailModel email, MailAddress recipient, MailAddress replyTo)
         {
             var templatePath = Path.ChangeExtension(email.TemplateName, "hbs");
 
             var body = await _renderService.RenderAsync(templatePath, email);
-            var message = new MailMessage
+            var message = new MailMessage(_sender, recipient)
             {
-                From = _sender,
                 Subject = email.Subject,
                 Body = body,
                 IsBodyHtml = email.IsHtml
             };
 
-            foreach (var recipient in recipients)
+            if (replyTo != null)
             {
-                message.To.Add(recipient);
+                message.ReplyToList.Add(replyTo);
             }
 
             await _client.SendMailAsync(message);
@@ -92,8 +96,8 @@ namespace Dccn.ProjectForm.Services
 
     public interface IEmailService
     {
-        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, params MailAddress[] recipients);
-        Task SendEmailNoOverrideAsync(IEmailModel email, params MailAddress[] recipients);
+        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser = false);
+        Task SendEmailNoOverrideAsync(IEmailModel email, MailAddress recipient);
     }
 
     public static class EmailServiceExtensions

@@ -1,6 +1,11 @@
-﻿{{!< Layout}}
+﻿{{{approverName}}} has rejected the {{{sectionName}}} section of your project proposal "{{{proposalTitle}}}".{{#if invalidatedSections}}
+The approval for the following sections has become invalid and has been reverted: {{{invalidatedSections}}}.{{/if}}
 
-{{{approverName}}} has rejected the {{{sectionName}}} section of your project proposal "{{{proposalTitle}}}".
-{{#if invalidatedSections}}The approval for the following sections has become invalid and has been reverted: {{{invalidatedSections}}}.{{/if}}
+Reason given by {{{approverName}}}:
+-----
+{{{reason}}}
+-----
 
 Link to the project proposal form: {{{pageLink}}}
+
+You can send a message to the approver by replying to this e-mail.

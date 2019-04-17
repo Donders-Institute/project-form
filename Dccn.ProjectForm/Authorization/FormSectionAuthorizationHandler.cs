@@ -14,91 +14,98 @@ namespace Dccn.ProjectForm.Authorization
     public class FormSectionAuthorizationHandler : AuthorizationHandler<FormSectionOperation, Proposal>
     {
         private readonly IUserManager _userManager;
-        private readonly IAuthorityProvider _authorityProvider;
         private readonly IEnumerable<IFormSectionHandler> _sectionHandlers;
 
-        public FormSectionAuthorizationHandler(IUserManager userManager, IAuthorityProvider authorityProvider, IEnumerable<IFormSectionHandler> sectionHandlers)
+        public FormSectionAuthorizationHandler(IUserManager userManager, IEnumerable<IFormSectionHandler> sectionHandlers)
         {
             _userManager = userManager;
-            _authorityProvider = authorityProvider;
             _sectionHandlers = sectionHandlers;
         }
 
         protected override Task HandleRequirementAsync(AuthorizationHandlerContext context, FormSectionOperation requirement, Proposal proposal)
         {
+            // Admin can do anything
             if (_userManager.IsInRole(context.User, Role.Admin))
             {
                 context.Succeed(requirement);
                 return Task.CompletedTask;
             }
 
+            // Project ID has been assigned so the proposal is in a read-only state
             if (proposal.ProjectId != null)
             {
                 return Task.CompletedTask;
             }
 
-            var userId = _userManager.GetUserId(context.User);
-            var sectionHandler =  _sectionHandlers.First(h => h.ModelType == requirement.SectionType);
-
+            var sectionHandler =  _sectionHandlers.Single(h => h.ModelType == requirement.SectionType);
+            // Section's prerequisites have not been met
             if (sectionHandler.NeedsApprovalBy(proposal).Any())
             {
-                context.Fail();
                 return Task.CompletedTask;
             }
 
+            var userId = _userManager.GetUserId(context.User);
             var approvals =  sectionHandler.GetAssociatedApprovals(proposal);
+            var success = false;
             switch (requirement.Operation)
             {
-                case FormSectionOperation.OperationType.Edit when (userId == proposal.OwnerId || userId == proposal.SupervisorId) && approvals.All(CanOwnerEdit):
-                    context.Succeed(requirement);
-                    break;
                 case FormSectionOperation.OperationType.Edit:
-                {
-                    var canEdit = approvals
-                        .Where(a => _authorityProvider.GetAuthorityIds(proposal, a.AuthorityRole).Contains(userId))
-                        .Any(CanAuthorityEdit);
-                    if (canEdit)
+                    // User and supervisor can edit if section's approval state allows it
+                    if (userId == proposal.OwnerId || userId == proposal.SupervisorId)
                     {
-                        context.Succeed(requirement);
+                        success = CanOwnerOrSupervisorEdit(approvals);
+                    }
+
+                    // Associated authorities can edit if section's approval state allows it
+                    if (approvals.Any(approval => _userManager.IsInApprovalRole(context.User, approval.AuthorityRole)))
+                    {
+                        success = CanAuthorityEdit(approvals);
                     }
 
                     break;
-                }
-                case FormSectionOperation.OperationType.Submit when userId == proposal.OwnerId && approvals.All(CanOwnerSubmit):
-                    context.Succeed(requirement);
+                case FormSectionOperation.OperationType.Submit:
+                    // User can edit if section's approval state allows it
+                    success = userId == proposal.OwnerId && CanOwnerSubmit(approvals);
                     break;
-                case FormSectionOperation.OperationType.Retract when userId == proposal.OwnerId && approvals.All(CanOwnerRetract):
-                    context.Succeed(requirement);
+                case FormSectionOperation.OperationType.Retract:
+                    // User can retract if section's approval state allows it
+                    success = userId == proposal.OwnerId && CanOwnerRetract(approvals);
                     break;
+            }
+
+            if (success)
+            {
+                context.Succeed(requirement);
             }
 
             return Task.CompletedTask;
         }
 
-        private static bool CanOwnerEdit(Approval approval)
+        private static bool CanOwnerOrSupervisorEdit(IEnumerable<Approval> approvals)
         {
-            return approval.Status == ApprovalStatus.NotSubmitted
-                   || approval.Status == ApprovalStatus.NotApplicable;
+            return approvals.All(approval => approval.Status == ApprovalStatus.NotSubmitted ||
+                                             approval.Status == ApprovalStatus.NotApplicable);
         }
 
-        private static bool CanOwnerSubmit(Approval approval)
+        private static bool CanOwnerSubmit(IEnumerable<Approval> approvals)
         {
-            return approval.Status == ApprovalStatus.NotSubmitted
-                   || approval.Status == ApprovalStatus.NotApplicable;
+            return approvals.All(approval => approval.Status == ApprovalStatus.NotSubmitted ||
+                                             approval.Status == ApprovalStatus.NotApplicable);
         }
 
-        private static bool CanOwnerRetract(Approval approval)
+        private static bool CanOwnerRetract(IEnumerable<Approval> approvals)
         {
-            return approval.Status == ApprovalStatus.NotApplicable
-                   || approval.Status == ApprovalStatus.ApprovalPending
-                   || approval.Status == ApprovalStatus.Rejected
-                   || approval.Status == ApprovalStatus.Approved;
+            return approvals.All(approval => approval.Status == ApprovalStatus.NotApplicable ||
+                                             approval.Status == ApprovalStatus.ApprovalPending ||
+                                             approval.Status == ApprovalStatus.Rejected ||
+                                             approval.Status == ApprovalStatus.Approved);
         }
 
-        private static bool CanAuthorityEdit(Approval approval)
+        private static bool CanAuthorityEdit(IEnumerable<Approval> approvals)
         {
-            return approval.Status == ApprovalStatus.ApprovalPending
-                   || approval.Status == ApprovalStatus.Rejected;
+            return approvals.Any(approval => approval.Status == ApprovalStatus.ApprovalPending ||
+                                             approval.Status == ApprovalStatus.Rejected);
+
         }
     }
 

@@ -4,7 +4,7 @@ namespace Dccn.ProjectForm.Models
 {
     public enum ApprovalAuthorityRoleModel
     {
-        [Display(Name = "Principal investigator")]
+        [Display(Name = "Supervisor")]
         Supervisor,
 
         [Display(Name = "Ethical approval")]
@@ -16,7 +16,7 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Lab coordinator (MRI)")]
         LabMri,
 
-        [Display(Name = "Lab coordinator (non-MRI)")]
+        [Display(Name = "Lab coordinator (other)")]
         LabOther,
 
         [Display(Name = "Data dummy")]

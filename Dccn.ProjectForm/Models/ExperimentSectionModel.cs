@@ -25,10 +25,10 @@ namespace Dccn.ProjectForm.Models
         public string CustomStorageQuotaMotivation { get; set; }
 
         [Display(Name = "Form.Experiment.Labs.Label", Description = "Form.Experiment.Labs.Description")]
-        public IList<LabModel> Labs { get; set; } = new List<LabModel>();
+        public IDictionary<int, LabModel> Labs { get; set; } = new Dictionary<int, LabModel>();
 
         [Display(Name = "Form.Experiment.Experimenters.Label")]
-        public IList<ExperimenterModel> Experimenters { get; set; } = new List<ExperimenterModel>();
+        public IDictionary<string, ExperimenterModel> Experimenters { get; set; } = new Dictionary<string, ExperimenterModel>();
 
         [BindNever]
         public int MinimumStorageQuota { get; set; }

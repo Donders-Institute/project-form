@@ -1,0 +1,40 @@
+﻿@using Dccn.ProjectForm.Services
+@model FormModel
+
+@inject ILabProvider LabProvider
+
+@{
+    var labId = (int) ViewData["LabId"];
+}
+
+<div class="list-group-item list-group-item-action py-2 lab-item" data-storage="@Model.Experiment.Labs[labId].Modality.SessionStorageQuota" data-timestamp="@Convert.ToBase64String(Model.Timestamp)">
+    <input asp-for="Experiment.Labs[labId].Id" type="hidden">
+
+    <div class="form-row align-items-center">
+        <div class="col">
+            <label class="col-form-label col-form-label-sm font-weight-bold text-left">
+                @Model.Experiment.Labs[labId].Modality.DisplayName
+            </label>
+        </div>
+        <div class="col">
+            <input asp-for="Experiment.Labs[labId].SubjectCount" class="lab-item-subjects form-control form-control-sm" data-save-on="change">
+        </div>
+        <div class="col">
+            <input asp-for="Experiment.Labs[labId].ExtraSubjectCount" class="form-control form-control-sm" data-save-on="change">
+        </div>
+        <div class="col">
+            <input asp-for="Experiment.Labs[labId].SessionCount" class="lab-item-sessions form-control form-control-sm" data-save-on="change">
+        </div>
+        <div class="col">
+             <input asp-for="Experiment.Labs[labId].SessionDurationMinutes" class="lab-item-duration form-control form-control-sm" data-save-on="change">
+        </div>
+        <div class="col">
+            <span class="lab-item-total-duration form-control-plaintext form-control-sm"></span>
+        </div>
+        <div class="col-auto">
+            <button type="button" class="remove-lab-item btn btn-sm btn-outline-secondary" data-url="@Url.Page("Form", "RemoveLab", new { Model.Experiment.ProposalId, LabId = labId })">
+                <i class="fas fa-minus-square"></i>
+            </button>
+        </div>
+    </div>
+</div>

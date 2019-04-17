@@ -21,44 +21,65 @@ namespace Dccn.ProjectForm.Services
             _userManager = userManager;
         }
 
-        public IEnumerable<string> GetAuthorityIds(Proposal proposal, ApprovalAuthorityRole role)
+        public IEnumerable<string> GetAuthorityIdsForRole(Proposal proposal, ApprovalAuthorityRole role)
         {
             if (role == ApprovalAuthorityRole.Supervisor)
             {
                 return proposal.SupervisorId.Yield();
             }
 
-            return _formOptions.Authorities.TryGetValue(role, out var authorityId) ? authorityId : Enumerable.Empty<string>();
+            return _formOptions.Authorities.TryGetValue(role, out var authorityIds)
+                ? authorityIds
+                : Enumerable.Empty<string>();
+        }
+
+        public string GetPrimaryAuthorityId(Proposal proposal, ApprovalAuthorityRole role)
+        {
+            return GetAuthorityIdsForRole(proposal, role).FirstOrDefault();
+        }
+
+        public bool IsPrimaryAuthorityForRole(string userId, ApprovalAuthorityRole role)
+        {
+            if (role == ApprovalAuthorityRole.Supervisor)
+            {
+                return true;
+            }
+
+            return _formOptions.Authorities.TryGetValue(role, out var authorityIds) && authorityIds.FirstOrDefault() == userId;
         }
 
         public IEnumerable<ApprovalAuthorityRole> GetAuthorityRoles(string authorityId)
         {
-            return _formOptions.Authorities.Where(entry => entry.Value.Contains(authorityId)).Select(entry => entry.Key);
+            return _formOptions.Authorities
+                .Where(entry => entry.Value.Contains(authorityId))
+                .Select(entry => entry.Key);
         }
 
-        public async Task<ICollection<ProjectDbUser>> GetAuthoritiesAsync(Proposal proposal, ApprovalAuthorityRole role)
+        public Task<ICollection<ProjectDbUser>> GetAuthoritiesByRoleAsync(Proposal proposal, ApprovalAuthorityRole role)
         {
-            var ids = GetAuthorityIds(proposal, role);
-            return await ids.Select(id => _userManager.GetUserByIdAsync(id)).ToListAsync();
+            return _userManager.GetUsersByIdsAsync(GetAuthorityIdsForRole(proposal, role));
         }
 
-        public IEnumerable<string> GetAdministrationIds(Proposal proposal)
+        public async Task<ProjectDbUser> GetPrimaryAuthorityForRoleAsync(Proposal proposal, ApprovalAuthorityRole role)
         {
-            return _formOptions.Admins;
+            var authorityId = GetPrimaryAuthorityId(proposal, role);
+            return authorityId == null ? null : await _userManager.GetUserByIdAsync(authorityId);
         }
 
-        public async Task<ICollection<ProjectDbUser>> GetAdministrationAsync(Proposal proposal)
+        public Task<ICollection<ProjectDbUser>> GetAdministrationAsync()
         {
-            return await _formOptions.Admins.Select(id => _userManager.GetUserByIdAsync(id)).ToListAsync();
+            return _userManager.GetUsersByIdsAsync(_formOptions.Administration);
         }
     }
 
     public interface IAuthorityProvider
     {
-        IEnumerable<string> GetAuthorityIds(Proposal proposal, ApprovalAuthorityRole role);
+        IEnumerable<string> GetAuthorityIdsForRole(Proposal proposal, ApprovalAuthorityRole role);
+        bool IsPrimaryAuthorityForRole(string userId, ApprovalAuthorityRole role);
         IEnumerable<ApprovalAuthorityRole> GetAuthorityRoles(string authorityId);
-        Task<ICollection<ProjectDbUser>> GetAuthoritiesAsync(Proposal proposal, ApprovalAuthorityRole role);
-        IEnumerable<string> GetAdministrationIds(Proposal proposal);
-        Task<ICollection<ProjectDbUser>> GetAdministrationAsync(Proposal proposal);
+        Task<ICollection<ProjectDbUser>> GetAuthoritiesByRoleAsync(Proposal proposal, ApprovalAuthorityRole role);
+        Task<ICollection<ProjectDbUser>> GetAdministrationAsync();
+        string GetPrimaryAuthorityId(Proposal proposal, ApprovalAuthorityRole role);
+        Task<ProjectDbUser> GetPrimaryAuthorityForRoleAsync(Proposal proposal, ApprovalAuthorityRole role);
     }
 }

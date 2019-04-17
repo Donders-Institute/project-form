@@ -9,15 +9,19 @@ html {
     font-size: 14px;
 }
 
-html,
-body,
-#content {
-    height: 100%;
-}
+/* body { */
+/*     padding-top: var(--navbar-padding); */
+/* } */
 
-#content {
-    padding-top: var(--navbar-padding);
-}
+/* html, */
+/* body, */
+/* #content { */
+/*     height: 100%; */
+/* } */
+
+/* #content { */
+/*     padding-top: var(--navbar-padding); */
+/* } */
 
 #ie-warning {
     height: 100px;
@@ -135,11 +139,11 @@ div.validation-message[x-out-of-boundaries] {
     border-top-right-radius: 5px;
 }
 
-#form-view {
-    position: relative;
-    overflow: auto;
-    height: calc(100vh - var(--navbar-padding) - 2rem);
-}
+/* #form-view { */
+/*     position: relative; */
+/*     overflow: auto; */
+/*     height: calc(100vh - var(--navbar-padding) - 2rem); */
+/* } */
 
 .input-group-prepend > select {
     border-top-right-radius: 0;
@@ -158,4 +162,9 @@ div.validation-message[x-out-of-boundaries] {
 .input-group > span.algolia-autocomplete > .aa-input {
     border-top-left-radius: 0;
     border-bottom-left-radius: 0;
+}
+
+#section-nav .list-group-item-action:not(.active) {
+    color: #999999;
+    color: rgba(255, 255, 255, 0.5);
 }

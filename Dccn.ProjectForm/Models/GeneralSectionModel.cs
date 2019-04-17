@@ -3,7 +3,7 @@ using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
 {
-    [Display(Name = "Form.General.Title")]
+    [Display(Name = "Form.General.Title", Description = "Form.General.Description")]
     public class GeneralSectionModel : SectionModelBase
     {
         [Display(Name = "Form.General.PpmTitle.Label", Description = "Form.General.PpmTitle.Description")]
@@ -19,7 +19,6 @@ namespace Dccn.ProjectForm.Models
 
         [BindNever]
         [Display(Name = "Form.General.ProjectId.Label", Description = "Form.General.ProjectId.Description")]
-        [DisplayFormat(NullDisplayText = "<not exported>")]
         public string ProjectId { get; set; }
     }
 }

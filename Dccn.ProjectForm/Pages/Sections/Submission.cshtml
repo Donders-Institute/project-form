@@ -1,7 +1,7 @@
-﻿@model Models.SubmissionSectionModel
+﻿@model FormModel
 
 @{
-    var required = Model.NeedsApprovalBy.OrderBy(approval => approval.SectionName).ToList();
+    var required = Model.Submission.NeedsApprovalBy.OrderBy(approval => approval.SectionName).ToList();
     if (required.Any())
     {
         var last = required.Last();

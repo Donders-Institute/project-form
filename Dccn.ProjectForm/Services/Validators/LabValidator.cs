@@ -1,18 +1,12 @@
-﻿using System;
-using Dccn.ProjectForm.Models;
+﻿using Dccn.ProjectForm.Models;
 using FluentValidation;
-using Microsoft.Extensions.DependencyInjection;
 
 namespace Dccn.ProjectForm.Services.Validators
 {
     public class LabValidator : AbstractValidator<LabModel>
     {
-        public LabValidator(IServiceProvider serviceProvider)
+        public LabValidator()
         {
-            var modalityProvider = serviceProvider.GetRequiredService<ILabProvider>();
-
-            RuleFor(l => l.Modality.Id).NotEmpty().Must(id => modalityProvider.ModalityExists(id));
-
             RuleFor(l => l.SubjectCount).GreaterThanOrEqualTo(0);
             RuleFor(l => l.ExtraSubjectCount).GreaterThanOrEqualTo(0);
             RuleFor(l => l.SessionCount).GreaterThanOrEqualTo(0);

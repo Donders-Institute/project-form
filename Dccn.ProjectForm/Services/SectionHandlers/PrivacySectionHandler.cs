@@ -50,12 +50,17 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             proposal.PrivacyDataDisposalTerm = model.DataDisposalTerm;
 
-//            proposal.PrivacyDataDisposalTerm = model.DataDisposalTermDays.HasValue
-//                ? TimeSpan.FromDays(model.DataDisposalTermDays.Value)
-//                : (TimeSpan?) null;
-
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            CompareKeyedCollections(x.PrivacyDataTypes, y.PrivacyDataTypes)
+            && CompareKeyedCollections(x.PrivacyMotivations, y.PrivacyMotivations)
+            && CompareKeyedCollections(x.PrivacyStorageLocations, y.PrivacyStorageLocations)
+            && CompareKeyedCollections(x.PrivacyDataAccessors, y.PrivacyDataAccessors)
+            && x.PrivacySecurityMeasures == y.PrivacySecurityMeasures
+            && x.PrivacyDataDisposalTerm == y.PrivacyDataDisposalTerm
+            && base.SectionEquals(x, y);
 
         private static (IDictionary<string, PrivacyKeywordModel> Standard, string Custom) GetKeywordModels(ICollection<string> keywords, IDictionary<string, string> options)
         {

@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
@@ -56,7 +57,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     SessionCount = lab.SessionCount,
                     SessionDurationMinutes = (int?) lab.SessionDuration?.TotalMinutes
                 })
-                .ToList();
+                .ToImmutableSortedDictionary(lab => lab.Id, lab => lab);
 
             if (proposal.CustomQuota)
             {
@@ -77,7 +78,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     Id = experimenter.UserId,
                     Name = (await _userManager.GetUserByIdAsync(experimenter.UserId)).DisplayName
                 })
-                .ToListAsync();
+                .ToImmutableSortedDictionaryAsync(experimenter => experimenter.Id);
 
             await base.LoadAsync(model, proposal);
         }
@@ -87,20 +88,19 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             proposal.StartDate = model.StartDate;
             proposal.EndDate = model.EndDate;
 
-            foreach (var labModel in model.Labs)
+            foreach (var labUpdate in model.Labs.Values)
             {
-                var lab = proposal.Labs.SingleOrDefault(l => l.Id == labModel.Id);
+                var lab = proposal.Labs.FirstOrDefault(l => l.Id == labUpdate.Id);
                 if (lab == null)
                 {
                     continue;
                 }
 
-                lab.Modality = labModel.Modality.Id;
-                lab.SubjectCount = labModel.SubjectCount;
-                lab.ExtraSubjectCount = labModel.ExtraSubjectCount;
-                lab.SessionCount = labModel.SessionCount;
-                lab.SessionDuration = labModel.SessionDurationMinutes.HasValue
-                    ? TimeSpan.FromMinutes(labModel.SessionDurationMinutes.Value)
+                lab.SubjectCount = labUpdate.SubjectCount;
+                lab.ExtraSubjectCount = labUpdate.ExtraSubjectCount;
+                lab.SessionCount = labUpdate.SessionCount;
+                lab.SessionDuration = labUpdate.SessionDurationMinutes.HasValue
+                    ? TimeSpan.FromMinutes(labUpdate.SessionDurationMinutes.Value)
                     : (TimeSpan?) null;
             }
 
@@ -118,6 +118,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             }
 
             proposal.Experimenters = model.Experimenters
+                .Values
                 .Select(experimenter => new Experimenter
                 {
                     UserId = experimenter.Id
@@ -126,5 +127,23 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            x.StartDate == y.StartDate
+            && x.EndDate == y.EndDate
+            && CompareKeyedCollections(x.Labs, y.Labs, l => l.Id, (lx, ly) =>
+                    lx.Id == ly.Id
+                    && lx.Modality == ly.Modality
+                    && lx.SubjectCount == ly.SubjectCount
+                    && lx.ExtraSubjectCount == ly.ExtraSubjectCount
+                    && lx.SessionCount == ly.SessionCount
+                    && lx.SessionDuration == ly.SessionDuration)
+            && x.CustomQuota == y.CustomQuota
+            && x.CustomQuotaAmount == y.CustomQuotaAmount
+            && x.CustomQuotaMotivation == y.CustomQuotaMotivation
+            && CompareKeyedCollections(x.Experimenters, y.Experimenters, e => e.UserId, (ex, ey) =>
+                    ex.UserId == ey.UserId)
+            && base.SectionEquals(x, y);
+
     }
 }

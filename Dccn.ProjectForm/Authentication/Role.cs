@@ -4,7 +4,7 @@
     {
         Admin,
         Administration,
-        Supervisor,
-        User
+        Authority,
+        Supervisor
     }
 }

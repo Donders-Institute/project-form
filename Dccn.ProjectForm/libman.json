@@ -4,39 +4,68 @@
   "libraries": [
     {
       "library": "twitter-bootstrap@4.3.1",
-      "destination": "wwwroot/lib/twitter-bootstrap/"
+      "destination": "wwwroot/lib/twitter-bootstrap/",
+      "files": [
+        "css/bootstrap.css", "css/bootstrap.min.css",
+        "js/bootstrap.js", "js/bootstrap.min.js"
+      ]
     },
     {
       "library": "autocomplete.js@0.36.0",
-      "destination": "wwwroot/lib/autocomplete.js/"
+      "destination": "wwwroot/lib/autocomplete.js/",
+      "files": [
+        "autocomplete.jquery.js", "autocomplete.jquery.min.js"
+      ]
     },
     {
-      "library": "jquery@3.3.1",
-      "destination": "wwwroot/lib/jquery/"
+      "library": "jquery@3.4.0",
+      "destination": "wwwroot/lib/jquery/",
+      "files": [
+        "jquery.js", "jquery.min.js"
+      ]
     },
     {
       "library": "jsrender@1.0.2",
-      "destination": "wwwroot/lib/jsrender/"
-    },
-    {
-      "library": "jquery.inputmask@3.3.4",
-      "destination": "wwwroot/lib/jquery.inputmask/"
+      "destination": "wwwroot/lib/jsrender/",
+      "files": [
+        "jsrender.js", "jsrender.min.js"
+      ]
     },
     {
       "library": "moment.js@2.24.0",
-      "destination": "wwwroot/lib/moment.js/"
+      "destination": "wwwroot/lib/moment.js/",
+      "files": [
+        "moment.js", "moment.min.js"
+      ]
     },
     {
-      "library": "popper.js@1.14.7",
-      "destination": "wwwroot/lib/popper.js/"
+      "library": "popper.js@1.15.0",
+      "destination": "wwwroot/lib/popper.js/",
+      "files": [
+        "umd/popper.js", "umd/popper.min.js"
+      ]
     },
     {
       "library": "jquery-validate@1.19.0",
-      "destination": "wwwroot/lib/jquery-validate/"
+      "destination": "wwwroot/lib/jquery-validate/",
+      "files": [
+        "jquery.validate.js", "jquery.validate.min.js"
+      ]
     },
     {
       "library": "jquery-validation-unobtrusive@3.2.11",
-      "destination": "wwwroot/lib/jquery-validation-unobtrusive/"
+      "destination": "wwwroot/lib/jquery-validation-unobtrusive/",
+      "files": [
+        "jquery.validate.unobtrusive.js", "jquery.validate.unobtrusive.min.js"
+      ]
+    },
+    {
+      "provider": "unpkg",
+      "library": "@aspnet/signalr@1.1.4",
+      "destination": "wwwroot/lib/signalr/",
+      "files": [
+        "dist/browser/signalr.js", "dist/browser/signalr.min.js"
+      ]
     }
   ]
 }

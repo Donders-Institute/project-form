@@ -24,18 +24,18 @@ namespace Dccn.ProjectForm.Data
 
             builder.Entity<Proposal>(b =>
             {
-                b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
+                b.Property(e => e.CreatedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP").ValueGeneratedOnAdd();
                 b.Property(e => e.LastEditedOn).HasColumnType("DATETIME").HasDefaultValueSql("CURRENT_TIMESTAMP");
                 b.Property(e => e.LastEditedBy).IsRequired();
-                b.Property(e => e.Timestamp).IsRowVersion().IsRequired();
+                b.Property(e => e.Timestamp).HasColumnType("ROWVERSION").IsRequired().ValueGeneratedOnAddOrUpdate();
                 b.Property(e => e.OwnerId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.SupervisorId).HasMaxLength(UserIdMaxLength).IsRequired();
                 b.Property(e => e.ProjectId).HasMaxLength(10);
                 b.Property(e => e.Title).IsRequired();
                 b.Property(e => e.StartDate).HasColumnType("DATE");
                 b.Property(e => e.EndDate).HasColumnType("DATE");
-                b.Property(e => e.PaymentAverageSubjectCost).HasColumnType("decimal(5, 2)");
-                b.Property(e => e.PaymentMaxTotalCost).HasColumnType("decimal(6, 2)");
+                b.Property(e => e.PaymentAverageSubjectCost).HasColumnType("DECIMAL(5, 2)");
+                b.Property(e => e.PaymentMaxTotalCost).HasColumnType("DECIMAL(6, 2)");
 
                 var jsonConverter = new ValueConverter<ICollection<string>, string>(
                                         m => JsonConvert.SerializeObject(m),

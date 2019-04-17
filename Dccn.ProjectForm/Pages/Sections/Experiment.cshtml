@@ -1,68 +1,68 @@
-﻿@model Models.ExperimentSectionModel
-@using System.Web
+﻿@model FormModel
 @using Dccn.ProjectForm.Extensions
 @using Microsoft.Extensions.Localization
 @using Models
 @using Services
+
 @inject ILabProvider LabProvider
 @inject IStringLocalizer Localizer
 
 @* Start/end date *@
 <div class="form-row">
     <div class="col-sm form-group">
-        <label asp-for="StartDate"></label>
+        <label asp-for="Experiment.StartDate"></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
             </div>
-            <input asp-for="StartDate" class="form-control" data-submit-on="change">
+            <input asp-for="Experiment.StartDate" class="form-control" data-save-on="change">
         </div>
-        <small asp-description-for="StartDate"></small>
+        <small asp-description-for="Experiment.StartDate"></small>
     </div>
     <div class="col-sm form-group">
-        <label asp-for="EndDate"></label>
+        <label asp-for="Experiment.EndDate"></label>
         <div class="input-group">
             <div class="input-group-prepend">
                 <div class="input-group-text">
                     <i class="fas fa-calendar-alt"></i>
                 </div>
             </div>
-            <input asp-for="EndDate" class="form-control" data-submit-on="change">
+            <input asp-for="Experiment.EndDate" class="form-control" data-save-on="change">
         </div>
-        <small asp-description-for="EndDate"></small>
+        <small asp-description-for="Experiment.EndDate"></small>
     </div>
 </div>
 
 @* Labs *@
 <div class="card mb-3">
     <div class="card-body">
-        <h5 class="card-title">@Html.DisplayNameFor(m => m.Labs)</h5>
-        <h6 class="card-subtitle text-muted mb-3">@Html.DescriptionFor(m => m.Labs)</h6>
+        <h5 class="card-title">@Html.DisplayNameFor(m => m.Experiment.Labs)</h5>
+        <p class="card-text">@Html.DescriptionFor(m => m.Experiment.Labs)</p>
 
         <div class="card">
             <div class="card-header d-none d-lg-block py-2">
                 <div class="form-row align-items-center">
                     <label class="col col-form-label col-form-label-sm">
-                        @Html.DisplayNameFor(m => m.Labs.First().Modality)
-                        <i asp-tooltip-for="Labs.First().Modality"></i>
+                        @Html.DisplayNameFor(m => m.Experiment.Labs.Values.First().Modality)
+                        <i asp-tooltip-for="Experiment.Labs.Values.First().Modality"></i>
                     </label>
                     <label class="col col-form-label col-form-label-sm">
-                        @Html.DisplayNameFor(m => m.Labs.First().SubjectCount)
-                        <i asp-tooltip-for="Labs.First().SubjectCount"></i>
+                        @Html.DisplayNameFor(m => m.Experiment.Labs.Values.First().SubjectCount)
+                        <i asp-tooltip-for="Experiment.Labs.Values.First().SubjectCount"></i>
                     </label>
                     <label class="col col-form-label col-form-label-sm">
-                        @Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)
-                        <i asp-tooltip-for="Labs.First().ExtraSubjectCount"></i>
+                        @Html.DisplayNameFor(m => m.Experiment.Labs.Values.First().ExtraSubjectCount)
+                        <i asp-tooltip-for="Experiment.Labs.Values.First().ExtraSubjectCount"></i>
                     </label>
                     <label class="col col-form-label col-form-label-sm">
-                        @Html.DisplayNameFor(m => m.Labs.First().SessionCount)
-                        <i asp-tooltip-for="Labs.First().SessionCount"></i>
+                        @Html.DisplayNameFor(m => m.Experiment.Labs.Values.First().SessionCount)
+                        <i asp-tooltip-for="Experiment.Labs.Values.First().SessionCount"></i>
                     </label>
                     <label class="col col-form-label col-form-label-sm">
-                        @Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)
-                        <i asp-tooltip-for="Labs.First().SessionDurationMinutes"></i>
+                        @Html.DisplayNameFor(m => m.Experiment.Labs.Values.First().SessionDurationMinutes)
+                        <i asp-tooltip-for="Experiment.Labs.Values.First().SessionDurationMinutes"></i>
                     </label>
                     <label class="col col-form-label col-form-label-sm">
                         @Localizer["Form.Experiment.Labs.TotalDuration.Label"]
@@ -95,16 +95,19 @@
                     </div>
                 </div>
             </div>
-            <div class="list-group list-group-flush lab-items" data-storage-minimum="@Model.MinimumStorageQuota">
+            <div class="list-group list-group-flush lab-items" data-storage-minimum="@Model.Experiment.MinimumStorageQuota">
                 <div class="list-group-item list-group-placeholder py-2">
-                    <div class="form-row align-items-center">
-                        <div class="col">
-                            <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
-                                None
-                            </label>
-                        </div>
-                    </div>
+                    <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
+                        None
+                    </label>
                 </div>
+                @foreach (var lab in Model.Experiment.Labs.Values)
+                {
+                    @await Html.PartialAsync("Shared/_Lab", new ViewDataDictionary(ViewData)
+                    {
+                        {"LabId", lab.Id}
+                    })
+                }
             </div>
         </div>
     </div>
@@ -115,24 +118,24 @@
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="StorageQuota"
+                <input asp-for="Experiment.StorageQuota"
                        class="custom-control-input radio-panel-input"
                        type="radio"
                        id="quota-standard"
                        value="@StorageQuotaModel.Standard"
                        data-target="#quota-standard-panel"
-                       data-submit-on="change">
+                       data-save-on="change">
                 <label class="custom-control-label" for="quota-standard">@Html.DisplayName(StorageQuotaModel.Standard) (<span class="quota-standard-value">...</span>)</label>
             </div>
         </div>
         <fieldset class="collapse" id="quota-standard-panel" data-parent="#quota-options">
             <div class="card-body">
                 <h5 class="card-title">Standard storage quota</h5>
-                <h6 class="card-subtitle text-muted mb-3">
+                <p class="card-text">
                     Preferably apply for standard quota, which is based on standard quota
                     per subject per session for the different modalities you have included in your experiment.
                     See <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=quota">here</a> for more information.
-                </h6>
+                </p>
                 <p class="card-text">The calculated quota is: <span class="quota-standard-value">...</span>.</p>
             </div>
         </fieldset>
@@ -140,40 +143,40 @@
     <div class="card">
         <div class="card-header">
             <div class="custom-control custom-radio">
-                <input asp-for="StorageQuota"
+                <input asp-for="Experiment.StorageQuota"
                        class="custom-control-input radio-panel-input"
                        type="radio"
                        id="quota-custom"
                        value="@StorageQuotaModel.Custom"
                        data-target="#quota-custom-panel"
-                       data-submit-on="change">
+                       data-save-on="change">
                 <label class="custom-control-label" for="quota-custom">@Html.DisplayName(StorageQuotaModel.Custom)</label>
             </div>
         </div>
         <fieldset class="collapse" id="quota-custom-panel" data-parent="#quota-options">
             <div class="card-body">
                 <h5 class="card-title">Overruling storage quota</h5>
-                <h6 class="card-subtitle text-muted mb-3">
+                <p class="card-text">
                     Use overruling storage quota in case the project uses imported data or in case the default
                     quota per subject per session does not fit for your special requirements.
                     A motivation is mandatory when applying for overruling storage quota.
                     See <a target="_blank" href="https://intranet.donders.ru.nl/index.php?id=quota">here</a> for more information.
-                </h6>
+                </p>
                 <div class="form-group">
-                    <label asp-for="CustomStorageQuota"></label>
+                    <label asp-for="Experiment.CustomStorageQuota"></label>
                     <div class="input-group">
-                        <input asp-for="CustomStorageQuota" class="form-control" data-submit-on="change">
+                        <input asp-for="Experiment.CustomStorageQuota" class="form-control" data-save-on="change">
                         <div class="input-group-append">
                             <span class="input-group-text">GB</span>
                         </div>
                     </div>
-                    <small asp-description-for="CustomStorageQuota"></small>
+                    <small asp-description-for="Experiment.CustomStorageQuota"></small>
                 </div>
                 <div class="form-group">
-                    <label asp-for="CustomStorageQuotaMotivation"></label>
-                    <textarea asp-for="CustomStorageQuotaMotivation" class="form-control" rows="3"
-                              placeholder="@Html.DescriptionFor(m => m.CustomStorageQuotaMotivation)"
-                              data-submit-on="change"></textarea>
+                    <label asp-for="Experiment.CustomStorageQuotaMotivation"></label>
+                    <textarea asp-for="Experiment.CustomStorageQuotaMotivation" class="form-control" rows="3"
+                              placeholder="@Html.DescriptionFor(m => m.Experiment.CustomStorageQuotaMotivation)"
+                              data-save-on="change"></textarea>
                 </div>
             </div>
         </fieldset>
@@ -184,9 +187,9 @@
 <div class="card">
     <div class="card-body">
         <h5 class="card-title">Experimenters</h5>
-        <h6 class="card-subtitle text-muted mb-3">
+        <p class="card-text">
             Experimenters are allowed to do lab bookings for the project. The project owner is an experimenter by default.
-        </h6>
+        </p>
         <div class="card">
             <div class="card-header py-2">
                 <div class="row">
@@ -201,7 +204,7 @@
                     </div>
                     <div class="col-auto">
                         <button class="btn btn-sm btn-outline-secondary user-add" type="button"
-                                data-usertype="experimenter" data-submit-on="click">
+                                data-usertype="experimenter" data-save-on="click">
                             <i class="fas fa-plus-square"></i>
                         </button>
                     </div>
@@ -216,104 +219,27 @@
     </div>
 </div>
 
-<script id="lab-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2 lab-item" data-storage="{{:storage}}">
-
-        <input type="hidden" name="@Html.Name("Labs.Index")" value="{{:id}}">
-        <input type="hidden" name="@Html.Name("Labs[{{:id}}].Id")" value="{{:id}}">
-        <input type="hidden" name="@Html.Name("Labs[{{:id}}].Modality.Id")" value="{{:modality}}">
-
-        <div class="form-row align-items-center">
-            <div class="col-lg">
-                <label class="col-form-label col-form-label-sm font-weight-bold text-center text-lg-left">
-                    @foreach (var modality in LabProvider.Labs.Values)
-                    {
-                        @:{{if modality === @Html.Raw(HttpUtility.JavaScriptStringEncode(modality.Id, true))}}@modality.DisplayName{{/if}}
-                    }
-                </label>
-            </div>
-            <div class="col-lg">
-                <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SubjectCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-subjects" name="@Html.Name("Labs[{{:id}}].SubjectCount")"
-                           value="{{:subjects}}" data-submit-on="change">
-                </div>
-            </div>
-            <div class="col-lg">
-                <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().ExtraSubjectCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm" name="@Html.Name("Labs[{{:id}}].ExtraSubjectCount")"
-                           value="{{:extra}}" data-submit-on="change">
-                </div>
-            </div>
-            <div class="col-lg">
-                <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionCount)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-sessions" name="@Html.Name("Labs[{{:id}}].SessionCount")"
-                           value="{{:sessions}}" data-submit-on="change">
-                </div>
-            </div>
-            <div class="col-lg">
-                <div class="form-row">
-                    <label class="col col-form-label d-lg-none">@Html.DisplayNameFor(m => m.Labs.First().SessionDurationMinutes)</label>
-                    <input class="col-6 col-lg form-control form-control-sm lab-item-duration" name="@Html.Name("Labs[{{:id}}].SessionDurationMinutes")"
-                           value="{{:duration}}" placeholder="minutes" data-submit-on="change">
-                </div>
-            </div>
-            <div class="col-lg">
-                <div class="form-row">
-                    <label class="col col-form-label d-lg-none lab-item-total-duration">Total duration</label>
-                    <span class="col-6 col-lg form-control-plaintext form-control-sm lab-item-total-duration"></span>
-                </div>
-            </div>
-            <div class="col-lg-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary float-right float-lg-none remove-lab-item" formaction="@Url.Page(null, "RemoveLab", new { labId = "__ID__" }).Replace("__ID__", "{{:id}}")">
-                    <i class="fas fa-minus-square"></i><span class="d-lg-none"> Remove</span>
-                </button>
-            </div>
-        </div>
-    </div>
-</script>
-
 <script id="experimenter-item-template" type="text/x-jsrender">
-    <div class="list-group-item list-group-item-action py-2 experimenter-item-expanded" data-id="{{:id}}">
+    <div class="list-group-item list-group-item-action py-2 experimenter-item" data-id="{{attr:id}}">
+         <input type="hidden" name="@Html.NameFor(m => m.Experiment.Experimenters["__ID__"].Id).Replace("__ID__", "{{attr:id}}")" value="{{attr:id}}">
 
-        <input type="hidden" name="@Html.Name("Experimenters.Index")" value="{{:id}}">
-        <input type="hidden" name="@Html.Name("Experimenters[{{:id}}].Id")" value="{{:id}}">
-
-        <div class="row align-items-center">
-            <div class="col">
-                {{>name}}
-                <span class="badge badge-info">{{:id}}</span>
-            </div>
-
-            <div class="col-auto">
-                <button type="button" class="btn btn-sm btn-outline-secondary remove-experimenter" data-submit-on="click">
-                    <i class="fas fa-minus-square"></i>
-                </button>
-            </div>
-        </div>
-    </div>
-</script>
-
-<script id="labs" type="application/json">
-@(
-    Json.Serialize(Model.Labs.Select(lab => new
-    {
-        lab.Id,
-        Modality = lab.Modality.Id,
-        Subjects = lab.SubjectCount,
-        Extra = lab.ExtraSubjectCount,
-        Sessions = lab.SessionCount,
-        Duration = lab.SessionDurationMinutes,
-        Storage = lab.Modality.SessionStorageQuota
-    }))
-)
+         <div class="row align-items-center">
+             <div class="col">
+                 {{>name}}
+                 <span class="badge badge-info">{{:id}}</span>
+             </div>
+             <div class="col-auto">
+                 <button type="button" class="btn btn-sm btn-outline-secondary remove-experimenter" data-save-on="click">
+                     <i class="fas fa-minus-square"></i>
+                 </button>
+             </div>
+         </div>
+     </div>
 </script>
 
 <script id="experimenters" type="application/json">
 @(
-    Json.Serialize(Model.Experimenters.Select(experimenter => new
+    Json.Serialize(Model.Experiment.Experimenters.Values.Select(experimenter => new
     {
         experimenter.Id,
         experimenter.Name

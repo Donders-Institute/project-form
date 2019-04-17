@@ -13,7 +13,7 @@ namespace Dccn.ProjectForm.Extensions
                     return "secondary";
                 case ApprovalStatusModel.NotApplicable:
                     return "dark";
-                case ApprovalStatusModel.ApprovalPending:
+                case ApprovalStatusModel.Pending:
                     return "info";
                 case ApprovalStatusModel.Approved:
                     return "success";
@@ -30,7 +30,7 @@ namespace Dccn.ProjectForm.Extensions
             {
                 case ApprovalStatusModel.Rejected:
                     return 0;
-                case ApprovalStatusModel.ApprovalPending:
+                case ApprovalStatusModel.Pending:
                     return 1;
                 case ApprovalStatusModel.Approved:
                     return 2;
@@ -50,7 +50,7 @@ namespace Dccn.ProjectForm.Extensions
             {
                 case ApprovalStatusModel.NotSubmitted:
                     return null;
-                case ApprovalStatusModel.ApprovalPending:
+                case ApprovalStatusModel.Pending:
                     return "fas fa-ellipsis-h";
                 case ApprovalStatusModel.Approved:
                     return "fas fa-check";

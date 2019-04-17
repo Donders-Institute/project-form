@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Data;
@@ -66,5 +65,11 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            x.EcApproved == y.EcApproved
+            && x.EcCode == y.EcCode
+            && x.EcReference == y.EcReference
+            && base.SectionEquals(x, y);
     }
 }

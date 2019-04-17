@@ -1,6 +1,5 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using Microsoft.AspNetCore.Mvc.ModelBinding;
 
 namespace Dccn.ProjectForm.Models
@@ -9,7 +8,7 @@ namespace Dccn.ProjectForm.Models
     public class DataSectionModel : SectionModelBase
     {
         [Display(Name = "Form.Data.ProjectStorage.Label", Description = "Form.Data.ProjectStorage.Description")]
-        public IList<StorageAccessRuleModel> StorageAccessRules { get; set; } = new List<StorageAccessRuleModel>();
+        public IDictionary<string, StorageAccessRuleModel> StorageAccessRules { get; set; } = new Dictionary<string, StorageAccessRuleModel>();
 
         [Display(Name = "Form.Data.Preservation.Label", Description = "Form.Data.Preservation.Description")]
         public DataPreservationModel Preservation { get; set; }

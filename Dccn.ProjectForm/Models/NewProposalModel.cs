@@ -9,8 +9,7 @@ namespace Dccn.ProjectForm.Models
     {
         [Display(Name = "Title", Description = "The title of your project proposal.")]
         [Required(ErrorMessage = "A title is required.")]
-        [MinLength(10, ErrorMessage = "The title must contain at least {1} characters.")]
-        [MaxLength(255, ErrorMessage = "The title must contain at most {1} characters.")]
+        [MinLength(10, ErrorMessage = "The title must contain at least {0} characters.")]
         public string Title { get; set; }
 
         [Display(Name = "Principal investigator", Description = "The principal investigator responsible for project supervision. This cannot be changed later.")]
@@ -19,5 +18,8 @@ namespace Dccn.ProjectForm.Models
 
         [BindNever]
         public IList<SelectListItem> Supervisors { get; set; }
+
+        [BindNever]
+        public bool Submitted { get; set; }
     }
 }

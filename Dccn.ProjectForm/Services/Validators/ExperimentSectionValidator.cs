@@ -23,15 +23,15 @@ namespace Dccn.ProjectForm.Services.Validators
                 RuleFor(s => s.CustomStorageQuotaMotivation);
             });
 
-            RuleForEach(s => s.Labs)
+            RuleForEach(s => s.Labs.Values)
                 .OverrideIndexer((section, labs, lab, index) => $"[{lab.Id}]")
-                .NotNull()
-                .SetValidator(new LabValidator(serviceProvider));
+                .SetValidator(new LabValidator())
+                .OverridePropertyName(nameof(ExperimentSectionModel.Labs));
 
-            RuleForEach(s => s.Experimenters)
+            RuleForEach(s => s.Experimenters.Values)
                 .OverrideIndexer((section, experimenters, experimenter, index) => $"[{experimenter.Id}]")
-                .NotNull()
-                .SetValidator(s => new ExperimenterValidator(serviceProvider, s.Experimenters));
+                .SetValidator(s => new ExperimenterValidator(serviceProvider))
+                .OverridePropertyName(nameof(ExperimentSectionModel.Experimenters));
 
             RuleSet("Submit", () =>
             {

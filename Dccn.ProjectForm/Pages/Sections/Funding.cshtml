@@ -1,51 +1,51 @@
-﻿@model Models.FundingSectionModel
+﻿@model FormModel
 
 @* Contact person *@
 <div class="card mb-3">
     <div class="card-body">
         <h5 class="card-title">Contact person</h5>
-        <h6 class="card-subtitle text-muted mb-3">The person to contact for funding related questions.</h6>
+        <p class="card-text">The person to contact for funding related questions.</p>
 
         @* Name *@
         <div class="form-group">
-            <label asp-for="ContactName"></label>
+            <label asp-for="Funding.ContactName"></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <div class="input-group-text">
                         <i class="fas fa-user"></i>
                     </div>
                 </div>
-                <input asp-for="ContactName" id="funding-contact-name" class="form-control" data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" data-submit-on="change">
+                <input asp-for="Funding.ContactName" id="funding-contact-name" class="form-control" data-url="@Url.Action("Query", "Users", new {query = "__QUERY__"})" data-save-on="change">
             </div>
-            <small asp-description-for="ContactName"></small>
+            <small asp-description-for="Funding.ContactName"></small>
         </div>
 
         @* E-mail *@
         <div class="form-group">
-            <label asp-for="ContactEmail"></label>
+            <label asp-for="Funding.ContactEmail"></label>
             <div class="input-group">
                 <div class="input-group-prepend">
                     <div class="input-group-text">
                         <i class="fas fa-envelope"></i>
                     </div>
                 </div>
-                <input asp-for="ContactEmail" id="funding-contact-email" class="form-control" data-submit-on="change">
+                <input asp-for="Funding.ContactEmail" id="funding-contact-email" class="form-control" data-save-on="change">
             </div>
-            <small asp-description-for="ContactEmail"></small>
+            <small asp-description-for="Funding.ContactEmail"></small>
         </div>
     </div>
 </div>
 
 @* Financial code *@
 <div class="form-group">
-    <label asp-for="FinancialCode"></label>
+    <label asp-for="Funding.FinancialCode"></label>
     <div class="input-group">
         <div class="input-group-prepend">
             <div class="input-group-text">
                 <i class="fas fa-hashtag"></i>
             </div>
         </div>
-        <input asp-for="FinancialCode" class="form-control" data-submit-on="change">
+        <input asp-for="Funding.FinancialCode" class="form-control" data-save-on="change">
     </div>
-    <small asp-description-for="FinancialCode"></small>
+    <small asp-description-for="Funding.FinancialCode"></small>
 </div>

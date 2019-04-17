@@ -8,10 +8,10 @@ namespace Dccn.ProjectForm.Services.Validators
     {
         public DataSectionValidator(IServiceProvider serviceProvider)
         {
-            RuleForEach(s => s.StorageAccessRules)
+            RuleForEach(s => s.StorageAccessRules.Values)
                 .OverrideIndexer((section, rules, rule, index) => $"[{rule.Id}]")
-                .NotNull()
-                .SetValidator(s => new StorageAccessRuleValidator(serviceProvider, s.StorageAccessRules));
+                .SetValidator(s => new StorageAccessRuleValidator(serviceProvider))
+                .OverridePropertyName(nameof(DataSectionModel.StorageAccessRules));
 
             RuleFor(s => s.Preservation).IsInEnum();
 

@@ -1,0 +1,27 @@
+﻿@using Dccn.ProjectForm.Extensions
+@model FormModel
+
+<div id="section-nav" class="list-group sticky-top" style="top: var(--navbar-padding);" data-refresh-url="@Url.Page(null, new { SectionId = "Nav" })">
+    @foreach (var section in Model.Sections)
+    {
+        <a class="list-group-item list-group-item-action bg-dark" href="#@Html.Id(section.Id)" data-section-id="@(section.Id)">
+            @Html.DisplayName(section.Id)
+            <span class="ml-3 float-right">
+                @{
+                    var status = section.Approvals.Select(a => a.Status).OrderBy(ApprovalStatusExtensions.GetRanking).First();
+                    var icons = status.GetIconClasses();
+                }
+                <span class="badge badge-pill badge-@status.GetColor()" style="width: 2.5em">
+                    @if (icons != null)
+                    {
+                        <i class="@icons"></i>
+                    }
+                    else
+                    {
+                        @:&nbsp;
+                    }
+                </span>
+            </span>
+        </a>
+    }
+</div>

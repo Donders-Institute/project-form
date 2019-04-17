@@ -36,7 +36,8 @@ namespace Dccn.ProjectForm.Authorization
                 return Task.CompletedTask;
             }
 
-            if (requirement == ApprovalOperation.Approve && CanAuthorityApprove(approval) || requirement == ApprovalOperation.Reject && CanAuthorityReject(approval))
+            if (requirement == ApprovalOperation.Approve && CanAuthorityApprove(approval)
+                || requirement == ApprovalOperation.Reject && CanAuthorityReject(approval))
             {
                 context.Succeed(requirement);
             }

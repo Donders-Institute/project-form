@@ -7,11 +7,11 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Not submitted")]
         NotSubmitted,
 
-        [Display(Name = "Not applicable")]
+        [Display(Name = "N/A")]
         NotApplicable,
 
-        [Display(Name = "Approval pending")]
-        ApprovalPending,
+        [Display(Name = "Pending")]
+        Pending,
 
         [Display(Name = "Approved")]
         Approved,

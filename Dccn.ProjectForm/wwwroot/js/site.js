@@ -3,6 +3,7 @@
 var Validation = (function() {
     var errorElement = "div";
     var errorClass = "validation-message";
+    var previousErrors = {};
 
     function highlight($element) {
         $element.addClass("is-invalid");
@@ -16,7 +17,6 @@ var Validation = (function() {
         clearError($element);
 
         $error.insertAfter($element);
-
         $element.data("popper", new Popper($element, $error, {
             placement: "bottom-end",
             removeOnDestroy: true
@@ -31,6 +31,12 @@ var Validation = (function() {
 
         observer.observe($error.get(0), {
             childList: true
+        });
+
+        $element.parents().add($element).each(function() {
+            observer.observe(this, {
+                attributes: true
+            });
         });
 
         $element.data("observer", observer);
@@ -66,23 +72,15 @@ var Validation = (function() {
         submitHandler: function(form, event) {
             var $form = $(form);
             var submitHandler = $form.data("submit-handler");
-            if (submitHandler) {
-                // FIXME: awful hack
-                var $clickedElement = $(document.activeElement);
-                if ($clickedElement.is("button[type='submit']")) {
-                    var action = $clickedElement.prop("formAction");
-                    if (action) {
-                        $form.prop("action", action);
-                    }
-                    var method = $clickedElement.prop("formMethod");
-                    if (method) {
-                        $form.prop("method", method);
-                    }
-                    return form.submit();
-                }
-
+            if (submitHandler && event.useHandler) {
                 return submitHandler($form, event);
             } else {
+                if (event.action) {
+                    $form.prop("action", event.action);
+                }
+                if (event.method) {
+                    $form.prop("method", event.method);
+                }
                 return form.submit();
             }
         }
@@ -93,8 +91,12 @@ var Validation = (function() {
 
     return {
         updateErrors: function(errors) {
-            $(errorClass).each(function() {
-                Validation.clearError($(this));
+            Object.keys(previousErrors).forEach(function(name) {
+                if (!errors[name]) {
+                    $("[name='" + name + "']").each(function() {
+                        Validation.clearError($(this));
+                    });
+                }
             });
 
             Object.keys(errors).forEach(function(name) {
@@ -104,42 +106,73 @@ var Validation = (function() {
                     });
                 }
             });
+
+            previousErrors = errors;
         },
         setError: function($element, message) {
-            while ($element.is(":hidden")) {
-                $element = $element.parent();
-            }
             highlight($element);
-            placeError($("<" + errorElement + "/>", { "class": errorClass }).text(message), $element);
+            placeError($("<" + errorElement + ">").addClass(errorClass).text(message), $element);
         },
         clearError: function($element) {
-            while ($element.is(":hidden")) {
-                $element = $element.parent();
-            }
             unhighlight($element);
             clearError($element);
         }
     };
 })();
 
-var Initializers = function() {
-    var initializers = [];
+function showErrorModal(title, message, status) {
+    var $modal = $("#error-modal");
 
-    return {
-        register: function(f) {
-            initializers.push(f);
-        },
-        run: function() {
-            $(function() {
-                initializers.forEach(function(f) {
-                    f();
-                });
-            });
-        }
-    };
-}();
+    $modal.find("#error-modal-title").text(title);
+    $modal.find("#error-modal-message").text(message);
+    $modal.find("#error-modal-status").text(status);
 
-Initializers.register(function() {
+    $modal.modal({
+        backdrop: "static",
+        keyboard: false
+    });
+}
+
+function initListPlaceholders($root) {
+    $(".list-group", $root).has(".list-group-placeholder").each(function() {
+        var $group = $(this);
+        $group.data("placeholder", $group.children(".list-group-placeholder").detach());
+
+        var callback = function() {
+            if ($group.children(":not(.list-group-placeholder)").length > 0) {
+                $group.children(".list-group-placeholder").remove();
+            } else if ($group.children(".list-group-placeholder").length === 0) {
+                $group.append($group.data("placeholder"));
+            }
+        };
+
+        var observer = new MutationObserver(callback);
+        observer.observe(this, { childList: true });
+        callback();
+    });
+}
+
+function showToast(title, message, startTime) {
+    var $toast = $("#toast");
+
+    var timerId = $toast.data("timer");
+    if (timerId) {
+        clearInterval(timerId);
+    }
+
+    startTime = startTime || moment();
+    timerId = setInterval(function() {
+        $("#toast-time", $toast).text(startTime.fromNow());
+    }, 5000);
+    $toast.data("timer", timerId);
+
+    $("#toast-title", $toast).text(title);
+    $("#toast-message", $toast).html(message);
+    $("#toast-time", $toast).text(startTime.fromNow());
+    $toast.toast("show");
+}
+
+$(function() {
     if (navigator.appName === "Microsoft Internet Explorer" || !!(navigator.userAgent.match(/Trident/) || navigator.userAgent.match(/rv:11/))) {
         $("#ie-warning").removeClass("d-none");
         $("#content").addClass("d-none");
@@ -147,15 +180,13 @@ Initializers.register(function() {
     }
 
     $("#ajax-error-reload").click(function() {
-        window.location.reload();
+        window.location.replace(window.location.pathname);
     });
 
     $(document).ajaxError(function(_event, xhr) {
-        if (xhr.status === 0 && xhr.readyState === 0) {
+        if (xhr.status === "abort" || xhr.status === 0 && xhr.readyState === 0) {
             return;
         }
-
-        var $modal = $("#ajax-error-modal");
 
         var title = "Unknown error", message = null, status = null;
         if (xhr.status === 0) {
@@ -185,42 +216,71 @@ Initializers.register(function() {
             }
         }
 
-        $modal.find("#ajax-error-title").text(title);
-        $modal.find("#ajax-error-message").text(message);
-        $modal.find("#ajax-error-status").text(status);
-        $modal.modal({
-            backdrop: "static",
-            keyboard: false
-        });
+        showErrorModal(title, message, status);
     });
 
-    $("[data-validation-message]").each(function() {
-        var $element = $(this);
-        Validation.setError($element, $element.data("validation-message"));
-        $element.removeAttr("data-validation-message");
-    });
-
-    $(".list-group").has(".list-group-placeholder").each(function() {
-        var $group = $(this);
-        $group.data("placeholder", $group.children(".list-group-placeholder").detach());
-
-        var callback = function() {
-            if ($group.children(":not(.list-group-placeholder)").length > 0) {
-                $group.children(".list-group-placeholder").remove();
-            } else if ($group.children(".list-group-placeholder").length === 0) {
-                $group.append($group.data("placeholder"));
-            }
-        };
-
-        var observer = new MutationObserver(callback);
-        observer.observe(this, { childList: true });
-        callback();
-    });
+    initListPlaceholders(document);
 
     Validation.updateErrors(JSON.parse($("#validation-errors").html()));
-    $('[data-toggle="tooltip"]').tooltip({
+    $("[data-toggle='tooltip']").tooltip({
         html: true
     });
 
     $("#content").removeClass("invisible");
 });
+
+(function(document, history, location) {
+    var historySupport = !!(history && history.pushState);
+
+    var anchorScrolls = {
+        ANCHOR_REGEX: /^#[^ ]+$/,
+        OFFSET_HEIGHT_PX: 66,
+
+        init: function() {
+            this.scrollToCurrent();
+            $(window).on("hashchange", $.proxy(this, "scrollToCurrent"));
+            $("body").on("click", "a", $.proxy(this, "delegateAnchors"));
+        },
+
+        getFixedOffset: function() {
+            return this.OFFSET_HEIGHT_PX;
+        },
+
+        scrollIfAnchor: function(href, pushToHistory) {
+            var anchorOffset;
+
+            if (!this.ANCHOR_REGEX.test(href)) {
+                return false;
+            }
+
+            var match = document.getElementById(href.slice(1));
+
+            if (match) {
+                anchorOffset = $(match).offset().top - this.getFixedOffset();
+                $("html, body").animate({ scrollTop: anchorOffset });
+
+                if (historySupport && pushToHistory) {
+                    history.pushState({}, document.title, location.pathname + href);
+                }
+            }
+
+            return !!match;
+        },
+
+        scrollToCurrent: function(e) {
+            if (this.scrollIfAnchor(window.location.hash) && e) {
+                e.preventDefault();
+            }
+        },
+
+        delegateAnchors: function(e) {
+            var elem = e.target;
+
+            if (this.scrollIfAnchor(elem.getAttribute("href"), true)) {
+                e.preventDefault();
+            }
+        }
+    };
+
+    $(document).ready($.proxy(anchorScrolls, "init"));
+})(window.document, window.history, window.location);

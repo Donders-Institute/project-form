@@ -1,5 +1,9 @@
 [Form.General]
 Title = "General"
+Description = """
+	Here you can specify general proposal information such as the title of the project, the project owner (usually the applicant)
+	and the (hosting) PI. The project number is added later by the administration.
+	"""
 
     [Form.General.PpmTitle]
     Label = "Title"
@@ -28,13 +32,19 @@ Title = "General"
     [Form.General.SupervisorName]
     Label =	"Principal investigator"
     Description	= """
-        The name of the <abbr title="Principal Investigator">PI</abbr> or responsible supervisor of the project owner.
+        The name of the Principal investigator or responsible supervisor of this project.
         """
 
 
 
 [Form.Funding]
 Title = "Funding"
+Description = """
+	Here you can specify names of granting institutions and contact persons. If known, specify the correct financial code,
+	otherwise provide relevant information for the financial administration about the funding of this PPM.
+	The financial administration will later correct this information with the right financial code and will assign a
+	project number in the General section.
+	"""
 
     [Form.Funding.ContactEmail]
     Label = "Email address"
@@ -328,6 +338,7 @@ Description = """
 [Form.Submission]
 Title = "Submission"
 Description = """
-    !!PLACEHOLDER!! After you have filled in the other sections, you can submit your form for final approval by the
-    director.
+	After you have completed all sections, you can submit this form for final approval by the director.
+	After approval by the director, the administration will automatically receive a request to process the PPM application,
+	which should become visible in the Project Database within a few days.
     """

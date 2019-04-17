@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.Immutable;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -16,6 +17,12 @@ namespace Dccn.ProjectForm.Extensions
             this IEnumerable<Task<TSource>> source, Func<TSource, TKey> keySelector)
         {
             return (await Task.WhenAll(source)).ToDictionary(keySelector);
+        }
+
+        public static async Task<ImmutableSortedDictionary<TKey, TSource>> ToImmutableSortedDictionaryAsync<TSource, TKey>(
+            this IEnumerable<Task<TSource>> source, Func<TSource, TKey> keySelector)
+        {
+            return (await Task.WhenAll(source)).ToImmutableSortedDictionary(keySelector, x => x);
         }
 
         public static IEnumerable<T> Yield<T>(this T item)

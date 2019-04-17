@@ -1,6 +1,8 @@
 ﻿@using System.Globalization
 @using Dccn.ProjectForm.Authentication
 @using Microsoft.AspNetCore.Hosting
+@using Microsoft.AspNetCore.Html
+@using Microsoft.AspNetCore.Mvc.ModelBinding
 
 @inject ISignInManager SignInManager
 @inject IHostingEnvironment Environment
@@ -28,58 +30,104 @@
 
     <title>@ViewData["Title"] - Project Proposal Form</title>
 </head>
-<body>
-
+<body class="position-relative" data-spy="scroll" data-target="#section-nav" data-offset="90">
     <div id="content" class="invisible">
-        <nav class="navbar navbar-expand-md navbar-dark bg-dark fixed-top">
-            <div class="container">
+        <nav class="navbar navbar-expand-md navbar-dark bg-dark sticky-top">
+            <div class="container-fluid">
                 <a asp-page="/Index" class="navbar-brand">
                     <svg xmlns="http://www.w3.org/2000/svg" class="donders-brand mr-1" viewBox="0 0 512 512" role="img">
                         <path fill="currentColor" d="M511,255.5a255,255,0,0,1-96.19,199.74L356.47,314.53,449.63,89.4A254.48,254.48,0,0,1,511,255.5ZM320.07,391a125.73,125.73,0,1,1,0-153.27L400,44.78A254.3,254.3,0,0,0,255.5,0C114.39,0,0,114.39,0,255.5S114.39,511,255.5,511a254.58,254.58,0,0,0,105-22.5ZM196.18,256.32a62.89,62.89,0,0,0,48.13,116.2l0,0a62.89,62.89,0,0,0-48.17-116.18Z"></path>
                     </svg>
-                    <span class="text-muted">DCCN</span>
+                    <span class="navbar-text p-0">DCCN</span>
                     Project Proposal
                 </a>
 
-                <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-                    <span class="navbar-toggler-icon"></span>
-                </button>
+                @* <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"> *@
+                @*     <span class="navbar-toggler-icon"></span> *@
+                @* </button> *@
 
-                @if (SignInManager.IsSignedIn(User))
-                {
-                    <div class="navbar-collapse collapse">
-                        <form asp-page="/Account/Login" asp-page-handler="Logout" class="form-inline ml-auto" method="post">
+                @* <div class="navbar-collapse collapse justify-content-around"> *@
+                    @{
+                        IHtmlContent message = null;
+                        string messageType = null;
+
+                        if (TempData.TryGetValue("Message", out var flashMessage))
+                        {
+                            message = new HtmlString((string) flashMessage);
+                            messageType = TempData.TryGetValue("MessageType", out var type) ? (string) type : "info";
+                        }
+                        else if (ViewData.ModelState.TryGetValue(string.Empty, out var entry))
+                        {
+                            message = new StringHtmlContent(entry.Errors.First().ErrorMessage);
+                            messageType = "danger";
+                        }
+                        else if (ViewData.ModelState.ValidationState == ModelValidationState.Invalid)
+                        {
+                            message = new StringHtmlContent("Form contains errors.");
+                            messageType = "danger";
+                        }
+                    }
+
+                    @if (message != null)
+                    {
+                        <div class="alert alert-@messageType alert-dismissible my-0 py-2 fade show" role="alert">
+                            @message
+                            <button type="button" class="close p-2" data-dismiss="alert" aria-label="Close">
+                                <span aria-hidden="true">&times;</span>
+                            </button>
+                        </div>
+                    }
+
+                    @if (SignInManager.IsSignedIn(User))
+                    {
+                        <form asp-page="/Account/Login" asp-page-handler="Logout" class="form-inline" method="post">
                             <span class="navbar-text mr-3">@SignInManager.UserManager.GetUserName(User)</span>
                             <button class="btn btn-outline-secondary" type="submit">Logout</button>
                         </form>
-                    </div>
-                }
+                    }
+                @* </div> *@
             </div>
         </nav>
 
-        <div class="container p-3 h-100">
-            @if (TempData.TryGetValue("Message", out var message))
-            {
-                <div class="alert alert-@(TempData.TryGetValue("MessageType", out var type) ? type : "secondary") alert-dismissible fade show" role="alert">
-                    @Html.Raw(message)
-                    <button type="button" class="close" data-dismiss="alert" aria-label="Close">
+        <div class="position-fixed d-flex w-100 p-3" style="z-index: 1000; pointer-events: none;">
+            <div id="toast" class="toast ml-auto" data-autohide="false" style="pointer-events: auto;">
+                <div class="toast-header">
+                    <strong id="toast-title" class="mr-auto"></strong>
+                    <small id="toast-time"></small>
+                    <button type="button" class="ml-2 mb-1 close" data-dismiss="toast" aria-label="Close">
                         <span aria-hidden="true">&times;</span>
                     </button>
                 </div>
-            }
-            @RenderBody()
+                <div id="toast-message" class="toast-body"></div>
+            </div>
+        </div>
+
+        <div class="container-fluid">
+            <div class="row">
+                @if (IsSectionDefined("Sidebar"))
+                {
+                    <div class="col-auto bg-dark p-0 px-1">
+                        @RenderSection("Sidebar")
+                    </div>
+                }
+                <div class="col">
+                    <div class="container p-3">
+                        @RenderBody()
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
 
-    <div id="ajax-error-modal" class="modal" tabindex="-1" role="dialog">
+    <div id="error-modal" class="modal" tabindex="-1" role="dialog">
         <div class="modal-dialog modal-dialog-centered" role="document">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 id="ajax-error-title" class="modal-title"></h5>
+                    <h5 id="error-modal-title" class="modal-title"></h5>
                 </div>
                 <div class="modal-body">
-                    <p id="ajax-error-message"></p>
-                    <p id="ajax-error-status" class="text-muted small text-right mb-0"></p>
+                    <p id="error-modal-message"></p>
+                    <p id="error-modal-status" class="text-muted small text-right mb-0"></p>
                 </div>
                 <div class="modal-footer">
                     <button id="ajax-error-reload" class="btn btn-primary" type="button">Reload</button>
@@ -97,55 +145,53 @@
     </span>
 
     <script id="validation-errors" type="application/json">
-        @Json.Serialize(new SerializableError(Model.ModelState))
-</script>
+        @Json.Serialize(new SerializableError(ViewData.ModelState))
+    </script>
 
-<environment include="Development">
-    <script src="~/lib/jquery/jquery.js"></script>
-    <script src="~/lib/jquery-validate/jquery.validate.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
-    <script src="~/lib/moment.js/moment.js"></script>
-    <script src="~/lib/jsrender/jsrender.js"></script>
-    <script src="~/lib/popper.js/umd/popper.js"></script>
-    <script src="~/lib/twitter-bootstrap/js/bootstrap.js"></script>
-    <script src="~/lib/autocomplete.js/autocomplete.jquery.js"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/lib/jquery/jquery.min.js"></script>
-    <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
-    <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
-    <script src="~/lib/moment.js/moment.min.js"></script>
-    <script src="~/lib/jsrender/jsrender.min.js"></script>
-    <script src="~/lib/popper.js/umd/popper.min.js"></script>
-    <script src="~/lib/twitter-bootstrap/js/bootstrap.min.js"></script>
-    <script src="~/lib/autocomplete.js/autocomplete.jquery.min.js"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/lib/jquery/jquery.js"></script>
+        <script src="~/lib/jquery-validate/jquery.validate.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.js"></script>
+        <script src="~/lib/moment.js/moment.js"></script>
+        <script src="~/lib/jsrender/jsrender.js"></script>
+        <script src="~/lib/popper.js/umd/popper.js"></script>
+        <script src="~/lib/twitter-bootstrap/js/bootstrap.js"></script>
+        <script src="~/lib/autocomplete.js/autocomplete.jquery.js"></script>
+        <script src="~/lib/signalr/dist/browser/signalr.js"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/lib/jquery/jquery.min.js"></script>
+        <script src="~/lib/jquery-validate/jquery.validate.min.js"></script>
+        <script src="~/lib/jquery-validation-unobtrusive/jquery.validate.unobtrusive.min.js"></script>
+        <script src="~/lib/moment.js/moment.min.js"></script>
+        <script src="~/lib/jsrender/jsrender.min.js"></script>
+        <script src="~/lib/popper.js/umd/popper.min.js"></script>
+        <script src="~/lib/twitter-bootstrap/js/bootstrap.min.js"></script>
+        <script src="~/lib/autocomplete.js/autocomplete.jquery.min.js"></script>
+        <script src="~/lib/signalr/dist/browser/signalr.min.js"></script>
+    </environment>
 
-@{
-    var culture = CultureInfo.CurrentCulture;
-    do
-    {
-        if (Environment.WebRootFileProvider.GetFileInfo($"lib/jquery-validate/localization/methods_{culture.Name}.js").Exists)
-        {
-            <script src="~/lib/jquery-validate/localization/methods_@(culture.Name).js"></script>
-            break;
-        }
-        culture = culture.Parent;
-    } while (!Equals(culture, culture.Parent));
-}
+@*     @{ *@
+@*         var culture = CultureInfo.CurrentCulture; *@
+@*         do *@
+@*         { *@
+@*             if (Environment.WebRootFileProvider.GetFileInfo($"lib/jquery-validate/localization/methods_{culture.Name}.js").Exists) *@
+@*             { *@
+@*                 <script src="~/lib/jquery-validate/localization/methods_@(culture.Name).js"></script> *@
+@*                 break; *@
+@*             } *@
+@*             culture = culture.Parent; *@
+@*         } while (!Equals(culture, culture.Parent)); *@
+@*     } *@
 
-<environment include="Development">
-    <script src="~/js/site.js" asp-append-version="true"></script>
-</environment>
-<environment exclude="Development">
-    <script src="~/js/site.min.js"></script>
-</environment>
+    <environment include="Development">
+        <script src="~/js/site.js" asp-append-version="true"></script>
+    </environment>
+    <environment exclude="Development">
+        <script src="~/js/site.min.js"></script>
+    </environment>
 
-@RenderSection("Scripts", false)
-
-<script type="text/javascript">
-    Initializers.run();
-</script>
+    @RenderSection("Scripts", false)
 
 </body>
 </html>

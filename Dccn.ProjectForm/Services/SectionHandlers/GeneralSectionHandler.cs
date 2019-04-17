@@ -39,5 +39,9 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            x.Title == y.Title
+            && base.SectionEquals(x, y);
     }
 }

@@ -16,7 +16,7 @@ namespace Dccn.ProjectForm.Extensions
             this Expression<Func<TParam, T, TResult>> expression, TParam value)
         {
             var visitor = new Visitor(expression.Parameters.First(), Expression.Constant(value, typeof(TParam)));
-            return Expression.Lambda<Func<T, TResult>>(visitor.Visit(expression.Body), expression.Parameters.Skip(1));
+            return Expression.Lambda<Func<T, TResult>>(visitor.Visit(expression.Body) ?? throw new InvalidOperationException(), expression.Parameters.Skip(1));
         }
 
         private class Visitor : ExpressionVisitor

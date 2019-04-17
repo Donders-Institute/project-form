@@ -1,42 +1,43 @@
-﻿@model Models.GeneralSectionModel
+﻿@model FormModel
+
 @* Title *@
 <div class="form-group">
-    <label asp-for="Title"></label>
-    <input asp-for="Title" class="form-control" data-submit-on="change">
-    <small asp-description-for="Title"></small>
+    <label asp-for="General.Title"></label>
+    <input asp-for="General.Title" class="form-control" data-save-on="change">
+    <small asp-description-for="General.Title"></small>
 </div>
 
 @* Project Id *@
 <div class="form-group">
-    <label asp-for="ProjectId"></label>
-    <input asp-for="ProjectId" class="form-control" disabled>
-    <small asp-description-for="ProjectId"></small>
+    <label asp-for="General.ProjectId"></label>
+    <input asp-for="General.ProjectId" class="form-control" disabled>
+    <small asp-description-for="General.ProjectId"></small>
 </div>
 
 @* Owner *@
 <div class="form-group">
-    <label asp-for="OwnerName"></label>
+    <label asp-for="General.OwnerName"></label>
     <div class="input-group">
         <div class="input-group-prepend">
             <div class="input-group-text">
                 <i class="fas fa-user"></i>
             </div>
         </div>
-        <input asp-for="OwnerName" class="form-control" disabled>
+        <input asp-for="General.OwnerName" class="form-control" disabled>
     </div>
-    <small asp-description-for="OwnerName"></small>
+    <small asp-description-for="General.OwnerName"></small>
 </div>
 
 @* Principal investigator *@
 <div class="form-group">
-    <label asp-for="SupervisorName"></label>
+    <label asp-for="General.SupervisorName"></label>
     <div class="input-group">
         <div class="input-group-prepend">
             <div class="input-group-text">
                 <i class="fas fa-user"></i>
             </div>
         </div>
-        <input asp-for="SupervisorName" class="form-control" disabled>
+        <input asp-for="General.SupervisorName" class="form-control" disabled>
     </div>
-    <small asp-description-for="SupervisorName"></small>
+    <small asp-description-for="General.SupervisorName"></small>
 </div>

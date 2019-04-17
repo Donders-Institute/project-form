@@ -17,10 +17,12 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Project owner")]
         public string ProposalOwnerName { get; set; }
 
-        [Display(Name = "Approval role")]
+        [Display(Name = "Role")]
         public ApprovalAuthorityRoleModel Role { get; set; }
 
         [Display(Name = "Status")]
         public ApprovalStatusModel Status { get; set; }
+
+        public ApprovalRoleTypeModel RoleType { get; set; }
     }
 }

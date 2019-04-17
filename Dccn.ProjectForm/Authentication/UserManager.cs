@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Data;
 using Dccn.ProjectForm.Data.ProjectDb;
@@ -58,56 +59,68 @@ namespace Dccn.ProjectForm.Authentication
             return principal.IsInRole(Enum.GetName(typeof(Role), role));
         }
 
-        public Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal)
+        public Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal, CancellationToken cancellationToken)
         {
-            return GetPrimaryGroupByIdAsync(GetPrimaryGroupId(principal));
+            return GetPrimaryGroupByIdAsync(GetPrimaryGroupId(principal), cancellationToken);
         }
 
-        public Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId)
+        public Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId, CancellationToken cancellationToken)
         {
-            return _dbContext.Groups.FindAsync(groupId);
+            return Groups.FirstOrDefaultAsync(g => g.Id == groupId, cancellationToken);
         }
 
-        public Task<bool> GroupExistsAsync(string groupId)
+        public Task<bool> GroupExistsAsync(string groupId, CancellationToken cancellationToken)
         {
-            return _dbContext.Groups.AnyAsync(g => g.Id == groupId);
+            return Groups.AnyAsync(g => g.Id == groupId, cancellationToken);
         }
 
-        public IQueryable<ProjectDbGroup> QueryGroups()
+        public IQueryable<ProjectDbGroup> Groups => _dbContext.Groups;//.AsNoTracking();
+
+        public Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup, CancellationToken cancellationToken)
         {
-            return _dbContext.Groups;
+            return GetUserByIdAsync(GetUserId(principal), includeGroup, cancellationToken);
         }
 
-        public Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup)
+        public async Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup, CancellationToken cancellationToken)
         {
-            return GetUserByIdAsync(GetUserId(principal), includeGroup);
+            var query = includeGroup ? Users.Include(u => u.Group) : Users;
+            return await query.FirstOrDefaultAsync(u => u.Id == userId, cancellationToken);
         }
 
-        public async Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup)
+        public async Task<ICollection<ProjectDbUser>> GetUsersByIdsAsync(IEnumerable<string> userIds, CancellationToken cancellationToken)
         {
-            var user = await _dbContext.Users.FindAsync(userId);
-            if (user == null)
-            {
-                return null;
-            }
+            var users = await Users
+                .Where(u => userIds.Distinct().Contains(u.Id))
+                .ToListAsync(cancellationToken);
 
-            if (includeGroup)
-            {
-                await _dbContext.Entry(user).Reference(u => u.Group).LoadAsync();
-            }
+            return userIds
+                .Join(users, id => id, user => user.Id, (id, user) => user)
+                .ToList();
+        }
 
-            return user;
+        public async Task<IDictionary<string, string>> GetUserNamesForIdsAsync(IEnumerable<string> userIds, CancellationToken cancellationToken = default)
+        {
+            return await Users
+                .Where(u => userIds.Distinct().Contains(u.Id))
+                .Select(u => new
+                {
+                    u.Id,
+                    u.FirstName,
+                    u.MiddleName,
+                    u.LastName
+                })
+                .ToDictionaryAsync(
+                    u => u.Id,
+                    u => ProjectDbUser.GetDisplayName(u.Id, u.FirstName, u.MiddleName, u.LastName),
+                    cancellationToken);
         }
 
         public Task<bool> UserExistsAsync(string userId)
         {
-            return _dbContext.Users.AnyAsync(u => u.Id == userId);
+            return Users.AnyAsync(u => u.Id == userId);
         }
 
-        public IQueryable<ProjectDbUser> QueryUsers()
-        {
-            return _dbContext.Users;
-        }
+        public IQueryable<ProjectDbUser> Users => _dbContext.Users; //.AsNoTracking();
     }
 
     public interface IUserManager
@@ -121,14 +134,16 @@ namespace Dccn.ProjectForm.Authentication
         IEnumerable<ApprovalAuthorityRole> GetApprovalRoles(ClaimsPrincipal principal);
         bool IsInApprovalRole(ClaimsPrincipal principal, ApprovalAuthorityRole role);
 
-        Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal);
-        Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId);
-        Task<bool> GroupExistsAsync(string groupId);
-        IQueryable<ProjectDbGroup> QueryGroups();
+        Task<ProjectDbGroup> GetPrimaryGroupAsync(ClaimsPrincipal principal, CancellationToken cancellationToken = default);
+        Task<ProjectDbGroup> GetPrimaryGroupByIdAsync(string groupId, CancellationToken cancellationToken = default);
+        Task<bool> GroupExistsAsync(string groupId, CancellationToken cancellationToken = default);
+        IQueryable<ProjectDbGroup> Groups { get; }
 
-        Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false);
-        Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup = false);
+        Task<ProjectDbUser> GetUserAsync(ClaimsPrincipal principal, bool includeGroup = false, CancellationToken cancellationToken = default);
+        Task<ProjectDbUser> GetUserByIdAsync(string userId, bool includeGroup = false, CancellationToken cancellationToken = default);
+        Task<ICollection<ProjectDbUser>> GetUsersByIdsAsync(IEnumerable<string> userIds, CancellationToken cancellationToken = default);
+        Task<IDictionary<string, string>> GetUserNamesForIdsAsync(IEnumerable<string> userIds, CancellationToken cancellationToken = default);
         Task<bool> UserExistsAsync(string userId);
-        IQueryable<ProjectDbUser> QueryUsers();
+        IQueryable<ProjectDbUser> Users { get; }
     }
 }

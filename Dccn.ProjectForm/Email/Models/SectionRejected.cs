@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace Dccn.ProjectForm.Email.Models
+﻿namespace Dccn.ProjectForm.Email.Models
 {
     public class SectionRejected : EmailModelBase
     {
@@ -11,5 +9,6 @@ namespace Dccn.ProjectForm.Email.Models
         public string SectionName { get; set; }
         public string PageLink { get; set; }
         public string InvalidatedSections { get; set; }
+        public string Reason { get; set; }
     }
 }

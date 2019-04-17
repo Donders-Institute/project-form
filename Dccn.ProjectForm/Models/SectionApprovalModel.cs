@@ -1,6 +1,4 @@
-﻿using Dccn.ProjectForm.Data;
-
-namespace Dccn.ProjectForm.Models
+﻿namespace Dccn.ProjectForm.Models
 {
     public class SectionApprovalModel
     {
@@ -10,7 +8,6 @@ namespace Dccn.ProjectForm.Models
         public string AuthorityName { get; set; }
         public string AuthorityEmail { get; set; }
         public ApprovalStatusModel Status { get; set; }
-        public Approval RawApproval { get; set; }
         public bool CanApprove { get; set; }
         public bool CanReject { get; set; }
     }

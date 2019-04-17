@@ -35,7 +35,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
                     CanRemove = rule.UserId != owner.Id && rule.UserId != supervisor.Id,
                     CanEdit = rule.UserId != owner.Id
                 })
-                .ToListAsync();
+                .ToImmutableSortedDictionaryAsync(rule => rule.Id);
 
             if (proposal.ExternalPreservation)
             {
@@ -63,6 +63,7 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
         protected override Task StoreAsync(DataSectionModel model, Proposal proposal)
         {
             proposal.StorageAccessRules = model.StorageAccessRules
+                .Values
                 .Select(rule => new StorageAccessRule
                 {
                     UserId = rule.Id,
@@ -87,5 +88,15 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
 
             return base.StoreAsync(model, proposal);
         }
+
+        public override bool SectionEquals(Proposal x, Proposal y) =>
+            CompareKeyedCollections(x.StorageAccessRules, y.StorageAccessRules, r => r.UserId, (rx, ry) =>
+                rx.UserId == ry.UserId
+                && rx.Role == ry.Role)
+            && x.ExternalPreservation == y.ExternalPreservation
+            && x.ExternalPreservationLocation == y.ExternalPreservationLocation
+            && x.ExternalPreservationSupervisor == y.ExternalPreservationLocation
+            && x.ExternalPreservationReference == y.ExternalPreservationReference
+            && base.SectionEquals(x, y);
     }
 }

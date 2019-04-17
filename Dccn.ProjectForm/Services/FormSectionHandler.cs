@@ -3,10 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
-using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Data;
-using Dccn.ProjectForm.Data.ProjectDb;
-using Dccn.ProjectForm.Extensions;
 using Dccn.ProjectForm.Models;
 using Dccn.ProjectForm.Pages;
 using Dccn.ProjectForm.Services.SectionHandlers;
@@ -22,16 +19,12 @@ namespace Dccn.ProjectForm.Services
     public abstract class FormSectionHandlerBase<TModel> : IFormSectionHandler<TModel>
         where TModel : ISectionModel, new()
     {
-        private readonly IAuthorityProvider _authorityProvider;
-        private readonly IUserManager _userManager;
         private readonly IValidator<TModel> _validator;
         private readonly ModelMetadata _metadata;
         private readonly Func<FormModel, TModel> _compiledExpr;
 
         protected FormSectionHandlerBase(IServiceProvider serviceProvider, Expression<Func<FormModel, TModel>> expression)
         {
-            _authorityProvider = serviceProvider.GetRequiredService<IAuthorityProvider>();
-            _userManager = serviceProvider.GetRequiredService<IUserManager>();
             _validator = serviceProvider.GetService<IValidator<TModel>>();
             _compiledExpr = expression.Compile();
 
@@ -95,6 +88,13 @@ namespace Dccn.ProjectForm.Services
             return await ValidateAsync(form, "default,Submit,Approve");
         }
 
+        public async Task<ISectionModel> LoadAsync(Proposal proposal)
+        {
+            var model = new TModel();
+            await LoadAsync(model, proposal);
+            return model;
+        }
+
         public virtual bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole)
         {
             if (!ApprovalRoles.Contains(authorityRole))
@@ -117,44 +117,19 @@ namespace Dccn.ProjectForm.Services
             return section == null ? Task.CompletedTask : StoreAsync(section, proposal);
         }
 
-        protected virtual async Task LoadAsync(TModel model, Proposal proposal)
+        protected virtual Task LoadAsync(TModel model, Proposal proposal)
         {
             model.Id = Id;
+            model.ProposalId = proposal.Id;
 
             model.Comments = proposal.Comments.FirstOrDefault(c => c.SectionId == Id)?.Content;
 
-            model.Approvals = await proposal.Approvals
-                .Where(a => ApprovalRoles.Contains(a.AuthorityRole))
-                .Select(async approval =>
-                {
-                    var authorities = await _authorityProvider.GetAuthoritiesAsync(proposal, approval.AuthorityRole);
-                    ProjectDbUser authority;
-                    if (approval.Status == ApprovalStatus.Approved || approval.Status == ApprovalStatus.Rejected)
-                    {
-                        // Show authority who approved the section at the time as opposed to current approval role
-                        authority = await _userManager.GetUserByIdAsync(approval.ValidatedBy);
-                    }
-                    else
-                    {
-                        // Pick first from the list (if any)
-                        authority = authorities.FirstOrDefault();
-                    }
-
-                    return new SectionApprovalModel
-                    {
-                        RawApproval = approval,
-                        AuthorityRole = (ApprovalAuthorityRoleModel) approval.AuthorityRole,
-                        AuthorityName = authority?.DisplayName,
-                        AuthorityEmail = authority?.Email,
-                        Status = (ApprovalStatusModel) approval.Status
-                    };
-                })
-                .ToListAsync();
+            return Task.CompletedTask;
         }
 
         protected virtual Task StoreAsync(TModel model, Proposal proposal)
         {
-            var comment = proposal.Comments.FirstOrDefault(c => c.SectionId == Id);
+            var comment = proposal.Comments.SingleOrDefault(c => c.SectionId == Id);
             if (comment != null)
             {
                 if (string.IsNullOrWhiteSpace(model.Comments))
@@ -178,6 +153,16 @@ namespace Dccn.ProjectForm.Services
             return Task.CompletedTask;
         }
 
+        public virtual bool SectionEquals(Proposal x, Proposal y) =>
+            x.ProjectId == y.ProjectId
+            && NeedsApprovalBy(x).Any() == NeedsApprovalBy(y).Any()
+            && x.Comments.SingleOrDefault(c => c.SectionId == Id)?.Content == y.Comments.SingleOrDefault(c => c.SectionId == Id)?.Content
+            && CompareKeyedCollections(GetAssociatedApprovals(x), GetAssociatedApprovals(y), a => a.AuthorityRole, (ax, ay) =>
+                ax.AuthorityRole == ay.AuthorityRole
+                && ax.Status == ay.Status
+                && ax.ValidatedBy == ay.ValidatedBy);
+
+
         private async Task<bool> ValidateAsync(FormModel form, string ruleSet = null)
         {
             if (_validator == null)
@@ -188,6 +173,41 @@ namespace Dccn.ProjectForm.Services
             var result = await _validator.ValidateAsync(_compiledExpr(form), ruleSet: ruleSet);
             result.AddToModelState(form.ModelState, Id);
             return result.IsValid;
+        }
+
+        protected static bool CompareKeyedCollections<TElement>(IEnumerable<TElement> x, IEnumerable<TElement> y) where TElement : IComparable<TElement>
+        {
+            return CompareKeyedCollections(x, y, k => k);
+        }
+
+        protected static bool CompareKeyedCollections<TElement, TKey>(IEnumerable<TElement> x, IEnumerable<TElement> y, Func<TElement, TKey> keySelector)
+        {
+            return CompareKeyedCollections(x, y, keySelector, (ex, ey) => ex.Equals(ey));
+        }
+
+        protected static bool CompareKeyedCollections<TElement, TKey>(IEnumerable<TElement> x, IEnumerable<TElement> y, Func<TElement, TKey> keySelector, Func<TElement, TElement, bool> comparer)
+        {
+            return x.OrderBy(keySelector).SequenceEqual(y.OrderBy(keySelector), new FuncComparer<TElement>(comparer));
+        }
+
+        private class FuncComparer<TElement> : IEqualityComparer<TElement>
+        {
+            private readonly Func<TElement, TElement, bool> _func;
+
+            public FuncComparer(Func<TElement, TElement, bool> func)
+            {
+                _func = func;
+            }
+
+            public bool Equals(TElement x, TElement y)
+            {
+                return _func(x, y);
+            }
+
+            public int GetHashCode(TElement obj)
+            {
+                throw new NotSupportedException();
+            }
         }
     }
 
@@ -211,9 +231,11 @@ namespace Dccn.ProjectForm.Services
         Task<bool> ValidateApprovalAsync(FormModel form, Proposal proposal);
         Task LoadAsync(FormModel form, Proposal proposal);
         Task StoreAsync(FormModel form, Proposal proposal);
+        Task<ISectionModel> LoadAsync(Proposal proposal);
 
         bool IsAuthorityApplicable(Proposal proposal, ApprovalAuthorityRole authorityRole);
         IEnumerable<ApprovalAuthorityRole> NeedsApprovalBy(Proposal proposal);
+        bool SectionEquals(Proposal x, Proposal y);
     }
 
     public static class FormSectionHandlerExtensions
