@@ -16,6 +16,7 @@ namespace Dccn.ProjectForm.Services
     public class EmailBackgroundService : BackgroundService
     {
         private const int MaxRetries = 5;
+        private const int RetryBaseDelayMs = 5000;
 
         private readonly EmailOptions _options;
         private readonly IEmailService _emailService;
@@ -58,9 +59,9 @@ namespace Dccn.ProjectForm.Services
                         }
                         else
                         {
-                            var delaySeconds = 5 * (1 << attempt);
-                            _logger.LogWarning(e, $"Error sending e-mail. Retrying after a {delaySeconds} seconds.");
-                            await Task.Delay(delaySeconds * 1000, stoppingToken);
+                            var delay = TimeSpan.FromMilliseconds(RetryBaseDelayMs * (1 << attempt));
+                            _logger.LogWarning(e, $"Error sending e-mail. Retrying after a {(int) delay.TotalSeconds} seconds.");
+                            await Task.Delay(delay, stoppingToken);
                         }
                     }
                 }

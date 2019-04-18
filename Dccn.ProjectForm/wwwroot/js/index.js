@@ -26,17 +26,61 @@ $(function() {
         $(".toolbar", table.container()).replaceWith(function() {
             var $toolbar = $($("#toolbar-template").render(null, tableData));
 
-            $(".filter-count", $toolbar).change(function() {
-                table.page.len(parseInt($(this).val())).draw();
-            }).change();
+            $(".filter-count", $toolbar).each(function() {
+                var $filter = $(this);
+                $filter.change(function() {
+                    var value = $(this).val();
+                    table.page.len(parseInt(value)).draw();
+                    try {
+                        localStorage.setItem(table.node().id + "-filter-count", value);
+                    } catch(e) { /* Do nothing */ }
+                });
 
-            $(".filter-status", $toolbar).change(function() {
-                table.column(".status").search($(this).val(), true, false).draw();
-            }).val(tableData.statusFilter ? "^" + tableData.statusFilter + "$" : "").change();
+                var storedValue = localStorage.getItem(table.node().id + "-filter-count");
+                if (storedValue !== null) {
+                    $filter.val(storedValue);
+                }
 
-            $(".filter-role", $toolbar).change(function() {
-                table.column(".role-type").search($(this).val(), true, false).draw();
-            }).change();
+                $filter.change();
+            });
+
+            $(".filter-status", $toolbar).each(function() {
+                var $filter = $(this);
+                $filter.change(function() {
+                    var value = $(this).val();
+                    table.column(".status").search(value, true, false).draw();
+                    try {
+                        localStorage.setItem(table.node().id + "-filter-status", value);
+                    } catch (e) { /* Do nothing */ }
+                });
+
+                var storedValue = localStorage.getItem(table.node().id + "-filter-status");
+                if (storedValue !== null) {
+                    $filter.val(storedValue);
+                } else if (tableData.statusFilter) {
+                    $filter.val("^" + tableData.statusFilter + "$");
+                }
+
+                $filter.change();
+            });
+
+            $(".filter-role", $toolbar).each(function() {
+                var $filter = $(this);
+                $filter.change(function() {
+                    var value = $(this).val();
+                    table.column(".role-type").search(value, true, false).draw();
+                    try {
+                        localStorage.setItem(table.node().id + "-filter-role", value);
+                    } catch (e) { /* Do nothing */ }
+                });
+
+                var storedValue = localStorage.getItem(table.node().id + "-filter-role");
+                if (storedValue !== null) {
+                    $filter.val(storedValue);
+                }
+
+                $filter.change();
+            });
 
             $(".filter-search", $toolbar).on("input", function() {
                 table.search($(this).val()).draw();
