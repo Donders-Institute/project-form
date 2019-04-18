@@ -1,8 +1,9 @@
 ﻿using System.IO;
-using System.Net;
 using System.Net.Mail;
 using System.Security.Claims;
+using System.Threading;
 using System.Threading.Tasks;
+using System.Threading.Tasks.Dataflow;
 using Dccn.ProjectForm.Authentication;
 using Dccn.ProjectForm.Configuration;
 using Dccn.ProjectForm.Email.Models;
@@ -18,34 +19,32 @@ namespace Dccn.ProjectForm.Services
     public class EmailService : IEmailService
     {
         private readonly ITemplateRenderService _renderService;
-        private readonly IUserManager _userManager;
-        private readonly SmtpClient _client;
+        private readonly IServiceScopeFactory _scopeFactory;
         private readonly MailAddress _sender;
         private readonly EmailOptions.OverrideRecipientOptions _overrideRecipient;
+        private readonly BufferBlock<MailMessage> _queue;
 
-        public EmailService(ITemplateRenderService renderService, IUserManager userManager, IOptionsSnapshot<EmailOptions> optionsAccessor)
+        public EmailService(ITemplateRenderService renderService, IOptions<EmailOptions> optionsAccessor, IServiceScopeFactory scopeFactory)
         {
             _renderService = renderService;
-            _userManager = userManager;
+            _scopeFactory = scopeFactory;
 
             var options = optionsAccessor.Value;
-
-            _client = new SmtpClient(options.Host, options.Port);
-            if (options.UserName != null)
-            {
-                _client.Credentials = new NetworkCredential(options.UserName, options.Password);
-            }
-
             _sender = new MailAddress(options.Sender.Address, options.Sender.DisplayName);
             _overrideRecipient = options.OverrideRecipient ?? new EmailOptions.OverrideRecipientOptions { Enabled = false };
+            _queue = new BufferBlock<MailMessage>();
         }
 
-        public async Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser)
+        public async Task QueueMessageAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser)
         {
             MailAddress userAddress = null;
             if (user != null)
             {
-                userAddress = new MailAddress(_userManager.GetEmailAddress(user), _userManager.GetUserName(user));
+                using (var scope = _scopeFactory.CreateScope())
+                {
+                    var userManager = scope.ServiceProvider.GetRequiredService<IUserManager>();
+                    userAddress = new MailAddress(userManager.GetEmailAddress(user), userManager.GetUserName(user));
+                }
             }
 
             if (_overrideRecipient.Enabled)
@@ -68,9 +67,14 @@ namespace Dccn.ProjectForm.Services
             await SendEmailAsync(email, recipient, replyToUser && userAddress != null ? userAddress : null);
         }
 
-        public async Task SendEmailNoOverrideAsync(IEmailModel email, MailAddress recipient)
+        public async Task QueueMessageNoOverrideAsync(IEmailModel email, MailAddress recipient)
         {
             await SendEmailAsync(email, recipient, null);
+        }
+
+        public Task<MailMessage> PollMessageAsync(CancellationToken cancellationToken)
+        {
+            return _queue.ReceiveAsync(cancellationToken);
         }
 
         private async Task SendEmailAsync(IEmailModel email, MailAddress recipient, MailAddress replyTo)
@@ -90,14 +94,15 @@ namespace Dccn.ProjectForm.Services
                 message.ReplyToList.Add(replyTo);
             }
 
-            await _client.SendMailAsync(message);
+            await _queue.SendAsync(message);
         }
     }
 
     public interface IEmailService
     {
-        Task SendEmailAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser = false);
-        Task SendEmailNoOverrideAsync(IEmailModel email, MailAddress recipient);
+        Task QueueMessageAsync(ClaimsPrincipal user, IEmailModel email, MailAddress recipient, bool replyToUser = false);
+        Task QueueMessageNoOverrideAsync(IEmailModel email, MailAddress recipient);
+        Task<MailMessage> PollMessageAsync(CancellationToken cancellationToken = default);
     }
 
     public static class EmailServiceExtensions
@@ -106,7 +111,8 @@ namespace Dccn.ProjectForm.Services
         public static IServiceCollection AddEmail(this IServiceCollection services, string templatePath)
         {
             return services
-                .AddTransient<IEmailService, EmailService>()
+                .AddHostedService<EmailBackgroundService>()
+                .AddSingleton<IEmailService, EmailService>()
                 .AddSingleton<ITemplateRenderService>(provider =>
                 {
                     var environment = provider.GetRequiredService<IHostingEnvironment>();

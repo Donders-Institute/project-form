@@ -7,6 +7,10 @@
     <TypeScriptToolsVersion>3.1</TypeScriptToolsVersion>
   </PropertyGroup>
   <ItemGroup>
+    <Compile Remove="Migrations\20190417221318_AddDataProtection.cs" />
+    <Compile Remove="Migrations\20190417221318_AddDataProtection.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
     <PackageReference Include="FluentValidation" Version="8.2.3" />
     <PackageReference Include="FluentValidation.AspNetCore" Version="8.2.2" />
     <PackageReference Include="LinqKit.Microsoft.EntityFrameworkCore" Version="1.1.16" />

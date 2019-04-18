@@ -34,7 +34,7 @@ namespace Dccn.ProjectForm.Services
             {
                 try
                 {
-                    await emailService.SendEmailNoOverrideAsync(new ExceptionReport
+                    await emailService.QueueMessageNoOverrideAsync(new ExceptionReport
                     {
                         RequestId = Activity.Current?.Id ?? httpContext.TraceIdentifier,
                         RequestMethod = httpContext.Request.Method,

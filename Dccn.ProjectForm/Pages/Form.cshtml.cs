@@ -194,7 +194,7 @@ namespace Dccn.ProjectForm.Pages
                     {
                         var primary = authorities.First();
 
-                        await _emailService.SendEmailAsync(User, new ApprovalRequest
+                        await _emailService.QueueMessageAsync(User, new ApprovalRequest
                         {
                             ApplicantName = _userManager.GetUserName(User),
                             ProposalTitle = proposal.Title,
@@ -384,7 +384,7 @@ namespace Dccn.ProjectForm.Pages
 
             if (approve)
             {
-                await _emailService.SendEmailAsync(User, new SectionApproved
+                await _emailService.QueueMessageAsync(User, new SectionApproved
                 {
                     ApproverName = _userManager.GetUserName(User),
                     Remarks = ApproveSection.Remarks,
@@ -397,7 +397,7 @@ namespace Dccn.ProjectForm.Pages
             }
             else
             {
-                await _emailService.SendEmailAsync(User, new SectionRejected
+                await _emailService.QueueMessageAsync(User, new SectionRejected
                 {
                     ApproverName = _userManager.GetUserName(User),
                     Reason = RejectSection.Reason,
@@ -418,7 +418,7 @@ namespace Dccn.ProjectForm.Pages
                 var administration = await _authorityProvider.GetAdministrationAsync();
                 var primary = administration.First();
 
-                await _emailService.SendEmailAsync(User, new ProposalApproved
+                await _emailService.QueueMessageAsync(User, new ProposalApproved
                 {
                     ApplicantName = (await _userManager.GetUserByIdAsync(proposal.OwnerId)).DisplayName,
                     ProposalTitle = proposal.Title,

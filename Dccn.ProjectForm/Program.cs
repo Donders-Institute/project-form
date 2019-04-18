@@ -23,7 +23,7 @@ namespace Dccn.ProjectForm
             var logger = host.Services.GetRequiredService<ILogger<Program>>();
 
             await Task.WhenAll(
-                MigrateDbContextAsync(host.Services, logger),
+                InitProposalDbContextAsync(host.Services, logger),
                 InitLabsProviderAsync(host.Services, logger));
 
             ValidatorOptions.DisplayNameResolver = (type, member, expression) =>
@@ -37,7 +37,7 @@ namespace Dccn.ProjectForm
             await host.RunAsync();
         }
 
-        [UsedImplicitly]
+        [PublicAPI]
         public static IWebHostBuilder CreateWebHostBuilder(string[] args)
         {
             return WebHost.CreateDefaultBuilder(args)
@@ -45,7 +45,7 @@ namespace Dccn.ProjectForm
                 .UseStartup<Startup>();
         }
 
-        private static async Task MigrateDbContextAsync(IServiceProvider services, ILogger logger)
+        private static async Task InitProposalDbContextAsync(IServiceProvider services, ILogger logger)
         {
             try
             {
@@ -57,7 +57,7 @@ namespace Dccn.ProjectForm
             }
             catch (Exception e)
             {
-                logger.LogCritical(e, "There was an error migrating the database.");
+                logger.LogCritical(e, "There was an error migrating the proposals database.");
                 throw;
             }
         }

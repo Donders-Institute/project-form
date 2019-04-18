@@ -32,17 +32,25 @@ namespace Dccn.ProjectForm.Services
         {
             var uri = $"users/query?email={HttpUtility.UrlEncode(email)}&detail";
 
-            var response = await _client.GetAsync(uri);
-            response.EnsureSuccessStatusCode();
-
-            var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUserDto[]>>();
-            if (!result.Succeeded)
+            try
             {
-                _logger.LogError($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
+                var response = await _client.GetAsync(uri);
+                response.EnsureSuccessStatusCode();
+
+                var result = await response.Content.ReadAsAsync<ApiResult<RepositoryUserDto[]>>();
+                if (!result.Succeeded)
+                {
+                    _logger.LogError($"Repository API Error. Message: {result.ErrorMessage}. Code: {result.ErrorCode}");
+                    return Enumerable.Empty<RepositoryUserDto>();
+                }
+
+                return result.Data;
+            }
+            catch (HttpRequestException e)
+            {
+                _logger.LogError("Error contacting repository API.", e);
                 return Enumerable.Empty<RepositoryUserDto>();
             }
-
-            return result.Data;
         }
 
         private class ApiResult<TData>

@@ -22,7 +22,6 @@ using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Localization;
 using Newtonsoft.Json.Converters;
-using IHostingEnvironment = Microsoft.AspNetCore.Hosting.IHostingEnvironment;
 
 namespace Dccn.ProjectForm
 {
@@ -37,17 +36,19 @@ namespace Dccn.ProjectForm
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddDbContext<ProjectDbContext>(options =>
-            {
-                options.UseMySql(_configuration.GetConnectionString("ProjectDb"));
-                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
-            });
+            services.AddDockerDataProtection("/var/opt/dpkeys");
 
-            services.AddDbContext<ProposalDbContext>(options =>
-            {
-                options.UseSqlServer(_configuration.GetConnectionString("ProposalDb"));
-                options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
-            });
+            services
+                .AddDbContext<ProjectDbContext>(options =>
+                {
+                    options.UseMySql(_configuration.GetConnectionString("ProjectDb"));
+                    options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+                })
+                .AddDbContext<ProposalDbContext>(options =>
+                {
+                    options.UseSqlServer(_configuration.GetConnectionString("ProposalDb"));
+                    options.ConfigureWarnings(warnings => warnings.Throw(RelationalEventId.QueryClientEvaluationWarning));
+                });
 
             services.AddMemoryCache();
 
@@ -71,18 +72,12 @@ namespace Dccn.ProjectForm
                     var policy = new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build();
                     options.Filters.Add(new AuthorizeFilter(policy));
                 })
-                .AddViewOptions(options =>
-                {
-                    // options.HtmlHelperOptions.ClientValidationEnabled = false;
-                    // options.ClientModelValidatorProviders.Clear();
-                })
                 .AddJsonOptions(options =>
                 {
                     options.SerializerSettings.Converters.Add(new StringEnumConverter());
                 })
                 .AddFluentValidation(options =>
                 {
-                    //options.ConfigureClientsideValidation(enabled: false);
                     options.LocalizationEnabled = true;
                 });
 

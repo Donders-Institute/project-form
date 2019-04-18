@@ -91,7 +91,6 @@ namespace Dccn.ProjectForm.Services
                     await Task.Delay(5000, cancellationToken);
                 }
             }
-            cancellationToken.ThrowIfCancellationRequested();
         }
 
         private async Task ProcessUpdatesAsync(SqlCommand command, CancellationToken cancellationToken)
