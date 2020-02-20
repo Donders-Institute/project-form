@@ -19,6 +19,7 @@ namespace Dccn.ProjectForm.Data.ProjectDb
         public DbSet<ProjectDbGroup> Groups { get; private set; }
         public DbSet<ProjectDbProject> Projects { get; private set; }
         public DbSet<ProjectDbImagingMethod> ImagingMethods { get; private set; }
+        public DbSet<ProjectDbFundingSource> FundingSources { get; private set; }
 
 //        public DbQuery<User> Users { get; private set; }
 
@@ -79,6 +80,15 @@ namespace Dccn.ProjectForm.Data.ProjectDb
                 b.Property(e => e.Url).HasColumnName("url");
 
                 b.ToTable("imaging_methods");
+            });
+
+            builder.Entity<ProjectDbFundingSource>(b =>
+            {
+                b.Property(e => e.Id).HasColumnName("id");
+                b.Property(e => e.OldId).HasColumnName("oldid");
+                b.Property(e => e.Description).HasColumnName("description");
+
+                b.ToTable("sources");
             });
 
 

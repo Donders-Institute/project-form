@@ -35,7 +35,7 @@ namespace Dccn.ProjectForm.Data
                 b.Property(e => e.StartDate).HasColumnType("DATE");
                 b.Property(e => e.EndDate).HasColumnType("DATE");
                 b.Property(e => e.PaymentAverageSubjectCost).HasColumnType("DECIMAL(5, 2)");
-                b.Property(e => e.PaymentMaxTotalCost).HasColumnType("DECIMAL(6, 2)");
+                b.Property(e => e.PaymentMaxTotalCost).HasColumnType("DECIMAL(9, 2)");
 
                 var jsonConverter = new ValueConverter<ICollection<string>, string>(
                                         m => JsonConvert.SerializeObject(m),

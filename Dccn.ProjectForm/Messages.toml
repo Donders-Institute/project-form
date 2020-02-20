@@ -93,7 +93,7 @@ Description = "Each PPM requires ethical approval, for standard research pick â€
 
         [Form.Ethics.Pending.CorrespondenceNumber]
         Label = "Correspondence number"
-		Description = "!!!Put explanation here."
+		#Description = "."
 
 
 
@@ -117,7 +117,7 @@ Description = """
     Description = """
         Ending date of data acquisition.
 
-        In case the will be no data acquired pick an end date equal to the start date.
+        In case there will be no data acquired pick an end date equal to the start date.
         """
 
     [Form.Experiment.Labs]

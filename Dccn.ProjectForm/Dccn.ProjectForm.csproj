@@ -9,6 +9,8 @@
   <ItemGroup>
     <Compile Remove="Migrations\20190417221318_AddDataProtection.cs" />
     <Compile Remove="Migrations\20190417221318_AddDataProtection.Designer.cs" />
+    <Compile Remove="Migrations\20190628082225_Increase maximum budget.cs" />
+    <Compile Remove="Migrations\20190628082225_Increase maximum budget.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentValidation" Version="8.2.3" />

@@ -93,7 +93,6 @@ $(function() {
     $("table[data-row-type='proposal']").each(function() {
         var tableData = $(this).data();
 
-
         var options = {
             dom: tableLayout,
             order: [],
@@ -124,7 +123,8 @@ $(function() {
         if (tableData.ajaxUrl) {
             options.ajax = {
                 url: tableData.ajaxUrl,
-                dataSrc: ""
+                dataSrc: "",
+                error: function() {}
             };
         }
 
@@ -195,7 +195,8 @@ $(function() {
         if (tableData.ajaxUrl) {
             options.ajax = {
                 url: tableData.ajaxUrl,
-                dataSrc: ""
+                dataSrc: "",
+                error: function() {}
             };
         }
 

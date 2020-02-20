@@ -12,7 +12,7 @@ namespace Dccn.ProjectForm.Models
         [Display(Name = "Form.Ethics.Approved.Code.Label", Description = "Form.Ethics.Approved.Code.Description")]
         public string Code { get; set; }
 
-        [Display(Name = "Form.Ethics.Pending.CorrespondenceNumber.Label", Description = "Form.Ethics.Pending.CorrespondenceNumber.Description")]
+        [Display(Name = "Form.Ethics.Pending.CorrespondenceNumber.Label" /*, Description = "Form.Ethics.Pending.CorrespondenceNumber.Description" */)]
         public string CorrespondenceNumber { get; set; }
 
         [BindNever]

@@ -4,14 +4,16 @@ using Dccn.ProjectForm.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Dccn.ProjectForm.Migrations
 {
     [DbContext(typeof(ProposalDbContext))]
-    partial class ProposalDbContextModelSnapshot : ModelSnapshot
+    [Migration("20190628090852_IncreaseTotalMaximumBudget")]
+    partial class IncreaseTotalMaximumBudget
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

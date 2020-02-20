@@ -40,6 +40,7 @@
                     </svg>
                     <span class="navbar-text p-0">DCCN</span>
                     Project Proposal
+                    <span class="text-muted">(BETA)</span>
                 </a>
 
                 @* <button class="navbar-toggler" type="button" data-toggle="collapse" data-target=".navbar-collapse"> *@
@@ -81,6 +82,8 @@
                     @if (SignInManager.IsSignedIn(User))
                     {
                         <form asp-page="/Account/Login" asp-page-handler="Logout" class="form-inline" method="post">
+                            <img class="rounded-circle mr-2" src="https://intranet.donders.ru.nl/projects/app/webroot/img/staff/thumbs-intranet/@(SignInManager.UserManager.GetUserId(User)).jpg"
+                                 alt="user" style="height: 2em; width: 2em; object-fit: cover;">
                             <span class="navbar-text mr-3">@SignInManager.UserManager.GetUserName(User)</span>
                             <button class="btn btn-outline-secondary" type="submit">Logout</button>
                         </form>

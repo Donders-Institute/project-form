@@ -27,7 +27,8 @@ namespace Dccn.ProjectForm.Services.SectionHandlers
             ApprovalAuthorityRole.LabMri,
             ApprovalAuthorityRole.LabOther,
             ApprovalAuthorityRole.DataManager,
-            ApprovalAuthorityRole.Privacy
+            ApprovalAuthorityRole.Privacy,
+            ApprovalAuthorityRole.Payment
         };
 
         protected override async Task LoadAsync(SubmissionSectionModel model, Proposal proposal)

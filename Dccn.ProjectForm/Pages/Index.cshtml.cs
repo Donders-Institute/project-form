@@ -199,7 +199,13 @@ namespace Dccn.ProjectForm.Pages
                 return Forbid();
             }
 
-            await _exporter.Export(proposal, ExportProposal.SourceId);
+            if (!await _exporter.Export(proposal, ExportProposal.SourceId))
+            {
+                ModelState.AddModelError(string.Empty, "The funding source needs to be created first.");
+                await LoadPageAsync();
+                return Page();
+            }
+
             proposal.LastEditedBy = _userManager.GetUserId(User);
             proposal.LastEditedOn = DateTime.Now;
             await _proposalDbContext.SaveChangesAsync();
@@ -211,7 +217,7 @@ namespace Dccn.ProjectForm.Pages
 
             var writer = new StringWriter();
             new HtmlContentBuilder()
-                .Append("The project proposal was succesfully exported to the Project Database as ")
+                .Append("The project proposal was successfully exported to the Project Database as ")
                 .AppendHtml(link)
                 .Append(".")
                 .WriteTo(writer, HtmlEncoder.Default);

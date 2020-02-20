@@ -20,11 +20,16 @@ namespace Dccn.ProjectForm.Services
         }
 
         [SuppressMessage("ReSharper", "PossibleInvalidOperationException")]
-        public async Task Export(Proposal proposal, string sourceId)
+        public async Task<bool> Export(Proposal proposal, string sourceId)
         {
             if (sourceId.Length != 7)
             {
                 throw new ArgumentOutOfRangeException(nameof(sourceId));
+            }
+
+            if (!await _projectDbContext.FundingSources.AnyAsync(s => s.Id == sourceId))
+            {
+                return false;
             }
 
             var suffixes = await _projectDbContext.Projects
@@ -95,9 +100,38 @@ namespace Dccn.ProjectForm.Services
                 });
             }
 
-            var totalQuota = proposal.CustomQuotaAmount is int customQuota
-                ? customQuota
-                : Math.Min(experiments.Sum(experiment => experiment.CalculatedQuota), _labProvider.MinimumStorageQuota);
+            var calculatedQuota = experiments.Sum(experiment => experiment.CalculatedQuota);
+            var customQuota = proposal.CustomQuotaAmount.GetValueOrDefault(_labProvider.MinimumStorageQuota / 1000);
+            int totalQuota;
+            if (customQuota > calculatedQuota)
+            {
+                if (experiments.Count == 1)
+                {
+                    experiments.Single().PpmApprovedQuota = customQuota;
+                }
+                else
+                {
+                    experiments.Add(new ProjectDbExperiment
+                    {
+                        Created = now,
+                        Updated = now,
+                        ExperimenterId = proposal.OwnerId,
+                        StartingDate = startDate,
+                        EndingDate = endDate,
+                        ImagingMethodId = "none",
+                        LabTime = 0,
+                        Offset = 0,
+                        PpmApprovedQuota = customQuota - calculatedQuota,
+                        ExperimentEndDate = finalEndDate
+                    });
+                }
+
+                totalQuota = customQuota;
+            }
+            else
+            {
+                totalQuota = calculatedQuota;
+            }
 
             var experimenters = proposal.Experimenters
                 .Where(experimenter => experimenter.UserId != proposal.OwnerId)
@@ -132,13 +166,12 @@ namespace Dccn.ProjectForm.Services
                 SourceId = sourceId,
                 StartingDate = startDate,
                 EndingDate = endDate,
-                PpmApprovedQuota = proposal.CustomQuotaAmount.GetValueOrDefault(),
+                // PpmApprovedQuota = proposal.CustomQuotaAmount.GetValueOrDefault(),
                 EcApproved = proposal.EcApproved,
                 EcRequestedBy = proposal.EcApproved ? proposal.EcCode : proposal.EcReference,
                 AuthorshipSequence = string.Empty,
                 AuthorshipRemarks = string.Empty,
                 ProjectBased = true,
-                TotalProjectSpace = totalQuota,
                 CalculatedProjectSpace = totalQuota,
                 ProjectEndDate = finalEndDate,
 
@@ -150,6 +183,8 @@ namespace Dccn.ProjectForm.Services
 
             await _projectDbContext.SaveChangesAsync();
             proposal.ProjectId = projectId;
+
+            return true;
         }
 
         private string GetRoleId(StorageAccessRole role)
@@ -170,6 +205,6 @@ namespace Dccn.ProjectForm.Services
 
     public interface IProjectDbExporter
     {
-        Task Export(Proposal proposal, string sourceId);
+        Task<bool> Export(Proposal proposal, string sourceId);
     }
 }

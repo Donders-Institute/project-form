@@ -9,7 +9,7 @@ namespace Dccn.ProjectForm.Services.Validators
         {
             RuleFor(s => s.SubjectCount).GreaterThanOrEqualTo(0);
             RuleFor(s => s.AverageSubjectCost).GreaterThanOrEqualTo(0).LessThan(1000);
-            RuleFor(s => s.MaxTotalCost).GreaterThanOrEqualTo(0).LessThan(10000);
+            RuleFor(s => s.MaxTotalCost).GreaterThanOrEqualTo(0).LessThan(10_000_000);
 
             RuleSet("Submit", () =>
             {
