@@ -46,19 +46,25 @@ namespace Dccn.ProjectForm.Authentication
 
         public IUserManager UserManager { get; }
 
-        public async Task<bool> PasswordSignInAsync(HttpContext httpContext, string userId, string password, bool isPersistent)
+        public async Task<SignInStatus> PasswordSignInAsync(HttpContext httpContext, string userId, string password, bool isPersistent)
         {
             var user = await UserManager.GetUserByIdAsync(userId, true);
             if (user == null)
             {
                 _logger.LogInformation($"User '{userId}' does not exist.");
-                return false;
+                return SignInStatus.InvalidCredentials;
             }
 
             if (!CheckPasswordSignIn(user, password))
             {
                 _logger.LogInformation($"Invalid credentials supplied for '{userId}'.");
-                return false;
+                return SignInStatus.InvalidCredentials;
+            }
+
+            if (user.Status == CheckinStatus.Tentative)
+            {
+                _logger.LogInformation($"User '{userId} has tentative status.");
+                return SignInStatus.InvalidStatus;
             }
 
             var identity = new ClaimsIdentity(AuthenticationScheme, ClaimTypes.UserName, ClaimTypes.Role);
@@ -91,7 +97,7 @@ namespace Dccn.ProjectForm.Authentication
 
             await httpContext.SignInAsync(AuthenticationScheme, new ClaimsPrincipal(identity), authProperties);
 
-            return true;
+            return SignInStatus.Success;
         }
 
         public async Task SignOutAsync(HttpContext httpContext)
@@ -148,9 +154,16 @@ namespace Dccn.ProjectForm.Authentication
 
     public interface ISignInManager
     {
-        Task<bool> PasswordSignInAsync(HttpContext httpContext, string userId, string password, bool isPersistent);
+        Task<SignInStatus> PasswordSignInAsync(HttpContext httpContext, string userId, string password, bool isPersistent);
         Task SignOutAsync(HttpContext httpContext);
         bool IsSignedIn(ClaimsPrincipal user);
         IUserManager UserManager { get; }
+    }
+
+    public enum SignInStatus
+    {
+        Success,
+        InvalidCredentials,
+        InvalidStatus
     }
 }

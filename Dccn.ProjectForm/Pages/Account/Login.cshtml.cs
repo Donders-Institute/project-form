@@ -1,3 +1,4 @@
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Dccn.ProjectForm.Authentication;
@@ -60,19 +61,26 @@ namespace Dccn.ProjectForm.Pages.Account
                 return Page();
             }
 
-            if (await _signInManager.PasswordSignInAsync(HttpContext, UserName, Password, RememberMe))
+            switch (await _signInManager.PasswordSignInAsync(HttpContext, UserName, Password, RememberMe))
             {
-                _logger.LogInformation($"User '{UserName}' logged in.");
+                case SignInStatus.Success:
+                    _logger.LogInformation($"User '{UserName}' logged in.");
 
-                if (returnUrl != null)
-                {
-                    return LocalRedirect(returnUrl);
-                }
+                    if (returnUrl != null)
+                    {
+                        return LocalRedirect(returnUrl);
+                    }
 
-                return RedirectToPage("/Index");
+                    return RedirectToPage("/Index");
+                case SignInStatus.InvalidCredentials:
+                    ModelState.AddModelError(nameof(Password), "Invalid login attempt.");
+                    break;
+                case SignInStatus.InvalidStatus:
+                    ModelState.AddModelError(nameof(UserName), "Your account has not yet been fully activated. Please make sure you finish the check-in procedure. For more information you can contact DCCN/CNS administration.");
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException();
             }
-
-            ModelState.AddModelError(nameof(Password), "Invalid login attempt.");
 
             return Page();
         }
