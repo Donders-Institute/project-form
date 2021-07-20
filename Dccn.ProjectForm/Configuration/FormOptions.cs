@@ -19,16 +19,17 @@ namespace Dccn.ProjectForm.Configuration
         [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
         public class LabOptions
         {
-            public IDictionary<string, string> Modalities { get; set; }
+            public IDictionary<string, LabModality> Modalities { get; set; }
             public int MinimumStorageQuota { get; set; }
         }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]
         public class LabModality
         {
+            public string MethodId { get; set; }
             public string DisplayName { get; set; }
             public bool IsMri { get; set; }
-            public int? SessionStorageQuota { get; set; }
+            public bool Hidden { get; set; }
         }
 
         [UsedImplicitly(ImplicitUseKindFlags.Assign, ImplicitUseTargetFlags.WithMembers)]

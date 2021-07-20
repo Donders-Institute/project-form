@@ -8,5 +8,6 @@ namespace Dccn.ProjectForm.Models
         public string DisplayName { get; set; }
         public bool IsMri { get; set; }
         public int SessionStorageQuota { get; set; }
+        public bool Hidden { get; set; }
     }
 }

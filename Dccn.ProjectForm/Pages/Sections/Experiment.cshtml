@@ -75,7 +75,7 @@
                             </button>
                             <div class="dropdown-menu">
                                 <h6 class="dropdown-header">Add a modality</h6>
-                                @foreach (var modality in LabProvider.Labs.Values)
+                                @foreach (var modality in LabProvider.Labs.Values.Where(m => !m.Hidden).OrderBy(m => m.DisplayName))
                                 {
                                     <button class="dropdown-item add-lab-item"
                                             type="button"
